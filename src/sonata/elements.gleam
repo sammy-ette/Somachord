@@ -1,9 +1,14 @@
 import gleam/int
+import gleam/uri
 import gleroglero/outline
 import gleroglero/solid
 import lustre/attribute
 import lustre/element
 import lustre/element/html
+import sonata/api_helper
+import sonata/models/auth
+import sonata/storage
+import varasto
 
 import sonata/model
 
@@ -49,6 +54,11 @@ pub fn song(
 }
 
 pub fn album(album album: model.Album) {
+  let auth_details = {
+    let assert Ok(stg) = storage.create() |> varasto.get("auth")
+    stg.auth
+  }
+
   html.div(
     [
       attribute.class(
@@ -72,7 +82,11 @@ pub fn album(album album: model.Album) {
           ),
           html.img([
             attribute.src(
-              "https://ia800503.us.archive.org/27/items/mbid-c8cda63d-d94a-4b80-9d94-d8c253e988fe/mbid-c8cda63d-d94a-4b80-9d94-d8c253e988fe-37355361520_thumb250.jpg",
+              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                #("id", album.cover_art_id),
+                #("size", "500"),
+              ])
+              |> uri.to_string,
             ),
             attribute.class(
               "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
@@ -106,7 +120,11 @@ pub fn album(album album: model.Album) {
         // ),
         ],
       ),
-      html.span([attribute.class("text-zinc-100")], [element.text(album.name)]),
+      html.a([attribute.href("/album/" <> album.id)], [
+        html.span([attribute.class("text-zinc-100 hover:underline")], [
+          element.text(album.name),
+        ]),
+      ]),
       html.span([attribute.class("text-zinc-500 font-light text-xs")], [
         element.text(int.to_string(album.year)),
       ]),

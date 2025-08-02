@@ -13,6 +13,7 @@ import sonata/pages/artist
 import sonata/pages/home
 import sonata/pages/song
 import sonata/storage
+import varasto
 
 import gleroglero/outline
 import lustre
@@ -29,6 +30,7 @@ import sonata/router
 pub fn main() {
   let app = lustre.application(init, update, view)
   let assert Ok(_) = login.register()
+  let assert Ok(_) = home.register()
   let assert Ok(_) = song_detail.register()
   let assert Ok(_) = artist_detail.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
@@ -51,9 +53,21 @@ fn init(_) {
 
   echo layout
 
-  let m = model.Model(route:, layout:, storage: storage.create())
-
-  #(m, modem.init(on_url_change))
+  let m =
+    model.Model(route:, layout:, storage: storage.create(), confirmed: False)
+  case
+    router.get_route() |> router.uri_to_route,
+    m.storage |> varasto.get("auth")
+  {
+    router.Login, _ | _, Ok(_) -> #(
+      model.Model(..m, confirmed: True),
+      modem.init(on_url_change),
+    )
+    _, Error(_) -> {
+      let assert Ok(login) = uri.parse("/login")
+      #(m, modem.load(login))
+    }
+  }
 }
 
 fn on_url_change(url: uri.Uri) -> msg.Msg {
@@ -74,22 +88,27 @@ fn update(
 }
 
 fn view(m: model.Model) {
-  let page = case m.route {
-    router.Home -> home.page()
-    router.Artist(id) -> artist.page()
-    router.Album(id) -> album.page(m)
-    router.Song(id) -> song.page()
-    _ -> home.page()
-  }
+  case m.confirmed {
+    False -> element.none()
+    True -> {
+      let page = case m.route {
+        router.Home -> home.element()
+        router.Artist(id) -> artist.page()
+        router.Album(id) -> album.page(m)
+        router.Song(id) -> song.page()
+        _ -> element.none()
+      }
 
-  let page_that_got_laid = case m.layout {
-    model.Mobile -> mobile_view(m, page)
-    model.Desktop -> desktop_view(m, page)
-  }
+      let page_that_got_laid = case m.layout {
+        model.Mobile -> mobile_view(m, page)
+        model.Desktop -> desktop_view(m, page)
+      }
 
-  case m.route {
-    router.Login -> login.element()
-    _ -> page_that_got_laid
+      case m.route {
+        router.Login -> login.element()
+        _ -> page_that_got_laid
+      }
+    }
   }
 }
 

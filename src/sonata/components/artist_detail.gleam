@@ -10,7 +10,7 @@ import sonata/elements
 import sonata/model
 
 pub type Model {
-  Model(id: String, current_tab: DetailTab)
+  Model(id: String, current_tab: DetailTab, albums: List(model.Album))
 }
 
 pub type DetailTab {
@@ -78,7 +78,7 @@ pub fn id(id: String) -> attribute.Attribute(msg) {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(id: "", current_tab: About), effect.none())
+  #(Model(id: "", current_tab: About, albums: []), effect.none())
 }
 
 fn update(m: Model, msg: Msg) {
@@ -137,21 +137,11 @@ fn view_home(m: Model) {
   ]
 }
 
-fn view_albums(m) {
+fn view_albums(m: Model) {
   [
     html.div(
       [attribute.class("flex flex-wrap gap-4")],
-      list.map(
-        model.Album(
-          id: "",
-          artist: "TAEYEON",
-          name: "To. X",
-          version: "",
-          year: 2023,
-        )
-          |> list.repeat(10),
-        fn(album: model.Album) { elements.album(album) },
-      ),
+      list.map(m.albums, fn(album: model.Album) { elements.album(album) }),
     ),
   ]
 }

@@ -72,8 +72,9 @@ fn update(m: Model, msg: Msg) {
     SonataMsg(msg.SubsonicResponse(resp)) ->
       case resp {
         Ok(api_helper.Ping) -> {
-          m.storage
-          |> varasto.set("auth", storage.Storage(auth: m.auth_details))
+          let _ =
+            m.storage
+            |> varasto.set("auth", storage.Storage(auth: m.auth_details))
           let assert Ok(home) = uri.parse("/")
           #(m, modem.load(home))
         }

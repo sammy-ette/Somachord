@@ -3,13 +3,37 @@ import gleam/http/request
 import gleam/option
 import gleam/uri
 import rsvp
+import sonata/model
 
 import sonata/models/auth
 import sonata/router
 
 pub type Response {
   Ping
+  AlbumList(String, List(model.Album))
   SubsonicError(code: Int, message: String)
+}
+
+pub fn create_uri(
+  path: String,
+  auth_details: auth.Auth,
+  query: List(#(String, String)),
+) {
+  let assert Ok(original_uri) = uri.parse(router.direct(path))
+  uri.Uri(
+    ..original_uri,
+    query: option.Some(
+      uri.query_to_string([
+        #("f", "json"),
+        #("u", auth_details.username),
+        #("s", auth_details.credentials.salt),
+        #("t", auth_details.credentials.token),
+        #("c", "sonata"),
+        #("v", "6.1.4"),
+        ..query
+      ]),
+    ),
+  )
 }
 
 pub fn construct_req(
@@ -19,24 +43,8 @@ pub fn construct_req(
   decoder decoder: decode.Decoder(Response),
   msg msg: fn(Result(Response, rsvp.Error)) -> b,
 ) {
-  let assert Ok(original_uri) = uri.parse(router.direct(path))
-  let request_uri =
-    uri.Uri(
-      ..original_uri,
-      query: option.Some(
-        uri.query_to_string([
-          #("f", "json"),
-          #("u", auth_details.username),
-          #("s", auth_details.credentials.salt),
-          #("t", auth_details.credentials.token),
-          #("c", "sonata"),
-          #("v", "6.1.4"),
-          ..query
-        ]),
-      ),
-    )
-
-  let assert Ok(req) = request.to(request_uri |> uri.to_string)
+  let assert Ok(req) =
+    request.to(create_uri(path, auth_details, query) |> uri.to_string)
   rsvp.send(
     req,
     rsvp.expect_json(

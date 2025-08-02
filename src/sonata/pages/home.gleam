@@ -1,13 +1,87 @@
+import gleam/bool
+import gleam/list
+import lustre
 import lustre/attribute
+import lustre/effect
+import lustre/element
 import lustre/element/html
+import sonata/api
+import sonata/api_helper
+import sonata/elements
+import sonata/model
+import sonata/models/auth
+import sonata/msg
+import sonata/storage
+import varasto
 
-pub fn page() {
-  html.div(
-    [
-      attribute.class(
-        "flex-1 flex flex-col p-4 rounded-lg border border-zinc-800",
-      ),
-    ],
+pub type AlbumList {
+  AlbumList(type_: String, albums: List(model.Album))
+}
+
+pub type Model {
+  Model(albumlists: List(AlbumList))
+}
+
+pub fn register() {
+  let app = lustre.component(init, update, view, [])
+  lustre.register(app, "home-page")
+}
+
+pub fn element() {
+  element.element(
+    "home-page",
+    [attribute.class("flex-1 border border-zinc-800 rounded-lg p-4")],
     [],
+  )
+}
+
+fn init(_) {
+  let storage = storage.create()
+
+  #(Model(albumlists: []), case storage |> varasto.get("auth") {
+    Ok(stg) -> api.album_list(stg.auth, "newest", 0, 8)
+    Error(_) -> effect.none()
+  })
+}
+
+fn update(m: Model, msg: msg.Msg) {
+  case msg {
+    msg.SubsonicResponse(Ok(api_helper.AlbumList(type_, list))) -> {
+      echo list
+      echo type_
+      #(
+        Model(
+          albumlists: [AlbumList(type_:, albums: list), ..m.albumlists]
+          |> list.reverse,
+        ),
+        effect.none(),
+      )
+    }
+    msg.SubsonicResponse(Error(e)) -> {
+      echo e
+      #(m, effect.none())
+    }
+    _ -> #(m, effect.none())
+  }
+}
+
+fn view(m: Model) {
+  html.div(
+    [attribute.class("flex flex-col")],
+    list.map(m.albumlists, fn(album_list) {
+      use <- bool.guard(album_list.albums |> list.is_empty, element.none())
+      html.div([], [
+        html.h1([attribute.class("ml-2 text-2xl font-medium")], [
+          element.text(case album_list.type_ {
+            "newest" -> "New Releases"
+            typ -> typ
+          }),
+        ]),
+        html.div(
+          [attribute.class("flex gap-4")],
+          list.map(album_list.albums, elements.album),
+        ),
+      ])
+    }),
   )
 }
