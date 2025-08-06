@@ -1,5 +1,4 @@
 import gleam/list
-import gleroglero/outline
 import lustre
 import lustre/attribute
 import lustre/component
@@ -95,7 +94,7 @@ fn view(m: Model) {
       [tab_element(m, Lyrics), tab_element(m, More)],
     ),
     html.div([attribute.class("p-4")], case m.current_tab {
-      Lyrics -> view_lyrics(m)
+      //Lyrics -> view_lyrics(m)
       //More -> view_more(m)
       _ -> [element.none()]
     }),

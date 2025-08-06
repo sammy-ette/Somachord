@@ -10,7 +10,12 @@ import sonata/router
 
 pub type Response {
   Ping
+  Artist(model.Artist)
+  TopSongs(List(model.Child))
   AlbumList(String, List(model.Album))
+  Album(model.Album)
+  Scrobble
+  Song(model.Child)
   SubsonicError(code: Int, message: String)
 }
 

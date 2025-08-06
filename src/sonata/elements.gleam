@@ -1,59 +1,132 @@
 import gleam/int
+import gleam/list
+import gleam/string
 import gleam/uri
-import gleroglero/outline
-import gleroglero/solid
 import lustre/attribute
 import lustre/element
 import lustre/element/html
+import lustre/event
 import sonata/api_helper
-import sonata/models/auth
 import sonata/storage
 import varasto
 
 import sonata/model
 
 pub fn song(
-  song song: model.Song,
+  song song: model.Child,
   index index: Int,
   attrs attrs: List(attribute.Attribute(msg)),
+  cover_art cover_art: Bool,
 ) {
-  html.div([attribute.class("flex justify-between"), ..attrs], [
-    html.div([attribute.class("flex gap-4 items-center")], [
-      html.span(
-        [attribute.class("text-zinc-600 font-[Azeret_Mono] font-light text-sm")],
-        [element.text(int.to_string(index + 1))],
+  let auth_details = {
+    let assert Ok(stg) = storage.create() |> varasto.get("auth")
+    stg.auth
+  }
+
+  html.div(
+    [
+      attribute.class(
+        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between",
       ),
-      html.div([attribute.class("flex gap-2 items-center")], [
-        html.div([attribute.class("w-8 h-8 text-zinc-400")], [
-          solid.musical_note(),
+      ..attrs
+    ],
+    [
+      html.div([attribute.class("flex gap-4 items-center")], [
+        html.div([attribute.class("w-5 grid grid-rows-1 grid-cols-1")], [
+          html.span(
+            [
+              attribute.class(
+                "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-smtext-right",
+              ),
+            ],
+            [element.text(int.to_string(index + 1))],
+          ),
+          html.i(
+            [
+              attribute.class(
+                "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
+              ),
+            ],
+            [],
+          ),
         ]),
-        html.div([attribute.class("flex flex-col gap")], [
-          html.a([attribute.href("/song/" <> song.id)], [
+        html.div([attribute.class("flex gap-2 items-center")], [
+          // html.div([attribute.class("w-8 h-8 text-zinc-400")], [
+          //   solid.musical_note(),
+          // ]),
+          case cover_art {
+            True ->
+              html.img([
+                attribute.class("w-12 h-12 rounded-sm"),
+                attribute.src(
+                  api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                    #("id", song.cover_art_id),
+                    #("size", "500"),
+                  ])
+                  |> uri.to_string,
+                ),
+              ])
+            False -> element.none()
+          },
+          html.div([attribute.class("flex flex-col gap-0.5 justify-center")], [
+            html.a([attribute.href("/song/" <> song.id)], [
+              html.span(
+                [attribute.class("text-sm text-zinc-100 hover:underline")],
+                [element.text(song.title)],
+              ),
+            ]),
             html.span(
-              [attribute.class("text-sm text-zinc-100 hover:underline")],
-              [element.text(song.title)],
+              [attribute.class("text-sm text-zinc-500 font-light")],
+              list.map(song.artists, fn(artist: model.SmallArtist) {
+                html.a([attribute.href("/artist/" <> artist.id)], [
+                  html.span([attribute.class("text-zinc-300 hover:underline")], [
+                    element.text(artist.name),
+                  ]),
+                ])
+              })
+                |> list.intersperse(element.text(", ")),
             ),
           ]),
-          html.span([attribute.class("text-sm text-zinc-500 font-light")], [
-            element.text(song.artist),
-          ]),
         ]),
       ]),
-    ]),
-    html.div([attribute.class("flex gap-4 items-center")], [
-      html.span(
-        [attribute.class("font-[Azeret_Mono] font-light text-zinc-500 text-sm")],
-        [element.text("0:00")],
-      ),
-      html.div([attribute.class("h-6 w-6 text-zinc-500")], [outline.heart()]),
-      html.div([attribute.class("h-6 w-6 text-zinc-500")], [
-        outline.ellipsis_vertical(),
+      html.div([attribute.class("flex gap-4 items-center")], [
+        html.span(
+          [
+            attribute.class(
+              "font-[Azeret_Mono] font-light text-zinc-500 text-sm",
+            ),
+          ],
+          [
+            element.text({
+              let minutes = song.duration / 60
+              let seconds = song.duration % 60
+
+              int.to_string(minutes)
+              <> ":"
+              <> int.to_string(seconds) |> string.pad_start(2, "0")
+            }),
+          ],
+        ),
+        html.div([attribute.class("flex items-center")], [
+          html.i(
+            [attribute.class("text-zinc-500 text-2xl ph ph-heart-straight")],
+            [],
+          ),
+          html.i(
+            [
+              attribute.class(
+                "text-zinc-500 text-2xl ph ph-dots-three-vertical",
+              ),
+            ],
+            [],
+          ),
+        ]),
       ]),
-    ]),
-  ])
+    ],
+  )
 }
 
-pub fn album(album album: model.Album) {
+pub fn album(album album: model.Album, handler handler: fn(String) -> msg) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
@@ -94,6 +167,7 @@ pub fn album(album album: model.Album) {
           ]),
           html.div(
             [
+              event.on_click(handler(album.id)),
               attribute.class(
                 "absolute top-26 left-26 relative transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
               ),
@@ -137,5 +211,18 @@ pub fn tag(name: String) {
     html.span([attribute.class("text-zinc-400 text-light text-xs")], [
       element.text(name),
     ]),
+  ])
+}
+
+pub fn time(duration: Int, attrs: List(attribute.Attribute(a))) {
+  html.span(attrs, [
+    element.text({
+      let minutes = duration / 60
+      let seconds = duration % 60
+
+      int.to_string(minutes)
+      <> ":"
+      <> int.to_string(seconds) |> string.pad_start(2, "0")
+    }),
   ])
 }

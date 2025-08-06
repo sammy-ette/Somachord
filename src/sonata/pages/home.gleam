@@ -1,10 +1,12 @@
 import gleam/bool
+import gleam/json
 import gleam/list
 import lustre
 import lustre/attribute
 import lustre/effect
 import lustre/element
 import lustre/element/html
+import lustre/event
 import sonata/api
 import sonata/api_helper
 import sonata/elements
@@ -27,10 +29,10 @@ pub fn register() {
   lustre.register(app, "home-page")
 }
 
-pub fn element() {
+pub fn element(attrs: List(attribute.Attribute(a))) {
   element.element(
     "home-page",
-    [attribute.class("flex-1 border border-zinc-800 rounded-lg p-4")],
+    [attribute.class("flex-1 border border-zinc-800 rounded-lg p-4"), ..attrs],
     [],
   )
 }
@@ -61,6 +63,16 @@ fn update(m: Model, msg: msg.Msg) {
       echo e
       #(m, effect.none())
     }
+    msg.Play(req) -> #(
+      m,
+      event.emit(
+        "play",
+        json.object([
+          #("id", json.string(req.id)),
+          #("type", json.string(req.type_)),
+        ]),
+      ),
+    )
     _ -> #(m, effect.none())
   }
 }
@@ -73,13 +85,17 @@ fn view(m: Model) {
       html.div([], [
         html.h1([attribute.class("ml-2 text-2xl font-medium")], [
           element.text(case album_list.type_ {
-            "newest" -> "New Releases"
+            "newest" -> "New Additions"
             typ -> typ
           }),
         ]),
         html.div(
-          [attribute.class("flex gap-4")],
-          list.map(album_list.albums, elements.album),
+          [attribute.class("flex flex-wrap overflow-auto gap-4")],
+          list.map(album_list.albums, fn(album) {
+            elements.album(album, fn(id) {
+              msg.Play(model.PlayRequest("album", id))
+            })
+          }),
         ),
       ])
     }),
