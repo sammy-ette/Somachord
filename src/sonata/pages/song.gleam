@@ -11,6 +11,7 @@ import lustre/element/html
 import lustre/event
 import sonata/api
 import sonata/api_helper
+import sonata/components
 import sonata/model
 import sonata/msg
 import sonata/storage
@@ -72,6 +73,7 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
         json.object([#("type", json.string("song")), #("id", json.string(m.id))]),
       ),
     )
+    msg.Nothing -> #(m, effect.none())
   }
 }
 
@@ -81,7 +83,7 @@ fn view(song: model.Child) {
     stg.auth
   }
 
-  html.div([], [
+  html.div([components.redirect_click(msg.Nothing)], [
     html.div([attribute.class("flex gap-8 p-8")], [
       html.img([
         attribute.src(

@@ -1,8 +1,10 @@
 import gleam/bool
+import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import lustre
 import lustre/attribute
+import lustre/component
 import lustre/effect
 import lustre/element
 import lustre/element/html
@@ -16,6 +18,8 @@ import sonata/msg
 import sonata/storage
 import varasto
 
+import sonata/components
+
 pub type AlbumList {
   AlbumList(type_: String, albums: List(model.Album))
 }
@@ -25,11 +29,12 @@ pub type Model {
 }
 
 pub fn register() {
-  let app = lustre.component(init, update, view, [])
+  let app =
+    lustre.component(init, update, view, [component.open_shadow_root(True)])
   lustre.register(app, "home-page")
 }
 
-pub fn element(attrs: List(attribute.Attribute(a))) {
+pub fn element(attrs: List(attribute.Attribute(msg.Msg))) {
   element.element(
     "home-page",
     [attribute.class("flex-1 border border-zinc-800 rounded-lg p-4"), ..attrs],
@@ -79,7 +84,10 @@ fn update(m: Model, msg: msg.Msg) {
 
 fn view(m: Model) {
   html.div(
-    [attribute.class("flex flex-col")],
+    [
+      components.redirect_click(msg.ComponentClick),
+      attribute.class("flex flex-col"),
+    ],
     list.map(m.albumlists, fn(album_list) {
       use <- bool.guard(album_list.albums |> list.is_empty, element.none())
       html.div([], [

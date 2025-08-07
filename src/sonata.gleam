@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/float
@@ -74,6 +75,7 @@ fn init(_) {
       current_song: model.new_song(),
       seeking: False,
       seek_amount: 0,
+      played_seconds: 0,
     )
   case
     router.get_route() |> router.uri_to_route,
@@ -133,22 +135,23 @@ fn update(
             let assert Ok(stg) = m.storage |> varasto.get("auth")
             stg.auth
           }
-          case m.albums |> dict.get(req.id) {
-            Error(_) -> #(
-              m,
-              api.album(auth_details:, id: req.id)
-                |> effect.map(fn(message: msg.Msg) {
-                  case message {
-                    msg.SubsonicResponse(Error(e)) ->
-                      msg.SubsonicResponse(Error(e))
-                    msg.SubsonicResponse(Ok(api_helper.Album(album))) ->
-                      msg.StreamAlbum(album)
-                    m -> m
-                  }
-                }),
-            )
-            Ok(_) -> #(m, effect.none())
-          }
+          use <- bool.guard(m.albums |> dict.has_key(req.id), #(
+            m,
+            effect.none(),
+          ))
+          #(
+            m,
+            api.album(auth_details:, id: req.id)
+              |> effect.map(fn(message: msg.Msg) {
+                case message {
+                  msg.SubsonicResponse(Error(e)) ->
+                    msg.SubsonicResponse(Error(e))
+                  msg.SubsonicResponse(Ok(api_helper.Album(album))) ->
+                    msg.StreamAlbum(album)
+                  m -> m
+                }
+              }),
+          )
         }
         _ -> #(m, effect.none())
       }
@@ -217,7 +220,7 @@ fn update(
     }
     msg.PlayerSongLoaded(song) -> {
       #(
-        model.Model(..m, current_song: song),
+        model.Model(..m, current_song: song, played_seconds: 0),
         api.scrobble(
           {
             let assert Ok(stg) = m.storage |> varasto.get("auth")

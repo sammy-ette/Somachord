@@ -6,6 +6,7 @@ import gleam/result
 import gleam/uri
 import sonata/api
 import sonata/api_helper
+import sonata/components
 import sonata/models/auth
 import sonata/storage
 import varasto
@@ -54,6 +55,7 @@ type Msg {
   SonataMsg(msg.Msg)
   PlayArtist
   PlayAlbum(id: String)
+  Nothing
 }
 
 pub fn register() {
@@ -126,6 +128,13 @@ fn update(m: Model, msg: Msg) {
         ]),
       ),
     )
+    PlayAlbum(id) -> #(
+      m,
+      event.emit(
+        "play",
+        json.object([#("id", json.string(id)), #("type", json.string("album"))]),
+      ),
+    )
     ChangeTab(tab) -> #(Model(..m, current_tab: tab), effect.none())
     _ -> #(m, effect.none())
   }
@@ -137,7 +146,7 @@ fn view(m: Model) {
     stg.auth
   }
 
-  html.div([attribute.class("h-full")], [
+  html.div([components.redirect_click(Nothing), attribute.class("h-full")], [
     html.div(
       [
         attribute.class("relative h-[45%] p-8 flex items-end bg-violet-950"),

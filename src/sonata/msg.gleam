@@ -11,7 +11,9 @@ pub type Msg {
   Router(router.Msg)
   SubsonicResponse(Result(api_helper.Response, rsvp.Error))
   Play(model.PlayRequest)
+
   StreamAlbum(model.Album)
+  StreamSong(model.Child)
 
   // player events
   ProgressDrag(Int)
@@ -24,12 +26,15 @@ pub type Msg {
   PlayerPausePlay
   PlayerNext
   Like
+
+  ComponentClick
 }
 
 pub type SongPageMsg {
   SongID(String)
   PlaySong
   SongResponse(Result(api_helper.Response, rsvp.Error))
+  Nothing
 }
 
 pub fn on_url_change(url: uri.Uri) -> Msg {

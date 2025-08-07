@@ -22,6 +22,7 @@ pub type Model {
     current_song: Child,
     seeking: Bool,
     seek_amount: Int,
+    played_seconds: Int,
   )
 }
 
