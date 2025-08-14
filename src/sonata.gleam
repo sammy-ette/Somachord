@@ -184,6 +184,27 @@ fn update(
         effect.none(),
       )
     }
+    msg.StreamSong(song) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      let stream_uri =
+        api_helper.create_uri("/rest/stream.view", auth_details, [
+          #("id", song.id),
+        ])
+        |> uri.to_string
+
+      m.player |> player.load_song(stream_uri, song)
+      #(
+        model.Model(
+          ..m,
+          queue: dict.new() |> dict.insert(0, song),
+          queue_position: 0,
+        ),
+        effect.none(),
+      )
+    }
     msg.MusicEnded | msg.PlayerNext -> {
       let queue_position = case
         int.compare(m.queue_position, m.queue |> dict.keys |> list.length)

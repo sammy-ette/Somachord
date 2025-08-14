@@ -55,6 +55,7 @@ type Msg {
   SonataMsg(msg.Msg)
   PlayArtist
   PlayAlbum(id: String)
+  PlaySong(id: String)
   Nothing
 }
 
@@ -283,7 +284,9 @@ fn view_home(m: Model) {
       html.div(
         [attribute.class("space-y-4")],
         list.index_map(m.top_songs, fn(song: model.Child, index: Int) {
-          elements.song(song:, index:, attrs: [], cover_art: True)
+          elements.song(song:, index:, attrs: [], cover_art: True, msg: {
+            PlaySong(song.id)
+          })
         }),
       ),
     ]),

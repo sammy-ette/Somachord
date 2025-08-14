@@ -136,7 +136,9 @@ pub fn desktop_page(m: model.Model, id) {
         html.div(
           [attribute.class("flex flex-col gap-4")],
           list.index_map(album.songs, fn(song: model.Child, index: Int) {
-            elements.song(song, index:, attrs: [], cover_art: False)
+            elements.song(song, index:, attrs: [], cover_art: False, msg: {
+              msg.StreamSong(song)
+            })
           }),
         ),
       ],

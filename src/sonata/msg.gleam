@@ -10,8 +10,13 @@ import sonata/router
 pub type Msg {
   Router(router.Msg)
   SubsonicResponse(Result(api_helper.Response, rsvp.Error))
+  // dispatches the appropriate msg (StreamAlbum, StreamSong)
+  // based on PlayRequest. because its "light data"
+  // that comes from components (only id for song/album/artist)
   Play(model.PlayRequest)
 
+  // handles actually playing the music in the browser
+  // and the queue.
   StreamAlbum(model.Album)
   StreamSong(model.Child)
 
@@ -21,7 +26,7 @@ pub type Msg {
   PlayerSongLoaded(model.Child)
   PlayerTick(time: Float)
   MusicEnded
-  // player msgs (interactions)
+  // player msgs (user interactions)
   PlayerPrevious
   PlayerPausePlay
   PlayerNext

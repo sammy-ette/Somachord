@@ -73,7 +73,7 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
         json.object([#("type", json.string("song")), #("id", json.string(m.id))]),
       ),
     )
-    msg.Nothing -> #(m, effect.none())
+    _ -> #(m, effect.none())
   }
 }
 
@@ -85,16 +85,22 @@ fn view(song: model.Child) {
 
   html.div([components.redirect_click(msg.Nothing)], [
     html.div([attribute.class("flex gap-8 p-8")], [
-      html.img([
-        attribute.src(
-          api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-            #("id", song.cover_art_id),
-            #("size", "500"),
+      case song.id {
+        // when song hasnt been retrieved yet
+        "" ->
+          html.div([attribute.class("w-80 h-80 rounded-md bg-zinc-800")], [])
+        _ ->
+          html.img([
+            attribute.src(
+              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                #("id", song.cover_art_id),
+                #("size", "500"),
+              ])
+              |> uri.to_string,
+            ),
+            attribute.class("w-80 h-80 object-cover rounded-md"),
           ])
-          |> uri.to_string,
-        ),
-        attribute.class("w-80 h-80 object-cover rounded-md"),
-      ]),
+      },
       html.div([attribute.class("flex flex-col gap-4")], [
         html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
           element.text(song.title),

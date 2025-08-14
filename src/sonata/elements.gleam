@@ -17,6 +17,7 @@ pub fn song(
   index index: Int,
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
+  msg msg: msg,
 ) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
@@ -43,6 +44,7 @@ pub fn song(
           ),
           html.i(
             [
+              event.on_click(msg),
               attribute.class(
                 "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
               ),
