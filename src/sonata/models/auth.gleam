@@ -1,9 +1,5 @@
-//import gleam/crypto
 import gleam/dynamic/decode
 import gleam/json
-
-import md5
-import random_str
 
 pub type Auth {
   Auth(username: String, credentials: Credentials)
@@ -44,8 +40,14 @@ pub type Credentials {
 }
 
 pub fn hash_password(password: String) -> Credentials {
-  let salt = random_str.new()
-  let token = md5.new(password <> salt)
+  let salt = generate_salt()
+  let token = md5_hash(password <> salt)
 
   Credentials(salt:, token:)
 }
+
+@external(javascript, "./auth.ffi.mjs", "hash")
+fn md5_hash(password: String) -> String
+
+@external(javascript, "./auth.ffi.mjs", "generate_salt")
+fn generate_salt() -> String
