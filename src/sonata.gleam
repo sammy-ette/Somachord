@@ -129,15 +129,19 @@ fn update(
     msg.Play(req) -> {
       echo "!!! play request id: " <> req.id
       echo "play request type: " <> req.type_
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
       case req.type_ {
         "album" -> {
-          let auth_details = {
-            let assert Ok(stg) = m.storage |> varasto.get("auth")
-            stg.auth
-          }
           use <- bool.guard(m.albums |> dict.has_key(req.id), #(
             m,
-            effect.none(),
+            effect.from(fn(dispatch) {
+              echo "already have album"
+              let assert Ok(album) = m.albums |> dict.get(req.id)
+              msg.StreamAlbum(album) |> dispatch
+            }),
           ))
           #(
             m,
@@ -153,6 +157,10 @@ fn update(
               }),
           )
         }
+        "song" -> #(
+          m,
+          api.song(auth_details:, id: req.id, msg: msg.SongRetrieval),
+        )
         _ -> #(m, effect.none())
       }
     }
@@ -184,7 +192,7 @@ fn update(
         effect.none(),
       )
     }
-    msg.StreamSong(song) -> {
+    msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth

@@ -119,26 +119,16 @@ fn update(m: Model, msg: Msg) {
       echo e
       #(m, effect.none())
     }
-    PlayArtist -> #(
-      m,
-      event.emit(
-        "play",
-        json.object([
-          #("id", json.string(m.artist_id)),
-          #("type", json.string("artist")),
-        ]),
-      ),
-    )
-    PlayAlbum(id) -> #(
-      m,
-      event.emit(
-        "play",
-        json.object([#("id", json.string(id)), #("type", json.string("album"))]),
-      ),
-    )
+    PlayArtist -> #(m, event.emit("play", play_json(m.artist_id, "artist")))
+    PlayAlbum(id) -> #(m, event.emit("play", play_json(id, "album")))
+    PlaySong(id) -> #(m, event.emit("play", play_json(id, "song")))
     ChangeTab(tab) -> #(Model(..m, current_tab: tab), effect.none())
     _ -> #(m, effect.none())
   }
+}
+
+fn play_json(id: String, type_: String) {
+  json.object([#("id", json.string(id)), #("type", json.string(type_))])
 }
 
 fn view(m: Model) {

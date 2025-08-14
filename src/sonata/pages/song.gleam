@@ -57,6 +57,7 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
           stg.auth
         },
         id:,
+        msg: msg.SongResponse,
       ),
     )
     msg.SongResponse(Ok(api_helper.Song(song))) -> #(song, effect.none())

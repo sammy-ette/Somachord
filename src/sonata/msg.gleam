@@ -10,6 +10,7 @@ import sonata/router
 pub type Msg {
   Router(router.Msg)
   SubsonicResponse(Result(api_helper.Response, rsvp.Error))
+  SongRetrieval(Result(api_helper.Response, rsvp.Error))
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)

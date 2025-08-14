@@ -77,7 +77,11 @@ pub fn artist(auth_details auth_details: auth.Auth, id id: String) {
   )
 }
 
-pub fn song(auth_details auth_details: auth.Auth, id id: String) {
+pub fn song(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  msg msg: fn(Result(api_helper.Response, rsvp.Error)) -> a,
+) {
   api_helper.construct_req(
     auth_details:,
     path: "/rest/getSong.view",
@@ -90,7 +94,7 @@ pub fn song(auth_details auth_details: auth.Auth, id id: String) {
 
       decode.success(api_helper.Song(song))
     },
-    msg: msg.SongResponse,
+    msg: msg,
   )
 }
 
