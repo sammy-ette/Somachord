@@ -20,6 +20,7 @@ pub type Msg {
   // and the queue.
   StreamAlbum(model.Album)
   StreamSong(model.Child)
+  StreamFromQueue(queue_position: Int)
 
   // player events
   ProgressDrag(Int)

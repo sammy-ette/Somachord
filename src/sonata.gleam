@@ -213,39 +213,15 @@ fn update(
         effect.none(),
       )
     }
-    msg.MusicEnded | msg.PlayerNext -> {
-      let queue_position = case
-        int.compare(m.queue_position, m.queue |> dict.keys |> list.length)
+    msg.PlayerTick(time) -> {
+      let playtime = case
+        float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
       {
-        order.Lt -> {
-          let auth_details = {
-            let assert Ok(stg) = m.storage |> varasto.get("auth")
-            stg.auth
-          }
-          echo "getting song"
-          let assert Ok(song) = m.queue |> dict.get(m.queue_position + 1)
-          let stream_uri =
-            api_helper.create_uri("/rest/stream.view", auth_details, [
-              #("id", song.id),
-            ])
-            |> uri.to_string
-          m.player |> player.load_song(stream_uri, song)
-          m.queue_position + 1
-        }
-        _ -> m.queue_position
+        True -> m.played_seconds + 1
+        False -> m.played_seconds
       }
-
-      #(
-        model.Model(..m, queue_position:),
-        api.scrobble(
-          {
-            let assert Ok(stg) = m.storage |> varasto.get("auth")
-            stg.auth
-          },
-          id: m.current_song.id,
-          submission: True,
-        ),
-      )
+      echo playtime
+      #(model.Model(..m, played_seconds: playtime), effect.none())
     }
     msg.PlayerSongLoaded(song) -> {
       #(
@@ -261,8 +237,49 @@ fn update(
       )
     }
     msg.PlayerPrevious -> {
-      m.player |> player.beginning()
-      #(m, effect.none())
+      #(m, case m.queue_position == 0 {
+        True -> effect.none()
+        False -> play_from_queue(m.queue_position - 1)
+      })
+    }
+    msg.MusicEnded | msg.PlayerNext -> {
+      #(
+        m,
+        effect.batch([
+          case m.played_seconds > m.current_song.duration / 2 {
+            True ->
+              api.scrobble(
+                {
+                  let assert Ok(stg) = m.storage |> varasto.get("auth")
+                  stg.auth
+                },
+                id: m.current_song.id,
+                submission: True,
+              )
+            False -> effect.none()
+          },
+          case
+            int.compare(m.queue_position, m.queue |> dict.keys |> list.length)
+          {
+            order.Lt -> play_from_queue(m.queue_position + 1)
+            _ -> effect.none()
+          },
+        ]),
+      )
+    }
+    msg.StreamFromQueue(position) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      let assert Ok(song) = m.queue |> dict.get(position)
+      let stream_uri =
+        api_helper.create_uri("/rest/stream.view", auth_details, [
+          #("id", song.id),
+        ])
+        |> uri.to_string
+      m.player |> player.load_song(stream_uri, song)
+      #(model.Model(..m, queue_position: position), effect.none())
     }
     msg.PlayerPausePlay -> {
       m.player |> player.toggle_play()
@@ -287,6 +304,10 @@ fn update(
     }
     _ -> #(m, effect.none())
   }
+}
+
+fn play_from_queue(position: Int) {
+  effect.from(fn(dispatch) { msg.StreamFromQueue(position) |> dispatch })
 }
 
 fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
@@ -570,15 +591,6 @@ fn desktop_view(m: model.Model, page) {
                             )
                             let assert Ok(seek_amount) = int.parse(value)
                             echo seek_amount
-                            decode.success(msg.ProgressDrag(seek_amount))
-                          }),
-                          event.on("change", {
-                            use value <- decode.subfield(
-                              ["target", "value"],
-                              decode.string,
-                            )
-                            let assert Ok(seek_amount) = int.parse(value)
-                            echo "change event " <> value
                             decode.success(msg.PlayerSeek(seek_amount))
                           }),
                           attribute.type_("range"),
