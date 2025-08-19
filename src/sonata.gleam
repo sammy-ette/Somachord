@@ -237,9 +237,13 @@ fn update(
       )
     }
     msg.PlayerPrevious -> {
-      #(m, case m.queue_position == 0 {
-        True -> effect.none()
-        False -> play_from_queue(m.queue_position - 1)
+      #(m, case m.queue_position == 0, m.player |> player.time() >. 5.0 {
+        False, False -> play_from_queue(m.queue_position - 1)
+        _, True -> {
+          m.player |> player.beginning()
+          effect.none()
+        }
+        _, _ -> effect.none()
       })
     }
     msg.MusicEnded | msg.PlayerNext -> {
