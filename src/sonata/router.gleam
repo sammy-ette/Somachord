@@ -10,6 +10,7 @@ pub type Msg {
 pub type Route {
   Home
   Login
+  Search(query: String)
   Artist(id: String)
   Album(id: String)
   Song(id: String)
@@ -20,6 +21,11 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
   case uri.path {
     "/" -> Home
     "/login" -> Login
+    "/search" -> Search("")
+    "/search/" <> query -> {
+      let assert Ok(decoded_query) = uri.percent_decode(query)
+      Search(decoded_query)
+    }
     "/artist/" <> id -> Artist(id)
     "/album/" <> id -> Album(id)
     "/song/" <> id -> Song(id)

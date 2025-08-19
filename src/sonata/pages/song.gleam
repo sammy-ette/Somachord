@@ -111,14 +111,20 @@ fn view(song: model.Child) {
           [
             html.span([attribute.class("flex gap-2 items-center")], [
               html.i([attribute.class("text-xl ph ph-user-sound")], []),
-              ..list.map(song.artists, fn(artist: model.SmallArtist) {
-                html.a([attribute.href("/artist/" <> artist.id)], [
-                  html.span([attribute.class("text-zinc-300 hover:underline")], [
-                    element.text(artist.name),
-                  ]),
-                ])
-              })
-              |> list.intersperse(element.text(", "))
+              html.span(
+                [attribute.class("text-zinc-300")],
+                list.map(song.artists, fn(artist: model.SmallArtist) {
+                  html.a([attribute.href("/artist/" <> artist.id)], [
+                    html.span(
+                      [
+                        attribute.class("hover:underline font-light text-sm"),
+                      ],
+                      [element.text(artist.name)],
+                    ),
+                  ])
+                })
+                  |> list.intersperse(element.text(", ")),
+              ),
             ]),
             html.span([], [element.text("•")]),
             html.span([attribute.class("flex gap-2 items-center")], [

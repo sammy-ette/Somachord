@@ -16,6 +16,11 @@ pub type Response {
   Album(model.Album)
   Scrobble
   Song(model.Child)
+  Search(
+    artists: List(model.SmallArtist),
+    albums: List(model.Album),
+    songs: List(model.Child),
+  )
   SubsonicError(code: Int, message: String)
 }
 

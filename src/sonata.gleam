@@ -1,39 +1,37 @@
 import gleam/bool
 import gleam/dict
-import gleam/dynamic/decode
 import gleam/float
 import gleam/int
-import gleam/io
 import gleam/list
+import gleam/option
 import gleam/order
 import gleam/pair
-import gleam/result
-import gleam/string
 import gleam/uri
-import lustre/event
-import player
-import plinth/browser/window
-import sonata/api
-import sonata/api_helper
-import sonata/components/login
-import sonata/components/song_detail
-import sonata/pages/album
-import sonata/pages/artist
-import sonata/pages/home
-import sonata/pages/song
-import sonata/storage
-import varasto
+import sonata/pages/search
 
 import lustre
 import lustre/attribute
 import lustre/effect
 import lustre/element
-import lustre/element/html
 import modem
+import plinth/browser/window
+import varasto
 
+import player
+import sonata/api
+import sonata/api_helper
+import sonata/components/login
+import sonata/components/song_detail
 import sonata/model
 import sonata/msg
+import sonata/pages/album
+import sonata/pages/artist
+import sonata/pages/home
+import sonata/pages/song
 import sonata/router
+import sonata/storage
+import sonata/view/desktop
+import sonata/view/mobile
 
 pub fn main() {
   let app = lustre.application(init, update, view)
@@ -42,6 +40,7 @@ pub fn main() {
   let assert Ok(_) = artist.register()
   let assert Ok(_) = song.register()
   let assert Ok(_) = song_detail.register()
+  let assert Ok(_) = search.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
 }
 
@@ -298,14 +297,36 @@ fn update(
       #(model.Model(..m, seeking: False), effect.none())
     }
     msg.Like -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
       #(
         model.Model(
           ..m,
-          current_song: model.Child(..m.current_song, starred: True),
+          current_song: model.Child(
+            ..m.current_song,
+            starred: bool.negate(m.current_song.starred),
+          ),
+          queue: m.queue
+            |> dict.insert(
+              m.queue_position,
+              model.Child(
+                ..m.current_song,
+                starred: bool.negate(m.current_song.starred),
+              ),
+            ),
         ),
-        effect.none(),
+        case m.current_song.starred {
+          False -> api.like(auth_details, m.current_song.id)
+          True -> api.unlike(auth_details, m.current_song.id)
+        },
       )
     }
+    msg.Search(query) -> #(
+      m,
+      modem.push("/search/" <> query, option.None, option.None),
+    )
     _ -> #(m, effect.none())
   }
 }
@@ -318,6 +339,7 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
   case event {
     "loaded" -> msg.PlayerSongLoaded(player |> player.current())
     "time" -> msg.PlayerTick(player |> player.time())
+    "previous" -> msg.PlayerPrevious
     "next" -> msg.PlayerNext
     "ended" -> msg.MusicEnded
     _ -> panic as "shouldnt happen"
@@ -330,6 +352,8 @@ fn view(m: model.Model) {
     True -> {
       let page = case m.route {
         router.Home -> home.element([msg.on_play(msg.Play)])
+        router.Search(query) ->
+          search.element([msg.on_play(msg.Play), search.query(query)])
         router.Artist(id) ->
           artist.element([
             msg.on_play(msg.Play),
@@ -345,8 +369,8 @@ fn view(m: model.Model) {
       }
 
       let page_that_got_laid = case m.layout {
-        model.Mobile -> mobile_view(m, page)
-        model.Desktop -> desktop_view(m, page)
+        model.Mobile -> mobile.view(m, page)
+        model.Desktop -> desktop.view(m, page)
       }
 
       case m.route {
@@ -355,390 +379,4 @@ fn view(m: model.Model) {
       }
     }
   }
-}
-
-fn desktop_view(m: model.Model, page) {
-  let auth_details = {
-    let assert Ok(stg) = m.storage |> varasto.get("auth")
-    stg.auth
-  }
-
-  html.div(
-    [
-      attribute.class(
-        "font-['Poppins'] flex flex-col h-screen w-screen px-3 py-4 gap-2 overflow-auto",
-      ),
-    ],
-    [
-      html.div([attribute.class("flex gap-4")], [
-        button(
-          html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-          "Library",
-          [attribute.class("w-42")],
-        ),
-        html.a([attribute.href("/")], [
-          nav_button(
-            html.i([attribute.class("text-3xl ph ph-house")], []),
-            html.i([attribute.class("text-3xl ph-fill ph-house")], []),
-            "Home",
-            m.route == router.Home,
-            [attribute.class("w-42")],
-          ),
-        ]),
-        button(
-          html.i([attribute.class("text-3xl ph ph-sparkle")], []),
-          "Discover",
-          [attribute.class("w-42")],
-        ),
-      ]),
-      html.div([attribute.class("flex-1 min-h-0 flex gap-2")], [
-        html.div(
-          [
-            attribute.class(
-              "flex flex-col gap-2 border border-zinc-800 rounded-lg py-4 px-1",
-            ),
-          ],
-          [
-            button(
-              html.i([attribute.class("text-3xl ph ph-playlist")], []),
-              "Playlists",
-              [],
-            ),
-            button(
-              html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
-              "Liked Songs",
-              [],
-            ),
-            html.a([attribute.href("/album/")], [
-              button(
-                html.i([attribute.class("text-3xl ph ph-vinyl-record")], []),
-                "Albums",
-                [],
-              ),
-            ]),
-            html.a([attribute.href("/artist/")], [
-              button(
-                html.i([attribute.class("text-3xl ph ph-user-sound")], []),
-                "Artists",
-                [],
-              ),
-            ]),
-          ],
-        ),
-        html.div([attribute.class("flex-1 flex flex-col gap-2")], [
-          page,
-          html.div(
-            [
-              attribute.class(
-                "h-20 rounded-lg p-4 border border-zinc-800 flex items-center justify-between",
-              ),
-            ],
-            [
-              html.div([attribute.class("flex gap-2 items-center w-1/3")], [
-                html.div(
-                  [
-                    attribute.class(
-                      "w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center",
-                    ),
-                  ],
-                  [
-                    case m.current_song.cover_art_id == "" {
-                      True ->
-                        html.i(
-                          [
-                            attribute.class(
-                              "text-zinc-500 text-3xl ph ph-music-notes-simple",
-                            ),
-                          ],
-                          [],
-                        )
-                      False ->
-                        html.img([
-                          attribute.src(
-                            api_helper.create_uri(
-                              "/rest/getCoverArt.view",
-                              auth_details,
-                              [
-                                #("id", m.current_song.cover_art_id),
-                                #("size", "500"),
-                              ],
-                            )
-                            |> uri.to_string,
-                          ),
-                          attribute.class("rounded-md object-cover"),
-                        ])
-                    },
-                  ],
-                ),
-                html.div([attribute.class("flex flex-col")], [
-                  html.span([attribute.class("font-medium text-nowrap")], [
-                    element.text(m.current_song.title),
-                  ]),
-                  html.span(
-                    [],
-                    list.map(
-                      m.current_song.artists,
-                      fn(artist: model.SmallArtist) {
-                        html.a([attribute.href("/artist/" <> artist.id)], [
-                          html.span(
-                            [
-                              attribute.class(
-                                "hover:underline font-light text-sm",
-                              ),
-                            ],
-                            [element.text(artist.name)],
-                          ),
-                        ])
-                      },
-                    )
-                      |> list.intersperse(element.text(", ")),
-                  ),
-                ]),
-              ]),
-              html.div([attribute.class("space-y-1")], [
-                html.div(
-                  [attribute.class("flex gap-4 justify-center items-center")],
-                  [
-                    html.i(
-                      [attribute.class("text-xl ph ph-shuffle-simple")],
-                      [],
-                    ),
-                    html.i(
-                      [
-                        attribute.class("text-xl ph-fill ph-skip-back"),
-                        event.on_click(msg.PlayerPrevious),
-                      ],
-                      [],
-                    ),
-                    html.i(
-                      [
-                        attribute.class("text-4xl ph-fill"),
-                        case m.player |> player.is_paused {
-                          False -> attribute.class("ph-pause-circle")
-                          True -> attribute.class("ph-play-circle")
-                        },
-                        event.on_click(msg.PlayerPausePlay),
-                      ],
-                      [],
-                    ),
-                    html.i(
-                      [
-                        attribute.class("text-xl ph-fill ph-skip-forward"),
-                        event.on_click(msg.PlayerNext),
-                      ],
-                      [],
-                    ),
-                    html.i([attribute.class("text-xl ph ph-repeat")], []),
-                  ],
-                ),
-                html.div(
-                  [
-                    attribute.class(
-                      "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]",
-                    ),
-                  ],
-                  [
-                    html.span([], [
-                      element.text({
-                        let minutes =
-                          float.round({ m.player |> player.time() }) / 60
-                        let seconds =
-                          float.round({ m.player |> player.time() }) % 60
-
-                        int.to_string(minutes)
-                        <> ":"
-                        <> int.to_string(seconds) |> string.pad_start(2, "0")
-                      }),
-                    ]),
-                    html.div(
-                      [attribute.class("grid grid-cols-1 grid-rows-1 w-96")],
-                      [
-                        html.div(
-                          [
-                            attribute.class(
-                              "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5",
-                            ),
-                          ],
-                          [
-                            html.div(
-                              [
-                                attribute.class(
-                                  "bg-zinc-100 rounded-full h-1.5",
-                                ),
-                                attribute.style(
-                                  "width",
-                                  float.to_string(
-                                    case m.seeking {
-                                      True -> int.to_float(m.seek_amount)
-                                      False -> m.player |> player.time()
-                                    }
-                                    /. int.to_float(m.current_song.duration)
-                                    *. 100.0,
-                                  )
-                                    <> "%",
-                                ),
-                              ],
-                              [],
-                            ),
-                          ],
-                        ),
-                        html.input([
-                          attribute.class(
-                            "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full",
-                          ),
-                          attribute.value("0"),
-                          attribute.max(int.to_string(m.current_song.duration)),
-                          event.on("input", {
-                            use value <- decode.subfield(
-                              ["target", "value"],
-                              decode.string,
-                            )
-                            let assert Ok(seek_amount) = int.parse(value)
-                            echo seek_amount
-                            decode.success(msg.PlayerSeek(seek_amount))
-                          }),
-                          attribute.type_("range"),
-                        ]),
-                      ],
-                    ),
-                    html.span([], [
-                      element.text({
-                        let minutes = m.current_song.duration / 60
-                        let seconds = m.current_song.duration % 60
-
-                        int.to_string(minutes)
-                        <> ":"
-                        <> int.to_string(seconds) |> string.pad_start(2, "0")
-                      }),
-                    ]),
-                  ],
-                ),
-              ]),
-              html.div([attribute.class("flex justify-end gap-2 w-1/3")], [
-                html.i(
-                  [
-                    case m.current_song.starred {
-                      True -> attribute.class("ph-fill text-violet-500")
-                      False -> attribute.class("ph")
-                    },
-                    attribute.class("text-3xl ph-heart-straight"),
-                    event.on_click(msg.Like),
-                  ],
-                  [],
-                ),
-                html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
-              ]),
-            ],
-          ),
-        ]),
-      ]),
-    ],
-  )
-}
-
-fn mobile_view(m: model.Model, page) {
-  html.div(
-    [
-      attribute.class(
-        "font-['Poppins'] h-screen w-screen flex relative flex-col p-4 gap-2 overflow-none",
-      ),
-    ],
-    [
-      page,
-      // todo: figure out how to make this stick to the bottom while having scroll
-      html.div([attribute.class("")], [
-        html.div([attribute.class("flex justify-evenly")], [
-          mobile_nav_button(
-            html.i([attribute.class("text-3xl ph ph-house")], []),
-            html.i([attribute.class("text-3xl ph-fill ph-house")], []),
-            "Home",
-            m.route == router.Home,
-            [],
-          ),
-          mobile_nav_button(
-            html.i([attribute.class("text-3xl ph ph-sparkles")], []),
-            html.i([attribute.class("text-3xl ph-fill ph-sparkles")], []),
-            "Discover",
-            False,
-            [],
-          ),
-          mobile_nav_button(
-            html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-            html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-            "Search",
-            False,
-            [],
-          ),
-          // mobile_nav_button(
-        //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-        //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-        //   "Library",
-        //   False,
-        //   [],
-        // ),
-        ]),
-      ]),
-    ],
-  )
-}
-
-fn mobile_nav_button(inactive, active, name, is_active, attrs) {
-  html.div(
-    [
-      attribute.class("flex flex-col gap-2 items-center"),
-      case is_active {
-        True -> attribute.class("bg-zinc-900 text-zinc-100")
-        False -> attribute.class("text-zinc-500")
-      },
-      ..attrs
-    ],
-    [
-      html.div([attribute.class("h-8 w-8")], [
-        case is_active {
-          True -> active
-          False -> inactive
-        },
-      ]),
-      html.h1([], [element.text(name)]),
-    ],
-  )
-}
-
-fn nav_button(inactive, active, name, is_active, attrs) {
-  html.div(
-    [
-      attribute.class(
-        "w-52 font-normal flex gap-4 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
-      ),
-      case is_active {
-        True -> attribute.class("bg-zinc-900 text-zinc-100")
-        False -> attribute.class("text-zinc-500")
-      },
-      ..attrs
-    ],
-    [
-      html.div([attribute.class("h-8 w-8")], [
-        case is_active {
-          True -> active
-          False -> inactive
-        },
-      ]),
-      html.h1([], [element.text(name)]),
-    ],
-  )
-}
-
-fn button(icon, name, attrs) {
-  html.div(
-    [
-      attribute.class(
-        "w-52 text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
-      ),
-      ..attrs
-    ],
-    [
-      html.div([attribute.class("h-8 w-8")], [icon]),
-      html.h1([], [element.text(name)]),
-    ],
-  )
 }

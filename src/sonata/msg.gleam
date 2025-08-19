@@ -16,6 +16,8 @@ pub type Msg {
   // that comes from components (only id for song/album/artist)
   Play(model.PlayRequest)
 
+  Search(query: String)
+
   // handles actually playing the music in the browser
   // and the queue.
   StreamAlbum(model.Album)

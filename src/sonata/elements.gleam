@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import gleam/int
 import gleam/list
 import gleam/string
@@ -29,29 +30,34 @@ pub fn song(
       attribute.class(
         "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between",
       ),
+      event.on("dblclick", { decode.success(msg) }),
       ..attrs
     ],
     [
       html.div([attribute.class("flex gap-4 items-center")], [
-        html.div([attribute.class("w-5 grid grid-rows-1 grid-cols-1")], [
-          html.span(
-            [
-              attribute.class(
-                "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-smtext-right",
+        case index {
+          -1 -> element.none()
+          _ ->
+            html.div([attribute.class("w-5 grid grid-rows-1 grid-cols-1")], [
+              html.span(
+                [
+                  attribute.class(
+                    "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-smtext-right",
+                  ),
+                ],
+                [element.text(int.to_string(index + 1))],
               ),
-            ],
-            [element.text(int.to_string(index + 1))],
-          ),
-          html.i(
-            [
-              event.on_click(msg),
-              attribute.class(
-                "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
+              html.i(
+                [
+                  event.on_click(msg),
+                  attribute.class(
+                    "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
+                  ),
+                ],
+                [],
               ),
-            ],
-            [],
-          ),
-        ]),
+            ])
+        },
         html.div([attribute.class("flex gap-2 items-center")], [
           // html.div([attribute.class("w-8 h-8 text-zinc-400")], [
           //   solid.musical_note(),
@@ -73,7 +79,11 @@ pub fn song(
           html.div([attribute.class("flex flex-col gap-0.5 justify-center")], [
             html.a([attribute.href("/song/" <> song.id)], [
               html.span(
-                [attribute.class("text-sm text-zinc-100 hover:underline")],
+                [
+                  attribute.class(
+                    "text-nowrap text-sm text-zinc-100 hover:underline",
+                  ),
+                ],
                 [element.text(song.title)],
               ),
             ]),
@@ -137,7 +147,7 @@ pub fn album(album album: model.Album, handler handler: fn(String) -> msg) {
   html.div(
     [
       attribute.class(
-        "flex flex-col w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75",
+        "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75",
       ),
     ],
     [
@@ -227,4 +237,43 @@ pub fn time(duration: Int, attrs: List(attribute.Attribute(a))) {
       <> int.to_string(seconds) |> string.pad_start(2, "0")
     }),
   ])
+}
+
+pub fn button(icon, name, attrs) {
+  html.div(
+    [
+      attribute.class(
+        "w-52 text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
+      ),
+      ..attrs
+    ],
+    [
+      html.div([attribute.class("h-8 w-8")], [icon]),
+      html.h1([], [element.text(name)]),
+    ],
+  )
+}
+
+pub fn nav_button(inactive, active, name, is_active, attrs) {
+  html.div(
+    [
+      attribute.class(
+        "w-52 font-normal flex gap-4 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
+      ),
+      case is_active {
+        True -> attribute.class("bg-zinc-900 text-zinc-100")
+        False -> attribute.class("text-zinc-500")
+      },
+      ..attrs
+    ],
+    [
+      html.div([attribute.class("h-8 w-8")], [
+        case is_active {
+          True -> active
+          False -> inactive
+        },
+      ]),
+      html.h1([], [element.text(name)]),
+    ],
+  )
 }

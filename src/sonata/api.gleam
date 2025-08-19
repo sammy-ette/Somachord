@@ -1,6 +1,7 @@
 import gleam/bool
 import gleam/dynamic/decode
 import gleam/int
+import gleam/list
 import gleam/option
 import gleam/string
 import rsvp
@@ -131,6 +132,56 @@ pub fn scrobble(
       #("submission", bool.to_string(submission) |> string.lowercase),
     ],
     decoder: { decode.success(api_helper.Scrobble) },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn like(auth_details: auth.Auth, id id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/star.view",
+    query: [#("id", id)],
+    decoder: { decode.success(api_helper.Ping) },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn unlike(auth_details: auth.Auth, id id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/unstar.view",
+    query: [#("id", id)],
+    decoder: { decode.success(api_helper.Ping) },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn search(auth_details: auth.Auth, query query: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/search3.view",
+    query: [#("query", query)],
+    decoder: {
+      use artists <- decode.then(decode.optionally_at(
+        ["subsonic-response", "searchResult3", "artist"],
+        [],
+        decode.list(model.artist_small_decoder()),
+      ))
+
+      use albums <- decode.then(decode.optionally_at(
+        ["subsonic-response", "searchResult3", "album"],
+        [],
+        decode.list(model.album_decoder()),
+      ))
+
+      decode.success(
+        api_helper.Search(
+          artists,
+          list.filter(albums, fn(album) { album.year != 0 }),
+          [],
+        ),
+      )
+    },
     msg: msg.SubsonicResponse,
   )
 }

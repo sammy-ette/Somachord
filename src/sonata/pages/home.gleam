@@ -98,7 +98,7 @@ fn view(m: Model) {
           }),
         ]),
         html.div(
-          [attribute.class("flex flex-wrap overflow-auto gap-4")],
+          [attribute.class("flex overflow-auto gap-4")],
           list.map(album_list.albums, fn(album) {
             elements.album(album, fn(id) {
               msg.Play(model.PlayRequest("album", id))
