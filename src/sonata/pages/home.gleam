@@ -37,7 +37,12 @@ pub fn register() {
 pub fn element(attrs: List(attribute.Attribute(msg.Msg))) {
   element.element(
     "home-page",
-    [attribute.class("flex-1 border border-zinc-800 rounded-lg p-4"), ..attrs],
+    [
+      attribute.class(
+        "flex-1 p-4 rounded-md border border-zinc-800 overflow-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
+      ),
+      ..attrs
+    ],
     [],
   )
 }
@@ -46,7 +51,7 @@ fn init(_) {
   let storage = storage.create()
 
   #(Model(albumlists: []), case storage |> varasto.get("auth") {
-    Ok(stg) -> api.album_list(stg.auth, "newest", 0, 8)
+    Ok(stg) -> api.album_list(stg.auth, "newest", 0, 9)
     Error(_) -> effect.none()
   })
 }
@@ -98,7 +103,7 @@ fn view(m: Model) {
           }),
         ]),
         html.div(
-          [attribute.class("flex overflow-auto gap-4")],
+          [attribute.class("flex overflow-auto -mr-24 gap-3.5")],
           list.map(album_list.albums, fn(album) {
             elements.album(album, fn(id) {
               msg.Play(model.PlayRequest("album", id))
