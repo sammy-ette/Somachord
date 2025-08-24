@@ -1,8 +1,9 @@
 import gleam/bool
+import gleam/dict
 import gleam/dynamic/decode
+import gleam/float
 import gleam/int
 import gleam/list
-import gleam/option
 import gleam/string
 import rsvp
 import somachord/api_helper
@@ -216,6 +217,68 @@ pub fn similar_songs_artist(auth_details: auth.Auth, id id: String) {
 
       decode.success(api_helper.SimilarSongs(songs))
     },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn queue(auth_details: auth.Auth) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/getPlayQueue.view",
+    query: [],
+    decoder: {
+      use song_position <- decode.then(decode.optionally_at(
+        ["subsonic-response", "playQueue", "position"],
+        0,
+        decode.int,
+      ))
+      // song position is in milliseconds
+      let song_position = int.to_float(song_position) /. 1000.0
+
+      use songs <- decode.subfield(
+        ["subsonic-response", "playQueue", "entry"],
+        decode.list(model.song_decoder()),
+      )
+      echo songs
+      let songs_indexed = list.index_map(songs, fn(idx, song) { #(song, idx) })
+      echo songs_indexed
+      // current is the id of the child/song the queue is currently on
+      use current <- decode.subfield(
+        ["subsonic-response", "playQueue", "current"],
+        decode.string,
+      )
+      let assert Ok(current_song) =
+        list.find(songs_indexed, fn(song) { { song.1 }.id == current })
+      echo current_song
+
+      decode.success(
+        api_helper.Queue(model.Queue(
+          song_position:,
+          songs: songs_indexed |> dict.from_list,
+          position: current_song.0,
+        )),
+      )
+    },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn save_queue(auth_details: auth.Auth, queue: model.Queue) {
+  let assert Ok(current_song) = queue.songs |> dict.get(queue.position)
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/savePlayQueue.view",
+    query: [
+      #("current", current_song.id),
+      #(
+        "position",
+        queue.song_position *. 1000.0 |> float.truncate |> int.to_string,
+      ),
+      ..list.map(queue.songs |> dict.values, fn(song: model.Child) {
+        #("id", song.id)
+      })
+    ],
+    decoder: decode.success(api_helper.Ping),
     msg: msg.SubsonicResponse,
   )
 }

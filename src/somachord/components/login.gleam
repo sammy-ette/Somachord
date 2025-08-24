@@ -1,6 +1,5 @@
 import gleam/list
 import gleam/uri
-import lustre/element/svg
 import modem
 import somachord/api_helper
 import somachord/msg

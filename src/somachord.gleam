@@ -70,31 +70,34 @@ fn init(_) {
       confirmed: False,
       albums: dict.new(),
       player: player.new(),
-      queue: dict.new(),
-      queue_position: 0,
+      queue: model.Queue(song_position: 0.0, position: 0, songs: dict.new()),
       current_song: model.new_song(),
       seeking: False,
       seek_amount: 0,
       played_seconds: 0,
     )
-  case
-    router.get_route() |> router.uri_to_route,
-    m.storage |> varasto.get("auth")
-  {
-    router.Login as route, _ | route, Ok(_) -> {
-      #(
-        model.Model(..m, confirmed: True),
-        effect.batch([
+  case m.storage |> varasto.get("auth") {
+    Ok(stg) -> #(
+      model.Model(..m, confirmed: True),
+      effect.batch([
+        modem.init(msg.on_url_change),
+        route_effect(m, route),
+        player.listen_events(m.player, player_event_handler),
+        api.queue(stg.auth),
+      ]),
+    )
+    Error(_) ->
+      case router.get_route() |> router.uri_to_route {
+        router.Login -> #(
+          model.Model(..m, confirmed: True),
           modem.init(msg.on_url_change),
-          route_effect(m, route),
-          player.listen_events(m.player, player_event_handler),
-        ]),
-      )
-    }
-    _, Error(_) -> {
-      let assert Ok(login) = uri.parse("/login")
-      #(m, modem.load(login))
-    }
+        )
+        _ -> {
+          let assert Ok(login) = uri.parse("/login")
+
+          #(m, modem.load(login))
+        }
+      }
   }
 }
 
@@ -123,6 +126,10 @@ fn update(
     msg.SubsonicResponse(Ok(api_helper.Album(album))) -> #(
       model.Model(..m, albums: m.albums |> dict.insert(album.id, album)),
       effect.none(),
+    )
+    msg.SubsonicResponse(Ok(api_helper.Queue(queue))) -> #(
+      model.Model(..m, queue:),
+      play_from_queue(queue.position),
     )
     msg.SubsonicResponse(Error(e)) -> {
       echo e
@@ -183,13 +190,16 @@ fn update(
       #(
         model.Model(
           ..m,
-          queue: album.songs
-            |> list.fold(#(dict.new(), 0), fn(acc, song) {
-              let #(d, idx) = acc
-              #(d |> dict.insert(idx, song), idx + 1)
-            })
-            |> pair.first,
-          queue_position: 0,
+          queue: model.Queue(
+            position: 0,
+            song_position: 0.0,
+            songs: album.songs
+              |> list.fold(#(dict.new(), 0), fn(acc, song) {
+                let #(d, idx) = acc
+                #(d |> dict.insert(idx, song), idx + 1)
+              })
+              |> pair.first,
+          ),
         ),
         effect.none(),
       )
@@ -209,8 +219,11 @@ fn update(
       #(
         model.Model(
           ..m,
-          queue: dict.new() |> dict.insert(0, song),
-          queue_position: 0,
+          queue: model.Queue(
+            song_position: 0.0,
+            songs: dict.new() |> dict.insert(0, song),
+            position: 0,
+          ),
         ),
         effect.none(),
       )
@@ -239,8 +252,8 @@ fn update(
       )
     }
     msg.PlayerPrevious -> {
-      #(m, case m.queue_position == 0, m.player |> player.time() >. 5.0 {
-        False, False -> play_from_queue(m.queue_position - 1)
+      #(m, case m.queue.position == 0, m.player |> player.time() >. 5.0 {
+        False, False -> play_from_queue(m.queue.position - 1)
         _, True -> {
           m.player |> player.beginning()
           effect.none()
@@ -266,11 +279,11 @@ fn update(
           },
           case
             int.compare(
-              m.queue_position + 1,
-              m.queue |> dict.keys |> list.length,
+              m.queue.position + 1,
+              m.queue.songs |> dict.keys |> list.length,
             )
           {
-            order.Lt -> play_from_queue(m.queue_position + 1)
+            order.Lt -> play_from_queue(m.queue.position + 1)
             order.Eq -> {
               let auth_details = {
                 let assert Ok(stg) = m.storage |> varasto.get("auth")
@@ -288,31 +301,28 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      echo m.queue_position + 1
+      echo m.queue.position + 1
       let new_queue =
         songs
         |> list.filter(fn(song) {
-          m.queue
+          m.queue.songs
           |> dict.values()
           |> list.find(fn(potential_song) { potential_song.id == song.id })
           |> result.is_error
         })
-        |> echo
         |> list.fold(
-          #(dict.new(), m.queue |> dict.keys |> list.length),
+          #(dict.new(), m.queue.songs |> dict.keys |> list.length),
           fn(acc, song) {
             let #(d, idx) = acc
             #(d |> dict.insert(idx, song), idx + 1)
           },
         )
-        |> echo
         |> pair.first
-        |> echo
-        |> dict.merge(m.queue)
+        |> dict.merge(m.queue.songs)
       #(
-        model.Model(..m, queue: new_queue),
-        case m.queue_position + 1 == new_queue |> dict.keys |> list.length {
-          False -> play_from_queue(m.queue_position + 1)
+        model.Model(..m, queue: model.Queue(..m.queue, songs: new_queue)),
+        case m.queue.position + 1 == new_queue |> dict.keys |> list.length {
+          False -> play_from_queue(m.queue.position + 1)
           True -> {
             let assert Ok(first_artist) = m.current_song.artists |> list.first
             api.similar_songs_artist(auth_details, first_artist.id)
@@ -345,14 +355,18 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let assert Ok(song) = m.queue |> dict.get(position)
+      let assert Ok(song) = m.queue.songs |> dict.get(position)
       let stream_uri =
         api_helper.create_uri("/rest/stream.view", auth_details, [
           #("id", song.id),
         ])
         |> uri.to_string
+      let modified_queue = model.Queue(..m.queue, position:)
       m.player |> player.load_song(stream_uri, song)
-      #(model.Model(..m, queue_position: position), effect.none())
+      #(
+        model.Model(..m, queue: modified_queue),
+        api.save_queue(auth_details, modified_queue),
+      )
     }
     msg.PlayerPausePlay -> {
       m.player |> player.toggle_play()
@@ -378,14 +392,17 @@ fn update(
             ..m.current_song,
             starred: bool.negate(m.current_song.starred),
           ),
-          queue: m.queue
-            |> dict.insert(
-              m.queue_position,
-              model.Child(
-                ..m.current_song,
-                starred: bool.negate(m.current_song.starred),
+          queue: model.Queue(
+            ..m.queue,
+            songs: m.queue.songs
+              |> dict.insert(
+                m.queue.position,
+                model.Child(
+                  ..m.current_song,
+                  starred: bool.negate(m.current_song.starred),
+                ),
               ),
-            ),
+          ),
         ),
         case m.current_song.starred {
           False -> api.like(auth_details, m.current_song.id)

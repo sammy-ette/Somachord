@@ -115,7 +115,7 @@ fn top_bar(m: model.Model) {
   ])
 }
 
-fn side_bar(m: model.Model) {
+fn side_bar(_: model.Model) {
   html.div(
     [
       attribute.class(
@@ -352,7 +352,7 @@ fn playing_bar(m: model.Model) {
                   ),
                 ],
                 list.map(
-                  m.queue
+                  m.queue.songs
                     |> dict.to_list
                     |> list.sort(
                       fn(
