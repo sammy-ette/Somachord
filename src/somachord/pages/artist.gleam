@@ -100,17 +100,17 @@ fn init(_) {
 
 fn update(m: Model, msg: Msg) {
   case msg {
-    ArtistID(id) -> #(
-      Model(..m, artist_id: id),
-      case storage.create() |> varasto.get("auth") {
-        Ok(stg) -> api.artist(stg.auth, id) |> effect.map(SomachordMsg)
-        Error(_) -> effect.none()
-      },
-    )
-    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.Artist(artist)))) -> #(
-      Model(..m, artist: option.Some(Ok(artist))),
-      api.top_songs(m.auth_details, artist.name) |> effect.map(SomachordMsg),
-    )
+    ArtistID(id) -> #(Model(..m, artist_id: id), case m.auth_details {
+      option.Some(auth) -> api.artist(auth, id) |> effect.map(SomachordMsg)
+      option.None -> effect.none()
+    })
+    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.Artist(artist)))) -> {
+      let assert option.Some(auth_details) = m.auth_details
+      #(
+        Model(..m, artist: option.Some(Ok(artist))),
+        api.top_songs(auth_details, artist.name) |> effect.map(SomachordMsg),
+      )
+    }
     SomachordMsg(msg.SubsonicResponse(Ok(api_helper.TopSongs(songs)))) -> #(
       Model(..m, top_songs: songs),
       effect.none(),
@@ -132,109 +132,112 @@ fn play_json(id: String, type_: String) {
 }
 
 fn view(m: Model) {
-  let auth_details = {
-    let assert Ok(stg) = storage.create() |> varasto.get("auth")
-    stg.auth
-  }
-
-  html.div([components.redirect_click(Nothing), attribute.class("h-full")], [
-    html.div(
-      [
-        attribute.class("relative h-[45%] p-8 flex items-end bg-violet-950"),
-        attribute.style("background-position-y", "20%"),
-        case option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)) {
-          Ok(artist) ->
-            attribute.style(
-              "background-image",
-              "url('"
-                <> api_helper.create_uri(
-                "/rest/getCoverArt.view",
-                auth_details,
-                [#("id", artist.cover_art_id), #("size", "500")],
+  {
+    use auth_details <- result.try(
+      m.auth_details |> option.to_result(element.none()),
+    )
+    html.div([components.redirect_click(Nothing), attribute.class("h-full")], [
+      html.div(
+        [
+          attribute.class("relative h-[45%] p-8 flex items-end bg-violet-950"),
+          attribute.style("background-position-y", "20%"),
+          case option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)) {
+            Ok(artist) ->
+              attribute.style(
+                "background-image",
+                "url('"
+                  <> api_helper.create_uri(
+                  "/rest/getCoverArt.view",
+                  auth_details,
+                  [#("id", artist.cover_art_id), #("size", "500")],
+                )
+                |> uri.to_string
+                  <> "')",
               )
-              |> uri.to_string
-                <> "')",
-            )
-          Error(_) -> attribute.none()
-        },
-        attribute.class("rounded-tl-md bg-cover bg-center"),
-      ],
-      [
+            Error(_) -> attribute.none()
+          },
+          attribute.class("rounded-tl-md bg-cover bg-center"),
+        ],
+        [
+          html.div(
+            [
+              attribute.class(
+                "bg-linear-to-l from-zinc-950 from-10% to-zinc-950/50 absolute top-0 left-0 h-full w-full",
+              ),
+            ],
+            [],
+          ),
+          html.div(
+            [attribute.class("z-20 flex items-center justify-between w-full")],
+            [
+              html.div([], [
+                html.h1([attribute.class("font-extrabold text-5xl")], [
+                  element.text(
+                    case
+                      option.to_result(m.artist, Nil)
+                      |> result.unwrap(Error(Nil))
+                    {
+                      Ok(artist) -> artist.name
+                      Error(_) -> ""
+                    },
+                  ),
+                ]),
+              ]),
+              html.div([attribute.class("flex items-center")], [
+                html.div(
+                  [
+                    attribute.class("flex items-center relative"),
+                    event.on_click(PlayArtist),
+                  ],
+                  [
+                    html.div(
+                      [
+                        attribute.class(
+                          "ml-2 z-5 absolute rounded-full bg-black w-8 h-8",
+                        ),
+                      ],
+                      [],
+                    ),
+                    html.i(
+                      [
+                        attribute.class(
+                          "z-10 ph-fill ph-play-circle text-6xl text-violet-500",
+                        ),
+                      ],
+                      [],
+                    ),
+                  ],
+                ),
+              ]),
+            ],
+          ),
+        ],
+      ),
+      html.div([attribute.class("font-[Poppins]")], [
         html.div(
           [
             attribute.class(
-              "bg-linear-to-l from-zinc-950 from-10% to-zinc-950/50 absolute top-0 left-0 h-full w-full",
+              "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400",
             ),
           ],
-          [],
-        ),
-        html.div(
-          [attribute.class("z-20 flex items-center justify-between w-full")],
           [
-            html.div([], [
-              html.h1([attribute.class("font-extrabold text-5xl")], [
-                element.text(
-                  case
-                    option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil))
-                  {
-                    Ok(artist) -> artist.name
-                    Error(_) -> ""
-                  },
-                ),
-              ]),
-            ]),
-            html.div([attribute.class("flex items-center")], [
-              html.div(
-                [
-                  attribute.class("flex items-center relative"),
-                  event.on_click(PlayArtist),
-                ],
-                [
-                  html.div(
-                    [
-                      attribute.class(
-                        "ml-2 z-5 absolute rounded-full bg-black w-8 h-8",
-                      ),
-                    ],
-                    [],
-                  ),
-                  html.i(
-                    [
-                      attribute.class(
-                        "z-10 ph-fill ph-play-circle text-6xl text-violet-500",
-                      ),
-                    ],
-                    [],
-                  ),
-                ],
-              ),
-            ]),
+            tab_element(m, Home),
+            tab_element(m, Albums),
+            tab_element(m, SinglesEPs),
+            tab_element(m, About),
           ],
         ),
-      ],
-    ),
-    html.div([attribute.class("font-[Poppins]")], [
-      html.div(
-        [
-          attribute.class(
-            "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400",
-          ),
-        ],
-        [
-          tab_element(m, Home),
-          tab_element(m, Albums),
-          tab_element(m, SinglesEPs),
-          tab_element(m, About),
-        ],
-      ),
-      html.div([attribute.class("p-4 flex")], case m.current_tab {
-        Home -> view_home(m)
-        Albums -> view_albums(m)
-        About -> view_about(m)
-        _ -> [element.none()]
-      }),
-    ]),
-  ])
+        html.div([attribute.class("p-4 flex")], case m.current_tab {
+          Home -> view_home(m)
+          Albums -> view_albums(m)
+          About -> view_about(m)
+          _ -> [element.none()]
+        }),
+      ]),
+    ])
+    |> Ok
+  }
+  |> result.unwrap_both
 }
 
 fn tab_element(m: Model, tab: DetailTab) {

@@ -81,14 +81,16 @@ fn init(_) {
     router.get_route() |> router.uri_to_route,
     m.storage |> varasto.get("auth")
   {
-    router.Login as route, _ | route, Ok(_) -> #(
-      model.Model(..m, confirmed: True),
-      effect.batch([
-        modem.init(msg.on_url_change),
-        route_effect(m, route),
-        player.listen_events(m.player, player_event_handler),
-      ]),
-    )
+    router.Login as route, _ | route, Ok(_) -> {
+      #(
+        model.Model(..m, confirmed: True),
+        effect.batch([
+          modem.init(msg.on_url_change),
+          route_effect(m, route),
+          player.listen_events(m.player, player_event_handler),
+        ]),
+      )
+    }
     _, Error(_) -> {
       let assert Ok(login) = uri.parse("/login")
       #(m, modem.load(login))
@@ -436,14 +438,13 @@ fn view(m: model.Model) {
         _ -> element.none()
       }
 
-      let page_that_got_laid = case m.layout {
-        model.Mobile -> mobile.view(m, page)
-        model.Desktop -> desktop.view(m, page)
-      }
-
       case m.route {
         router.Login -> login.element()
-        _ -> page_that_got_laid
+        _ ->
+          case m.layout {
+            model.Mobile -> mobile.view(m, page)
+            model.Desktop -> desktop.view(m, page)
+          }
       }
     }
   }

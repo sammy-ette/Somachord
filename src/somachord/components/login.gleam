@@ -36,7 +36,7 @@ pub fn register() {
 }
 
 pub fn element() {
-  element.element("login-page", [], [])
+  element.element("login-page", [attribute.class("flex-1")], [])
 }
 
 fn init(_) {
