@@ -239,9 +239,7 @@ pub fn queue(auth_details: auth.Auth) {
         ["subsonic-response", "playQueue", "entry"],
         decode.list(model.song_decoder()),
       )
-      echo songs
       let songs_indexed = list.index_map(songs, fn(idx, song) { #(song, idx) })
-      echo songs_indexed
       // current is the id of the child/song the queue is currently on
       use current <- decode.subfield(
         ["subsonic-response", "playQueue", "current"],
@@ -249,7 +247,6 @@ pub fn queue(auth_details: auth.Auth) {
       )
       let assert Ok(current_song) =
         list.find(songs_indexed, fn(song) { { song.1 }.id == current })
-      echo current_song
 
       decode.success(
         api_helper.Queue(model.Queue(
