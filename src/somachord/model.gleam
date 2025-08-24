@@ -40,7 +40,12 @@ pub type Song {
 }
 
 pub type Artist {
-  Artist(id: String, name: String, cover_art_id: String, albums: List(Album))
+  Artist(
+    id: String,
+    name: String,
+    cover_art_id: String,
+    albums: option.Option(List(Album)),
+  )
 }
 
 pub type SmallArtist {
@@ -51,7 +56,13 @@ pub fn artist_decoder() {
   use id <- decode.field("id", decode.string)
   use name <- decode.field("name", decode.string)
   use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
-  use albums <- decode.field("album", decode.list(album_decoder()))
+  use albums <- decode.optional_field(
+    "album",
+    option.None,
+    decode.then(decode.list(album_decoder()), fn(a) {
+      decode.success(option.Some(a))
+    }),
+  )
 
   decode.success(Artist(id:, name:, cover_art_id:, albums:))
 }

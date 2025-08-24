@@ -290,13 +290,17 @@ fn view_albums(m: Model) {
   [
     html.div(
       [attribute.class("flex flex-wrap gap-4")],
-      case option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)) {
-        Ok(artist) ->
-          list.map(artist.albums, fn(album: model.Album) {
-            elements.album(album, fn(id) { PlayAlbum(id) })
-          })
-        Error(_) -> [element.none()]
-      },
+      {
+        use artist <- result.try(
+          option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)),
+        )
+        use albums <- result.try(option.to_result(artist.albums, Nil))
+        list.map(albums, fn(album: model.Album) {
+          elements.album(album, fn(id) { PlayAlbum(id) })
+        })
+        |> Ok
+      }
+        |> result.unwrap([element.none()]),
     ),
   ]
 }
