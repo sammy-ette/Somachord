@@ -1,8 +1,8 @@
 import gleam/list
 import gleam/uri
 import modem
-import sonata/api_helper
-import sonata/msg
+import somachord/api_helper
+import somachord/msg
 
 import formal/form
 import lustre
@@ -11,11 +11,11 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api
-import sonata/models/auth
+import somachord/api
+import somachord/models/auth
 import varasto
 
-import sonata/storage
+import somachord/storage
 
 pub type Model {
   Model(
@@ -27,7 +27,7 @@ pub type Model {
 
 pub type Msg {
   LoginSubmitted(Result(Login, form.Form(Login)))
-  SonataMsg(msg.Msg)
+  SomachordMsg(msg.Msg)
 }
 
 pub fn register() {
@@ -62,14 +62,14 @@ fn update(m: Model, msg: Msg) {
       #(
         Model(..m, auth_details: auth),
         api.ping(auth)
-          |> effect.map(fn(a) { SonataMsg(a) }),
+          |> effect.map(fn(a) { SomachordMsg(a) }),
       )
     }
     LoginSubmitted(Error(updated_form)) -> #(
       Model(..m, login_form: updated_form),
       effect.none(),
     )
-    SonataMsg(msg.SubsonicResponse(resp)) ->
+    SomachordMsg(msg.SubsonicResponse(resp)) ->
       case resp {
         Ok(api_helper.Ping) -> {
           let _ =
@@ -127,7 +127,7 @@ pub fn view(m: Model) {
             [
               html.div([attribute.class("flex flex-col gap-8")], [
                 html.h1([attribute.class("font-bold text-4xl self-center")], [
-                  element.text("Sonata"),
+                  element.text("Somachord"),
                 ]),
                 html.form(
                   [

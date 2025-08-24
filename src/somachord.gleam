@@ -6,8 +6,9 @@ import gleam/list
 import gleam/option
 import gleam/order
 import gleam/pair
+import gleam/result
 import gleam/uri
-import sonata/pages/search
+import somachord/pages/search
 
 import lustre
 import lustre/attribute
@@ -18,20 +19,20 @@ import plinth/browser/window
 import varasto
 
 import player
-import sonata/api
-import sonata/api_helper
-import sonata/components/login
-import sonata/components/song_detail
-import sonata/model
-import sonata/msg
-import sonata/pages/album
-import sonata/pages/artist
-import sonata/pages/home
-import sonata/pages/song
-import sonata/router
-import sonata/storage
-import sonata/view/desktop
-import sonata/view/mobile
+import somachord/api
+import somachord/api_helper
+import somachord/components/login
+import somachord/components/song_detail
+import somachord/model
+import somachord/msg
+import somachord/pages/album
+import somachord/pages/artist
+import somachord/pages/home
+import somachord/pages/song
+import somachord/router
+import somachord/storage
+import somachord/view/desktop
+import somachord/view/mobile
 
 pub fn main() {
   let app = lustre.application(init, update, view)
@@ -262,13 +263,80 @@ fn update(
             False -> effect.none()
           },
           case
-            int.compare(m.queue_position, m.queue |> dict.keys |> list.length)
+            int.compare(
+              m.queue_position + 1,
+              m.queue |> dict.keys |> list.length,
+            )
           {
             order.Lt -> play_from_queue(m.queue_position + 1)
+            order.Eq -> {
+              let auth_details = {
+                let assert Ok(stg) = m.storage |> varasto.get("auth")
+                stg.auth
+              }
+              api.similar_songs(auth_details, m.current_song.id)
+            }
             _ -> effect.none()
           },
         ]),
       )
+    }
+    msg.SubsonicResponse(Ok(api_helper.SimilarSongs(songs))) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      echo m.queue_position + 1
+      let new_queue =
+        songs
+        |> list.filter(fn(song) {
+          m.queue
+          |> dict.values()
+          |> list.find(fn(potential_song) { potential_song.id == song.id })
+          |> result.is_error
+        })
+        |> echo
+        |> list.fold(
+          #(dict.new(), m.queue |> dict.keys |> list.length),
+          fn(acc, song) {
+            let #(d, idx) = acc
+            #(d |> dict.insert(idx, song), idx + 1)
+          },
+        )
+        |> echo
+        |> pair.first
+        |> echo
+        |> dict.merge(m.queue)
+      #(
+        model.Model(..m, queue: new_queue),
+        case m.queue_position + 1 == new_queue |> dict.keys |> list.length {
+          False -> play_from_queue(m.queue_position + 1)
+          True -> {
+            let assert Ok(first_artist) = m.current_song.artists |> list.first
+            api.similar_songs_artist(auth_details, first_artist.id)
+          }
+        },
+      )
+    }
+    msg.SubsonicResponse(Ok(api_helper.SubsonicError(
+      code,
+      message,
+      attempted_path,
+    ))) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      echo attempted_path
+      echo code
+      echo message
+      case attempted_path {
+        "/rest/getSimilarSongs.rest" -> {
+          let assert Ok(first_artist) = m.current_song.artists |> list.first
+          #(m, api.similar_songs_artist(auth_details, first_artist.id))
+        }
+        _ -> #(m, effect.none())
+      }
     }
     msg.StreamFromQueue(position) -> {
       let auth_details = {

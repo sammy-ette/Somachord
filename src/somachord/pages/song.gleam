@@ -9,16 +9,16 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api
-import sonata/api_helper
-import sonata/components
-import sonata/model
-import sonata/msg
-import sonata/storage
+import somachord/api
+import somachord/api_helper
+import somachord/components
+import somachord/model
+import somachord/msg
+import somachord/storage
 import varasto
 
-import sonata/components/song_detail
-import sonata/elements
+import somachord/components/song_detail
+import somachord/elements
 
 pub fn register() {
   let app =
@@ -61,7 +61,7 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
       ),
     )
     msg.SongResponse(Ok(api_helper.Song(song))) -> #(song, effect.none())
-    msg.SongResponse(Ok(api_helper.SubsonicError(code, msg))) -> {
+    msg.SongResponse(Ok(api_helper.SubsonicError(code, msg, _))) -> {
       echo msg
       echo code
       #(m, effect.none())

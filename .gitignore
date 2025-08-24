@@ -3,5 +3,4 @@
 /build
 erl_crash.dump
 node_modules/
-priv/static/sonata.css
-priv/static/sonata.mjs
+priv/

@@ -10,11 +10,11 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import player
-import sonata/api_helper
-import sonata/elements
-import sonata/model
-import sonata/msg
-import sonata/router
+import somachord/api_helper
+import somachord/elements
+import somachord/model
+import somachord/msg
+import somachord/router
 import varasto
 
 pub fn view(m: model.Model, page) {
@@ -133,14 +133,14 @@ fn side_bar(m: model.Model) {
         "Liked Songs",
         [],
       ),
-      html.a([attribute.href("/album/")], [
+      html.a([attribute.href("/albums")], [
         elements.button(
           html.i([attribute.class("text-3xl ph ph-vinyl-record")], []),
           "Albums",
           [],
         ),
       ]),
-      html.a([attribute.href("/artist/")], [
+      html.a([attribute.href("/artists")], [
         elements.button(
           html.i([attribute.class("text-3xl ph ph-user-sound")], []),
           "Artists",
@@ -351,11 +351,23 @@ fn playing_bar(m: model.Model) {
                     "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
                   ),
                 ],
-                list.map(m.queue |> dict.to_list, fn(queue_entry) {
-                  elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
-                    msg.StreamFromQueue(queue_entry.0)
-                  })
-                }),
+                list.map(
+                  m.queue
+                    |> dict.to_list
+                    |> list.sort(
+                      fn(
+                        queue_item_a: #(Int, model.Child),
+                        queue_item_b: #(Int, model.Child),
+                      ) {
+                        int.compare(queue_item_a.0, queue_item_b.0)
+                      },
+                    ),
+                  fn(queue_entry) {
+                    elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
+                      msg.StreamFromQueue(queue_entry.0)
+                    })
+                  },
+                ),
               ),
             ],
           ),

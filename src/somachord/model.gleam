@@ -2,10 +2,10 @@ import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/option
-import sonata/storage
+import somachord/storage
 import varasto
 
-import sonata/router
+import somachord/router
 
 pub type Player
 

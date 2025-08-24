@@ -3,10 +3,10 @@ import gleam/http/request
 import gleam/option
 import gleam/uri
 import rsvp
-import sonata/model
+import somachord/model
 
-import sonata/models/auth
-import sonata/router
+import somachord/models/auth
+import somachord/router
 
 pub type Response {
   Ping
@@ -21,7 +21,8 @@ pub type Response {
     albums: List(model.Album),
     songs: List(model.Child),
   )
-  SubsonicError(code: Int, message: String)
+  SimilarSongs(List(model.Child))
+  SubsonicError(code: Int, message: String, attempted_route: String)
 }
 
 pub fn create_uri(
@@ -38,7 +39,7 @@ pub fn create_uri(
         #("u", auth_details.username),
         #("s", auth_details.credentials.salt),
         #("t", auth_details.credentials.token),
-        #("c", "sonata"),
+        #("c", "somachord"),
         #("v", "6.1.4"),
         ..query
       ]),
@@ -74,7 +75,7 @@ pub fn construct_req(
               ["subsonic-response", "error", "message"],
               decode.string,
             )
-            decode.success(SubsonicError(code:, message:))
+            decode.success(SubsonicError(code:, message:, attempted_route: path))
           }
           _ -> panic as "this isnt supposed to happen wtf?"
         }

@@ -4,11 +4,11 @@ import gleam/list
 import gleam/option
 import gleam/result
 import gleam/uri
-import sonata/api
-import sonata/api_helper
-import sonata/components
-import sonata/models/auth
-import sonata/storage
+import somachord/api
+import somachord/api_helper
+import somachord/components
+import somachord/models/auth
+import somachord/storage
 import varasto
 
 import lustre
@@ -19,9 +19,9 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 
-import sonata/elements
-import sonata/model
-import sonata/msg
+import somachord/elements
+import somachord/model
+import somachord/msg
 
 type Model {
   Model(
@@ -52,7 +52,7 @@ fn tab_as_string(tab: DetailTab) {
 type Msg {
   ChangeTab(DetailTab)
   ArtistID(String)
-  SonataMsg(msg.Msg)
+  SomachordMsg(msg.Msg)
   PlayArtist
   PlayAlbum(id: String)
   PlaySong(id: String)
@@ -103,19 +103,19 @@ fn update(m: Model, msg: Msg) {
     ArtistID(id) -> #(
       Model(..m, artist_id: id),
       case storage.create() |> varasto.get("auth") {
-        Ok(stg) -> api.artist(stg.auth, id) |> effect.map(SonataMsg)
+        Ok(stg) -> api.artist(stg.auth, id) |> effect.map(SomachordMsg)
         Error(_) -> effect.none()
       },
     )
-    SonataMsg(msg.SubsonicResponse(Ok(api_helper.Artist(artist)))) -> #(
+    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.Artist(artist)))) -> #(
       Model(..m, artist: option.Some(Ok(artist))),
-      api.top_songs(m.auth_details, artist.name) |> effect.map(SonataMsg),
+      api.top_songs(m.auth_details, artist.name) |> effect.map(SomachordMsg),
     )
-    SonataMsg(msg.SubsonicResponse(Ok(api_helper.TopSongs(songs)))) -> #(
+    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.TopSongs(songs)))) -> #(
       Model(..m, top_songs: songs),
       effect.none(),
     )
-    SonataMsg(msg.SubsonicResponse(Error(e))) -> {
+    SomachordMsg(msg.SubsonicResponse(Error(e))) -> {
       echo e
       #(m, effect.none())
     }
@@ -304,7 +304,7 @@ fn view_about(m) {
       html.div([attribute.class("relative")], [
         html.h1(
           [attribute.class("z-2 text-3xl absolute left-24 top-30 font-bold")],
-          [element.text("#1 On Sonata")],
+          [element.text("#1 On Somachord")],
         ),
         html.div([attribute.class("wavy-circle bg-violet-500 self-start")], []),
       ]),

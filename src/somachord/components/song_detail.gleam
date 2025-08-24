@@ -6,8 +6,8 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/elements
-import sonata/model
+import somachord/elements
+import somachord/model
 
 pub type Model {
   Model(id: String, current_tab: DetailTab)

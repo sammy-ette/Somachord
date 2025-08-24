@@ -85,7 +85,7 @@ export function load_song(player, link, info) {
 
     let auth = JSON.parse(localStorage.getItem("auth")).auth
     console.log(auth)
-    let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=sonata&id=${info.cover_art_id}&size=500`
+    let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&id=${info.cover_art_id}&size=500`
     console.log(album_art_url)
     if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({

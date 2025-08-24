@@ -1,7 +1,9 @@
 import gleam/bool
 import gleam/dynamic/decode
+import gleam/int
 import gleam/json
 import gleam/list
+import gleam/order
 import lustre
 import lustre/attribute
 import lustre/component
@@ -9,16 +11,16 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api
-import sonata/api_helper
-import sonata/elements
-import sonata/model
-import sonata/models/auth
-import sonata/msg
-import sonata/storage
+import somachord/api
+import somachord/api_helper
+import somachord/elements
+import somachord/model
+import somachord/models/auth
+import somachord/msg
+import somachord/storage
 import varasto
 
-import sonata/components
+import somachord/components
 
 pub type AlbumList {
   AlbumList(type_: String, albums: List(model.Album))
@@ -51,7 +53,12 @@ fn init(_) {
   let storage = storage.create()
 
   #(Model(albumlists: []), case storage |> varasto.get("auth") {
-    Ok(stg) -> api.album_list(stg.auth, "newest", 0, 9)
+    Ok(stg) ->
+      effect.batch([
+        api.album_list(stg.auth, "frequent", 0, 9),
+        api.album_list(stg.auth, "newest", 0, 9),
+        api.album_list(stg.auth, "random", 0, 9),
+      ])
     Error(_) -> effect.none()
   })
 }
@@ -59,12 +66,20 @@ fn init(_) {
 fn update(m: Model, msg: msg.Msg) {
   case msg {
     msg.SubsonicResponse(Ok(api_helper.AlbumList(type_, list))) -> {
-      echo list
-      echo type_
       #(
         Model(
           albumlists: [AlbumList(type_:, albums: list), ..m.albumlists]
-          |> list.reverse,
+          |> list.sort(fn(list1: AlbumList, list2: AlbumList) {
+            let list_order = fn(type_: String) -> Int {
+              case type_ {
+                "frequent" -> 1
+                "newest" -> 2
+                "random" -> 3
+                _ -> 4
+              }
+            }
+            int.compare(list_order(list1.type_), list_order(list2.type_))
+          }),
         ),
         effect.none(),
       )
@@ -91,7 +106,7 @@ fn view(m: Model) {
   html.div(
     [
       components.redirect_click(msg.ComponentClick),
-      attribute.class("flex flex-col"),
+      attribute.class("flex flex-col gap-4 overflow-y-auto"),
     ],
     list.map(m.albumlists, fn(album_list) {
       use <- bool.guard(album_list.albums |> list.is_empty, element.none())
@@ -99,11 +114,12 @@ fn view(m: Model) {
         html.h1([attribute.class("ml-2 text-2xl font-medium")], [
           element.text(case album_list.type_ {
             "newest" -> "New Additions"
+            "frequent" -> "Most Played"
             typ -> typ
           }),
         ]),
         html.div(
-          [attribute.class("flex overflow-auto -mr-24 gap-3.5")],
+          [attribute.class("flex overflow-auto")],
           list.map(album_list.albums, fn(album) {
             elements.album(album, fn(id) {
               msg.Play(model.PlayRequest("album", id))

@@ -12,7 +12,9 @@ pub type Route {
   Login
   Search(query: String)
   Artist(id: String)
+  Artists
   Album(id: String)
+  Albums
   Song(id: String)
   Unknown
 }
@@ -26,7 +28,9 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
       let assert Ok(decoded_query) = uri.percent_decode(query)
       Search(decoded_query)
     }
+    "/artists" -> Artists
     "/artist/" <> id -> Artist(id)
+    "/albums" -> Albums
     "/album/" <> id -> Album(id)
     "/song/" <> id -> Song(id)
     _ -> Unknown

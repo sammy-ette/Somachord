@@ -7,11 +7,11 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api_helper
-import sonata/storage
+import somachord/api_helper
+import somachord/storage
 import varasto
 
-import sonata/model
+import somachord/model
 
 pub fn song(
   song song: model.Child,

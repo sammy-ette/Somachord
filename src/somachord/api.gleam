@@ -5,10 +5,10 @@ import gleam/list
 import gleam/option
 import gleam/string
 import rsvp
-import sonata/api_helper
-import sonata/model
-import sonata/models/auth
-import sonata/msg
+import somachord/api_helper
+import somachord/model
+import somachord/models/auth
+import somachord/msg
 
 pub fn ping(auth_details: auth.Auth) {
   api_helper.construct_req(
@@ -181,6 +181,40 @@ pub fn search(auth_details: auth.Auth, query query: String) {
           [],
         ),
       )
+    },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn similar_songs(auth_details: auth.Auth, id id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/getSimilarSongs.view",
+    query: [#("id", id)],
+    decoder: {
+      use songs <- decode.subfield(
+        ["subsonic-response", "similarSongs", "song"],
+        decode.list(model.song_decoder()),
+      )
+
+      decode.success(api_helper.SimilarSongs(songs))
+    },
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn similar_songs_artist(auth_details: auth.Auth, id id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/getSimilarSongs2.view",
+    query: [#("id", id)],
+    decoder: {
+      use songs <- decode.subfield(
+        ["subsonic-response", "similarSongs2", "song"],
+        decode.list(model.song_decoder()),
+      )
+
+      decode.success(api_helper.SimilarSongs(songs))
     },
     msg: msg.SubsonicResponse,
   )

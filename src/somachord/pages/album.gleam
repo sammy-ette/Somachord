@@ -7,11 +7,11 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api_helper
-import sonata/elements
-import sonata/model
-import sonata/msg
-import sonata/storage
+import somachord/api_helper
+import somachord/elements
+import somachord/model
+import somachord/msg
+import somachord/storage
 import varasto
 
 pub fn page(m: model.Model, id: String) {

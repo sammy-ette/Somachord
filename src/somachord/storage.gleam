@@ -1,7 +1,7 @@
 import gleam/dynamic/decode
 import gleam/json
 import plinth/javascript/storage
-import sonata/models/auth
+import somachord/models/auth
 import varasto
 
 pub type Storage {

@@ -7,13 +7,13 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import sonata/api
-import sonata/api_helper
-import sonata/components
-import sonata/elements
-import sonata/model
-import sonata/msg
-import sonata/storage
+import somachord/api
+import somachord/api_helper
+import somachord/components
+import somachord/elements
+import somachord/model
+import somachord/msg
+import somachord/storage
 import varasto
 
 pub type Model {

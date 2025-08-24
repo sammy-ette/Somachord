@@ -1,6 +1,6 @@
 import lustre/effect
 
-import sonata/model
+import somachord/model
 
 @external(javascript, "./player.ffi.mjs", "new_")
 pub fn new() -> model.Player

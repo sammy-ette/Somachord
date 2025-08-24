@@ -1,8 +1,8 @@
 import lustre/attribute
 import lustre/element
 import lustre/element/html
-import sonata/model
-import sonata/router
+import somachord/model
+import somachord/router
 
 pub fn view(m: model.Model, page) {
   html.div(

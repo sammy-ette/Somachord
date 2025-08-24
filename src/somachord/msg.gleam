@@ -3,9 +3,9 @@ import gleam/uri
 import lustre/attribute
 import lustre/event
 import rsvp
-import sonata/api_helper
-import sonata/model
-import sonata/router
+import somachord/api_helper
+import somachord/model
+import somachord/router
 
 pub type Msg {
   Router(router.Msg)
