@@ -1,5 +1,6 @@
 import gleam/list
 import gleam/uri
+import lustre/element/svg
 import modem
 import somachord/api_helper
 import somachord/msg
@@ -44,7 +45,7 @@ fn init(_) {
     Model(
       storage.create(),
       login_form(),
-      auth.Auth("", auth.Credentials("", "")),
+      auth.Auth("", auth.Credentials("", ""), ""),
     ),
     effect.none(),
   )
@@ -55,6 +56,7 @@ fn update(m: Model, msg: Msg) {
     LoginSubmitted(Ok(login_data)) -> {
       let auth =
         auth.Auth(
+          server_url: login_data.server_url,
           username: login_data.username,
           credentials: auth.hash_password(login_data.password),
         )
@@ -85,11 +87,12 @@ fn update(m: Model, msg: Msg) {
 }
 
 pub type Login {
-  Login(username: String, password: String)
+  Login(server_url: String, username: String, password: String)
 }
 
 fn login_form() -> form.Form(Login) {
   form.new({
+    use server_url <- form.field("serverURL", form.parse_url)
     use username <- form.field(
       "username",
       form.parse_string |> form.check_not_empty,
@@ -99,7 +102,11 @@ fn login_form() -> form.Form(Login) {
       form.parse_string |> form.check_not_empty,
     )
 
-    form.success(Login(username:, password:))
+    form.success(Login(
+      server_url: server_url |> uri.to_string,
+      username:,
+      password:,
+    ))
   })
 }
 
@@ -137,6 +144,26 @@ pub fn view(m: Model) {
                   [
                     html.div([attribute.class("flex flex-col gap-2")], [
                       html.label([attribute.class("text-sm font-medium")], [
+                        element.text("Server URL"),
+                      ]),
+                      html.input([
+                        attribute.type_("input"),
+                        attribute.name("serverURL"),
+                        attribute.class(
+                          "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
+                        ),
+                      ]),
+                      ..list.map(
+                        form.field_error_messages(m.login_form, "serverURL"),
+                        fn(msg) {
+                          html.small([attribute.class("text-red-400")], [
+                            element.text(msg),
+                          ])
+                        },
+                      )
+                    ]),
+                    html.div([attribute.class("flex flex-col gap-2")], [
+                      html.label([attribute.class("text-sm font-medium")], [
                         element.text("Username"),
                       ]),
                       html.input([
@@ -147,7 +174,7 @@ pub fn view(m: Model) {
                         ),
                       ]),
                       ..list.map(
-                        form.field_error_messages(m.login_form, "password"),
+                        form.field_error_messages(m.login_form, "username"),
                         fn(msg) {
                           html.small([attribute.class("text-red-400")], [
                             element.text(msg),

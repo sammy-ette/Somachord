@@ -1,5 +1,7 @@
 import gleam/option
 import gleam/uri
+import somachord/storage
+import varasto
 
 import plinth/browser/window
 
@@ -48,13 +50,13 @@ pub fn localhost() -> Bool {
 }
 
 pub fn root_uri() -> uri.Uri {
-  let route = get_route()
-  case localhost() {
-    True -> {
-      let assert Ok(local) = uri.parse("http://0.0.0.0:4747")
-      local
+  case storage.create() |> varasto.get("auth") {
+    Ok(stg) -> {
+      echo uri.parse(stg.auth.server_url)
+      let assert Ok(url) = uri.parse(stg.auth.server_url)
+      url
     }
-    False -> route
+    Error(_) -> uri.empty
   }
 }
 
@@ -62,9 +64,9 @@ pub fn root_url() -> String {
   root_uri() |> uri.to_string
 }
 
-pub fn direct(rel: String) -> String {
+pub fn direct(root: uri.Uri, rel: String) -> String {
   let assert Ok(rel_url) = uri.parse(rel)
-  let assert Ok(direction) = uri.merge(root_uri(), rel_url)
+  let assert Ok(direction) = uri.merge(root, rel_url)
   uri.to_string(direction)
 }
 

@@ -2,15 +2,20 @@ import gleam/dynamic/decode
 import gleam/json
 
 pub type Auth {
-  Auth(username: String, credentials: Credentials)
+  Auth(username: String, credentials: Credentials, server_url: String)
 }
 
 pub fn decoder() {
   use username <- decode.field("username", decode.string)
   use salt <- decode.field("salt", decode.string)
   use token <- decode.field("token", decode.string)
+  use server_url <- decode.field("serverURL", decode.string)
 
-  decode.success(Auth(username:, credentials: Credentials(salt:, token:)))
+  decode.success(Auth(
+    username:,
+    server_url:,
+    credentials: Credentials(salt:, token:),
+  ))
 }
 
 pub fn encoder(auth: Auth) -> json.Json {
@@ -18,6 +23,7 @@ pub fn encoder(auth: Auth) -> json.Json {
     #("username", json.string(auth.username)),
     #("salt", json.string(auth.credentials.salt)),
     #("token", json.string(auth.credentials.token)),
+    #("serverURL", json.string(auth.server_url)),
   ])
 }
 

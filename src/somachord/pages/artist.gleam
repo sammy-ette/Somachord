@@ -29,7 +29,7 @@ type Model {
     artist: option.Option(Result(model.Artist, Nil)),
     artist_id: String,
     top_songs: List(model.Child),
-    auth_details: auth.Auth,
+    auth_details: option.Option(auth.Auth),
   )
 }
 
@@ -89,9 +89,9 @@ fn init(_) {
       current_tab: Home,
       artist: option.None,
       top_songs: [],
-      auth_details: {
-        let assert Ok(stg) = storage.create() |> varasto.get("auth")
-        stg.auth
+      auth_details: case storage.create() |> varasto.get("auth") {
+        Ok(stg) -> option.Some(stg.auth)
+        Error(_) -> option.None
       },
     ),
     effect.none(),

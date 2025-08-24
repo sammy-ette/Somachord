@@ -30,7 +30,8 @@ pub fn create_uri(
   auth_details: auth.Auth,
   query: List(#(String, String)),
 ) {
-  let assert Ok(original_uri) = uri.parse(router.direct(path))
+  let assert Ok(root) = auth_details.server_url |> uri.parse
+  let assert Ok(original_uri) = uri.parse(router.direct(root, path))
   uri.Uri(
     ..original_uri,
     query: option.Some(
