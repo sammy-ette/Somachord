@@ -5,6 +5,6 @@ export function hash(text) {
 }
 
 export function generate_salt() {
-    let uuid = self.crypto.randomUUID()
-    return uuid.split("-")[0]
+    // 10 == 8 + 2 (salt is 8 characters)
+    return Math.random().toString(36).substring(2, 10)
 }
