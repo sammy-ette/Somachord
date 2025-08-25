@@ -20,4 +20,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/sammy-ette/Somachord:${{ github.head_ref || github.ref_name }} 
+          tags: ghcr.io/sammy-ette/somachord:${{ github.head_ref || github.ref_name }} 
