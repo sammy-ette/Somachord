@@ -1,5 +1,6 @@
 import lustre/effect
 
+import somachord/api_models
 import somachord/model
 
 @external(javascript, "./player.ffi.mjs", "new_")
@@ -23,10 +24,10 @@ pub fn listen_events(
 pub fn is_paused(player: model.Player) -> Bool
 
 @external(javascript, "./player.ffi.mjs", "current")
-pub fn current(player: model.Player) -> model.Child
+pub fn current(player: model.Player) -> api_models.Child
 
 @external(javascript, "./player.ffi.mjs", "pause_play")
-pub fn toggle_play(player: model.Player) -> model.Child
+pub fn toggle_play(player: model.Player) -> api_models.Child
 
 @external(javascript, "./player.ffi.mjs", "seek")
 pub fn seek(player: model.Player, amount: Int) -> Nil
@@ -36,7 +37,11 @@ pub fn seek(player: model.Player, amount: Int) -> Nil
 pub fn time(player: model.Player) -> Float
 
 @external(javascript, "./player.ffi.mjs", "load_song")
-pub fn load_song(player: model.Player, link: String, info: model.Child) -> Nil
+pub fn load_song(
+  player: model.Player,
+  link: String,
+  info: api_models.Child,
+) -> Nil
 
 @external(javascript, "./player.ffi.mjs", "beginning")
 pub fn beginning(player: model.Player) -> Nil

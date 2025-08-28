@@ -11,6 +11,7 @@ import lustre/element/html
 import lustre/event
 import somachord/api
 import somachord/api_helper
+import somachord/api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
@@ -20,7 +21,7 @@ import varasto
 import somachord/components
 
 pub type AlbumList {
-  AlbumList(type_: String, albums: List(model.Album))
+  AlbumList(type_: String, albums: List(api_models.Album))
 }
 
 pub type Model {

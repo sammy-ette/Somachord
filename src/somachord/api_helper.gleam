@@ -3,9 +3,10 @@ import gleam/http/request
 import gleam/option
 import gleam/uri
 import rsvp
-import somachord/model
 
+import somachord/api_models as model
 import somachord/models/auth
+import somachord/queue
 import somachord/router
 
 pub type Response {
@@ -22,7 +23,7 @@ pub type Response {
     songs: List(model.Child),
   )
   SimilarSongs(List(model.Child))
-  Queue(model.Queue)
+  Queue(queue.Queue)
   SubsonicError(code: Int, message: String, attempted_route: String)
 }
 

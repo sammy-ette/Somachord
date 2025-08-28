@@ -19,6 +19,7 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 
+import somachord/api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
@@ -26,9 +27,9 @@ import somachord/msg
 type Model {
   Model(
     current_tab: DetailTab,
-    artist: option.Option(Result(model.Artist, Nil)),
+    artist: option.Option(Result(api_models.Artist, Nil)),
     artist_id: String,
-    top_songs: List(model.Child),
+    top_songs: List(api_models.Child),
     auth_details: option.Option(auth.Auth),
   )
 }
@@ -276,7 +277,7 @@ fn view_home(m: Model) {
       ]),
       html.div(
         [attribute.class("space-y-4")],
-        list.index_map(m.top_songs, fn(song: model.Child, index: Int) {
+        list.index_map(m.top_songs, fn(song: api_models.Child, index: Int) {
           elements.song(song:, index:, attrs: [], cover_art: True, msg: {
             PlaySong(song.id)
           })
@@ -295,7 +296,7 @@ fn view_albums(m: Model) {
           option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)),
         )
         use albums <- result.try(option.to_result(artist.albums, Nil))
-        list.map(albums, fn(album: model.Album) {
+        list.map(albums, fn(album: api_models.Album) {
           elements.album(album, fn(id) { PlayAlbum(id) })
         })
         |> Ok

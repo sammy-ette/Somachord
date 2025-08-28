@@ -12,6 +12,7 @@ import lustre/element/html
 import lustre/event
 import player
 import somachord/api_helper
+import somachord/api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
@@ -228,7 +229,7 @@ fn playing_bar(m: model.Model) {
           ]),
           html.span(
             [],
-            list.map(m.current_song.artists, fn(artist: model.SmallArtist) {
+            list.map(m.current_song.artists, fn(artist: api_models.SmallArtist) {
               html.a([attribute.href("/artist/" <> artist.id)], [
                 html.span(
                   [
@@ -244,7 +245,17 @@ fn playing_bar(m: model.Model) {
       ]),
       html.div([attribute.class("space-y-1")], [
         html.div([attribute.class("flex gap-4 justify-center items-center")], [
-          html.i([attribute.class("text-xl ph ph-shuffle-simple")], []),
+          html.i(
+            [
+              attribute.class("text-xl ph ph-shuffle-simple"),
+              case m.shuffled {
+                True -> attribute.class("text-violet-600")
+                False -> attribute.none()
+              },
+              event.on_click(msg.PlayerShuffle),
+            ],
+            [],
+          ),
           html.i(
             [
               attribute.class("text-xl ph-fill ph-skip-back"),
@@ -399,8 +410,8 @@ fn playing_bar(m: model.Model) {
                     |> dict.to_list
                     |> list.sort(
                       fn(
-                        queue_item_a: #(Int, model.Child),
-                        queue_item_b: #(Int, model.Child),
+                        queue_item_a: #(Int, api_models.Child),
+                        queue_item_b: #(Int, api_models.Child),
                       ) {
                         int.compare(queue_item_a.0, queue_item_b.0)
                       },
