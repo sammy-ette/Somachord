@@ -64,8 +64,6 @@ fn init(_) {
     False -> model.Desktop
   }
 
-  echo layout
-
   let m =
     model.Model(
       route:,
@@ -177,7 +175,6 @@ fn update(
       ),
     )
     msg.SubsonicResponse(Error(e)) -> {
-      echo e
       #(m, effect.none())
     }
     msg.Play(req) -> {
@@ -297,7 +294,7 @@ fn update(
       case m.queue.position == 0, m.player |> player.time() >. 5.0 {
         False, False -> #(
           model.Model(..m, queue: queue.previous(m.queue)),
-          play_from_queue(m.queue.position - 1),
+          play(),
         )
         _, True -> {
           m.player |> player.beginning()
@@ -331,7 +328,7 @@ fn update(
               m.queue.songs |> dict.keys |> list.length,
             )
           {
-            order.Lt -> play_from_queue(m.queue.position + 1)
+            order.Lt -> play()
             order.Eq -> {
               api.similar_songs(auth_details, m.current_song.id)
             }
@@ -397,7 +394,7 @@ fn update(
         _ -> #(m, effect.none())
       }
     }
-    msg.StreamFromQueue(position) -> {
+    msg.StreamCurrent -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
@@ -408,11 +405,29 @@ fn update(
           #("id", song.id),
         ])
         |> uri.to_string
-      let modified_queue = queue.Queue(..m.queue, position:)
+      m.player |> player.load_song(stream_uri, song)
+      #(m, api.save_queue(auth_details, option.Some(m.queue)))
+    }
+    msg.QueueJumpTo(position) -> #(
+      model.Model(..m, queue: m.queue |> queue.jump(position)),
+      play(),
+    )
+    msg.StreamFromQueue(position) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      let queue = m.queue |> queue.jump(position)
+      let assert option.Some(song) = queue.current_song(queue)
+      let stream_uri =
+        api_helper.create_uri("/rest/stream.view", auth_details, [
+          #("id", song.id),
+        ])
+        |> uri.to_string
       m.player |> player.load_song(stream_uri, song)
       #(
-        model.Model(..m, queue: modified_queue),
-        api.save_queue(auth_details, option.Some(modified_queue)),
+        model.Model(..m, queue:),
+        api.save_queue(auth_details, option.Some(queue)),
       )
     }
     msg.PlayerPausePlay -> {
@@ -478,6 +493,10 @@ fn update(
 
 fn play_from_queue(position: Int) {
   effect.from(fn(dispatch) { msg.StreamFromQueue(position) |> dispatch })
+}
+
+fn play() {
+  effect.from(fn(dispatch) { msg.StreamCurrent |> dispatch })
 }
 
 fn player_event_handler(event: String, player: model.Player) -> msg.Msg {

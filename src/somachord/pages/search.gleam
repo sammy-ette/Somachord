@@ -73,12 +73,10 @@ fn update(m: Model, msg: Msg) {
       m,
       api.search(auth_details, query)
         |> effect.map(fn(msg: msg.Msg) {
-          echo query
           case msg {
             msg.SubsonicResponse(Ok(api_helper.Search(_, albums, _))) ->
               SearchResults(albums)
             _ -> {
-              echo msg
               Nothing
             }
           }

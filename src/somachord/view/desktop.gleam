@@ -16,6 +16,7 @@ import somachord/api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
+import somachord/queue
 import somachord/router
 import varasto
 
@@ -340,7 +341,6 @@ fn playing_bar(m: model.Model) {
                     decode.string,
                   )
                   let assert Ok(seek_amount) = int.parse(value)
-                  echo seek_amount
                   decode.success(msg.PlayerSeek(seek_amount))
                 }),
                 event.on("mousedown", {
@@ -405,23 +405,11 @@ fn playing_bar(m: model.Model) {
                     "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
                   ),
                 ],
-                list.map(
-                  m.queue.songs
-                    |> dict.to_list
-                    |> list.sort(
-                      fn(
-                        queue_item_a: #(Int, api_models.Child),
-                        queue_item_b: #(Int, api_models.Child),
-                      ) {
-                        int.compare(queue_item_a.0, queue_item_b.0)
-                      },
-                    ),
-                  fn(queue_entry) {
-                    elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
-                      msg.StreamFromQueue(queue_entry.0)
-                    })
-                  },
-                ),
+                list.map(queue.list(m.queue), fn(queue_entry) {
+                  elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
+                    msg.QueueJumpTo(queue_entry.0)
+                  })
+                }),
               ),
             ],
           ),

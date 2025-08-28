@@ -117,7 +117,6 @@ fn update(m: Model, msg: Msg) {
       effect.none(),
     )
     SomachordMsg(msg.SubsonicResponse(Error(e))) -> {
-      echo e
       #(m, effect.none())
     }
     PlayArtist -> #(m, event.emit("play", play_json(m.artist_id, "artist")))

@@ -63,8 +63,6 @@ fn update(m: api_models.Child, msg: msg.SongPageMsg) {
     )
     msg.SongResponse(Ok(api_helper.Song(song))) -> #(song, effect.none())
     msg.SongResponse(Ok(api_helper.SubsonicError(code, msg, _))) -> {
-      echo msg
-      echo code
       #(m, effect.none())
     }
     msg.SongResponse(_) -> #(m, effect.none())

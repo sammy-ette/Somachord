@@ -83,7 +83,6 @@ fn update(m: Model, msg: msg.Msg) {
       )
     }
     msg.SubsonicResponse(Error(e)) -> {
-      echo e
       #(m, effect.none())
     }
     msg.Play(req) -> #(

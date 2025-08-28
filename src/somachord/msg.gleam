@@ -25,6 +25,7 @@ pub type Msg {
   StreamAlbum(api_models.Album)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
+  StreamCurrent
 
   // player events
   ProgressDrag(Int)
@@ -38,6 +39,7 @@ pub type Msg {
   PlayerPausePlay
   PlayerNext
   Like
+  QueueJumpTo(position: Int)
 
   Unload
   ComponentClick
