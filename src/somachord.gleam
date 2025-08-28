@@ -219,7 +219,14 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let assert Ok(song) = album.songs |> list.first
+      let queue = case
+        m.shuffled,
+        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+      {
+        True, queue -> queue |> queue.shuffle
+        False, queue -> queue
+      }
+      let assert option.Some(song) = queue |> queue.current_song
       let stream_uri =
         api_helper.create_uri("/rest/stream.view", auth_details, [
           #("id", song.id),
@@ -227,13 +234,7 @@ fn update(
         |> uri.to_string
 
       m.player |> player.load_song(stream_uri, song)
-      #(
-        model.Model(
-          ..m,
-          queue: queue.new(songs: album.songs, position: 0, song_position: 0.0),
-        ),
-        effect.none(),
-      )
+      #(model.Model(..m, queue:), effect.none())
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
       let auth_details = {
