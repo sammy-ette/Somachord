@@ -702,6 +702,9 @@
   .pr-8 {
     padding-right: calc(var(--spacing) * 8);
   }
+  .text-center {
+    text-align: center;
+  }
   .font-\[\'Poppins\'\] {
     font-family: 'Poppins';
   }
@@ -781,6 +784,9 @@
   .text-nowrap {
     text-wrap: nowrap;
   }
+  .text-black {
+    color: var(--color-black);
+  }
   .text-red-400 {
     color: var(--color-red-400);
   }
@@ -815,6 +821,15 @@
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .duration-200 {
+    --tw-duration: 200ms;
+    transition-duration: 200ms;
   }
   .duration-250 {
     --tw-duration: 250ms;
@@ -879,6 +894,16 @@
       }
     }
   }
+  .hover\:bg-white\/80 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in srgb, #fff 80%, transparent);
+        @supports (color: color-mix(in lab, red, red)) {
+          background-color: color-mix(in oklab, var(--color-white) 80%, transparent);
+        }
+      }
+    }
+  }
   .hover\:bg-zinc-800 {
     &:hover {
       @media (hover: hover) {
@@ -914,6 +939,13 @@
     &:hover {
       @media (hover: hover) {
         text-decoration-line: underline;
+      }
+    }
+  }
+  .hover\:opacity-50 {
+    &:hover {
+      @media (hover: hover) {
+        opacity: 50%;
       }
     }
   }
