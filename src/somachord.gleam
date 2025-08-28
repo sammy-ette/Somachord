@@ -9,6 +9,7 @@ import gleam/pair
 import gleam/result
 import gleam/uri
 import plinth/javascript/date
+import somachord/pages/not_found
 import somachord/pages/search
 
 import lustre
@@ -511,7 +512,7 @@ fn view(m: model.Model) {
             msg.on_play(msg.Play),
             attribute.attribute("song-id", id),
           ])
-        _ -> element.none()
+        _ -> not_found.page()
       }
 
       case m.route {
