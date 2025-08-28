@@ -52,7 +52,6 @@ pub fn localhost() -> Bool {
 pub fn root_uri() -> uri.Uri {
   case storage.create() |> varasto.get("auth") {
     Ok(stg) -> {
-      echo uri.parse(stg.auth.server_url)
       let assert Ok(url) = uri.parse(stg.auth.server_url)
       url
     }

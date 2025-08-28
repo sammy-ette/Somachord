@@ -2,6 +2,7 @@ import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/option
+import plinth/javascript/date
 import somachord/storage
 import varasto
 
@@ -17,12 +18,20 @@ pub type Model {
     confirmed: Bool,
     albums: dict.Dict(String, Album),
     player: Player,
-    queue: dict.Dict(Int, Child),
-    queue_position: Int,
+    queue: Queue,
     current_song: Child,
     seeking: Bool,
     seek_amount: Int,
     played_seconds: Int,
+  )
+}
+
+pub type Queue {
+  Queue(
+    song_position: Float,
+    songs: dict.Dict(Int, Child),
+    position: Int,
+    changed: date.Date,
   )
 }
 
@@ -157,7 +166,11 @@ pub fn new_song() {
 pub fn song_decoder() {
   use id <- decode.field("id", decode.string)
   use album_name <- decode.field("album", decode.string)
-  use album_id <- decode.field("albumId", decode.string)
+  use album_id <- decode.then(
+    decode.one_of(decode.at(["albumID"], decode.string), [
+      decode.at(["parent"], decode.string),
+    ]),
+  )
   use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
   use artists <- decode.field("artists", decode.list(artist_small_decoder()))
   use duration <- decode.field("duration", decode.int)

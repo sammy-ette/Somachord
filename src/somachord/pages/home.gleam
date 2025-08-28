@@ -1,9 +1,7 @@
 import gleam/bool
-import gleam/dynamic/decode
 import gleam/int
 import gleam/json
 import gleam/list
-import gleam/order
 import lustre
 import lustre/attribute
 import lustre/component
@@ -15,7 +13,6 @@ import somachord/api
 import somachord/api_helper
 import somachord/elements
 import somachord/model
-import somachord/models/auth
 import somachord/msg
 import somachord/storage
 import varasto

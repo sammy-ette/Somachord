@@ -22,6 +22,7 @@ pub type Response {
     songs: List(model.Child),
   )
   SimilarSongs(List(model.Child))
+  Queue(model.Queue)
   SubsonicError(code: Int, message: String, attempted_route: String)
 }
 
