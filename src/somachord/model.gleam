@@ -2,6 +2,7 @@ import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/option
+import plinth/javascript/date
 import somachord/storage
 import varasto
 
@@ -26,7 +27,12 @@ pub type Model {
 }
 
 pub type Queue {
-  Queue(song_position: Float, songs: dict.Dict(Int, Child), position: Int)
+  Queue(
+    song_position: Float,
+    songs: dict.Dict(Int, Child),
+    position: Int,
+    changed: date.Date,
+  )
 }
 
 pub type PlayRequest {

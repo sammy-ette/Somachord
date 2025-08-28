@@ -4,7 +4,10 @@ import gleam/dynamic/decode
 import gleam/float
 import gleam/int
 import gleam/list
+import gleam/option
+import gleam/result
 import gleam/string
+import plinth/javascript/date
 import rsvp
 import somachord/api_helper
 import somachord/model
@@ -248,11 +251,17 @@ pub fn queue(auth_details: auth.Auth) {
       let assert Ok(current_song) =
         list.find(songs_indexed, fn(song) { { song.1 }.id == current })
 
+      use changed <- decode.subfield(
+        ["subsonic-response", "playQueue", "changed"],
+        date_decoder(),
+      )
+
       decode.success(
         api_helper.Queue(model.Queue(
           song_position:,
           songs: songs_indexed |> dict.from_list,
           position: current_song.0,
+          changed:,
         )),
       )
     },
@@ -260,21 +269,37 @@ pub fn queue(auth_details: auth.Auth) {
   )
 }
 
-pub fn save_queue(auth_details: auth.Auth, queue: model.Queue) {
-  let assert Ok(current_song) = queue.songs |> dict.get(queue.position)
+fn date_decoder() {
+  decode.new_primitive_decoder("Date", fn(v) {
+    use timestamp <- result.try(
+      decode.run(v, decode.string)
+      |> result.map_error(fn(_) { date.new("May 19 2024") }),
+    )
+    Ok(date.new(timestamp))
+  })
+}
+
+// saves the queue. gets cleared if queue is option.None
+pub fn save_queue(auth_details: auth.Auth, queue: option.Option(model.Queue)) {
   api_helper.construct_req(
     auth_details:,
     path: "/rest/savePlayQueue.view",
-    query: [
-      #("current", current_song.id),
-      #(
-        "position",
-        queue.song_position *. 1000.0 |> float.truncate |> int.to_string,
-      ),
-      ..list.map(queue.songs |> dict.values, fn(song: model.Child) {
-        #("id", song.id)
-      })
-    ],
+    query: case queue {
+      option.Some(queue) -> {
+        let assert Ok(current_song) = queue.songs |> dict.get(queue.position)
+        [
+          #("current", current_song.id),
+          #(
+            "position",
+            queue.song_position *. 1000.0 |> float.truncate |> int.to_string,
+          ),
+          ..list.map(queue.songs |> dict.values, fn(song: model.Child) {
+            #("id", song.id)
+          })
+        ]
+      }
+      option.None -> []
+    },
     decoder: decode.success(api_helper.Ping),
     msg: msg.SubsonicResponse,
   )

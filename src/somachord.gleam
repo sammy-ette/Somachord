@@ -8,6 +8,7 @@ import gleam/order
 import gleam/pair
 import gleam/result
 import gleam/uri
+import plinth/javascript/date
 import somachord/pages/search
 
 import lustre
@@ -70,7 +71,12 @@ fn init(_) {
       confirmed: False,
       albums: dict.new(),
       player: player.new(),
-      queue: model.Queue(song_position: 0.0, position: 0, songs: dict.new()),
+      queue: model.Queue(
+        song_position: 0.0,
+        position: 0,
+        songs: dict.new(),
+        changed: date.now(),
+      ),
       current_song: model.new_song(),
       seeking: False,
       seek_amount: 0,
@@ -84,6 +90,7 @@ fn init(_) {
         route_effect(m, route),
         player.listen_events(m.player, player_event_handler),
         api.queue(stg.auth),
+        unload_event(),
       ]),
     )
     Error(_) ->
@@ -114,6 +121,14 @@ fn route_effect(m: model.Model, route: router.Route) {
   }
 }
 
+fn unload_event() {
+  effect.from(fn(dispatch) {
+    window.add_event_listener("beforeunload", fn(_event) {
+      msg.Unload |> dispatch
+    })
+  })
+}
+
 fn update(
   m: model.Model,
   msg: msg.Msg,
@@ -127,9 +142,40 @@ fn update(
       model.Model(..m, albums: m.albums |> dict.insert(album.id, album)),
       effect.none(),
     )
-    msg.SubsonicResponse(Ok(api_helper.Queue(queue))) -> #(
-      model.Model(..m, queue:),
-      play_from_queue(queue.position),
+    msg.SubsonicResponse(Ok(api_helper.Queue(queue))) -> {
+      // we dont want to use the queue if its older than 2 hours
+      let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
+      echo queue.changed
+      #(
+        model.Model(..m, queue:),
+        case queue.changed |> date.get_time() < queue_time_range {
+          True ->
+            api.save_queue(
+              {
+                let assert Ok(stg) = m.storage |> varasto.get("auth")
+                stg.auth
+              },
+              option.None,
+            )
+          False -> {
+            m.player
+            |> player.seek(queue.song_position |> float.truncate)
+            play_from_queue(queue.position)
+          }
+        },
+      )
+    }
+    msg.Unload -> #(
+      m,
+      api.save_queue(
+        {
+          let assert Ok(stg) = m.storage |> varasto.get("auth")
+          stg.auth
+        },
+        option.Some(
+          model.Queue(..m.queue, song_position: m.player |> player.time),
+        ),
+      ),
     )
     msg.SubsonicResponse(Error(e)) -> {
       echo e
@@ -199,6 +245,7 @@ fn update(
                 #(d |> dict.insert(idx, song), idx + 1)
               })
               |> pair.first,
+            changed: date.now(),
           ),
         ),
         effect.none(),
@@ -223,6 +270,7 @@ fn update(
             song_position: 0.0,
             songs: dict.new() |> dict.insert(0, song),
             position: 0,
+            changed: date.now(),
           ),
         ),
         effect.none(),
@@ -365,12 +413,23 @@ fn update(
       m.player |> player.load_song(stream_uri, song)
       #(
         model.Model(..m, queue: modified_queue),
-        api.save_queue(auth_details, modified_queue),
+        api.save_queue(auth_details, option.Some(modified_queue)),
       )
     }
     msg.PlayerPausePlay -> {
       m.player |> player.toggle_play()
-      #(m, effect.none())
+      #(
+        m,
+        api.save_queue(
+          {
+            let assert Ok(stg) = m.storage |> varasto.get("auth")
+            stg.auth
+          },
+          option.Some(
+            model.Queue(..m.queue, song_position: m.player |> player.time),
+          ),
+        ),
+      )
     }
     msg.ProgressDrag(amount) -> #(
       model.Model(..m, seek_amount: amount, seeking: True),

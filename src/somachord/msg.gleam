@@ -36,6 +36,7 @@ pub type Msg {
   PlayerNext
   Like
 
+  Unload
   ComponentClick
 }
 
