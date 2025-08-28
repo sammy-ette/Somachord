@@ -127,11 +127,30 @@ pub fn desktop_page(m: model.Model, id) {
             ],
             [],
           ),
-          html.i([attribute.class("text-3xl ph ph-shuffle-simple")], []),
-          html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
-          html.i([attribute.class("text-3xl ph ph-download-simple")], []),
-          html.i([attribute.class("text-3xl ph ph-link")], []),
-          html.i([attribute.class("text-3xl ph ph-dots-three")], []),
+          html.i(
+            [
+              attribute.class(
+                "text-3xl ph ph-shuffle-simple cursor-not-allowed",
+              ),
+            ],
+            [],
+          ),
+          html.i(
+            [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+            [],
+          ),
+          html.i(
+            [
+              attribute.class(
+                "text-3xl ph ph-download-simple cursor-not-allowed",
+              ),
+            ],
+            [],
+          ),
+          html.i(
+            [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
+            [],
+          ),
         ]),
         html.div(
           [attribute.class("flex flex-col gap-4")],

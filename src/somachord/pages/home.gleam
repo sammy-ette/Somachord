@@ -119,7 +119,11 @@ fn view(m: Model) {
           }),
         ]),
         html.div(
-          [attribute.class("flex overflow-auto")],
+          [
+            attribute.class(
+              "flex overflow-auto [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
+            ),
+          ],
           list.map(album_list.albums, fn(album) {
             elements.album(album, fn(id) {
               msg.Play(model.PlayRequest("album", id))

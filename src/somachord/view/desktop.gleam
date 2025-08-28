@@ -133,20 +133,40 @@ fn side_bar(m: model.Model) {
         "Liked Songs",
         [],
       ),
-      html.a([attribute.href("/albums")], [
-        elements.button(
-          html.i([attribute.class("text-3xl ph ph-vinyl-record")], []),
-          "Albums",
-          [],
-        ),
-      ]),
-      html.a([attribute.href("/artists")], [
-        elements.button(
-          html.i([attribute.class("text-3xl ph ph-user-sound")], []),
-          "Artists",
-          [],
-        ),
-      ]),
+      html.a(
+        [
+          //attribute.href("/albums")
+        ],
+        [
+          elements.button(
+            html.i(
+              [
+                attribute.class(
+                  "cursor-not-allowed text-3xl ph ph-vinyl-record",
+                ),
+              ],
+              [],
+            ),
+            "Albums",
+            [],
+          ),
+        ],
+      ),
+      html.a(
+        [
+          //attribute.href("/artists")
+        ],
+        [
+          elements.button(
+            html.i(
+              [attribute.class("cursor-not-allowed text-3xl ph ph-user-sound")],
+              [],
+            ),
+            "Artists",
+            [],
+          ),
+        ],
+      ),
     ],
   )
 }
