@@ -10884,23 +10884,35 @@ function desktop_page(m, id2) {
                     toList([])
                   ),
                   i(
-                    toList([class$("text-3xl ph ph-shuffle-simple")]),
+                    toList([
+                      class$(
+                        "text-3xl ph ph-shuffle-simple cursor-not-allowed"
+                      )
+                    ]),
                     toList([])
                   ),
                   i(
-                    toList([class$("text-3xl ph ph-plus-circle")]),
+                    toList([
+                      class$(
+                        "text-3xl ph ph-plus-circle cursor-not-allowed"
+                      )
+                    ]),
                     toList([])
                   ),
                   i(
-                    toList([class$("text-3xl ph ph-download-simple")]),
+                    toList([
+                      class$(
+                        "text-3xl ph ph-download-simple cursor-not-allowed"
+                      )
+                    ]),
                     toList([])
                   ),
                   i(
-                    toList([class$("text-3xl ph ph-link")]),
-                    toList([])
-                  ),
-                  i(
-                    toList([class$("text-3xl ph ph-dots-three")]),
+                    toList([
+                      class$(
+                        "text-3xl ph ph-dots-three cursor-not-allowed"
+                      )
+                    ]),
                     toList([])
                   )
                 ])
@@ -11879,7 +11891,11 @@ function view5(m) {
                   ])
                 ),
                 div(
-                  toList([class$("flex overflow-auto")]),
+                  toList([
+                    class$(
+                      "flex overflow-auto [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
+                    )
+                  ]),
                   map(
                     album_list2.albums,
                     (album3) => {
@@ -13133,11 +13149,15 @@ function side_bar(m) {
         toList([])
       ),
       a(
-        toList([href("/albums")]),
+        toList([]),
         toList([
           button2(
             i(
-              toList([class$("text-3xl ph ph-vinyl-record")]),
+              toList([
+                class$(
+                  "cursor-not-allowed text-3xl ph ph-vinyl-record"
+                )
+              ]),
               toList([])
             ),
             "Albums",
@@ -13146,11 +13166,15 @@ function side_bar(m) {
         ])
       ),
       a(
-        toList([href("/artists")]),
+        toList([]),
         toList([
           button2(
             i(
-              toList([class$("text-3xl ph ph-user-sound")]),
+              toList([
+                class$(
+                  "cursor-not-allowed text-3xl ph ph-user-sound"
+                )
+              ]),
               toList([])
             ),
             "Artists",
@@ -13176,15 +13200,15 @@ function playing_bar(m) {
         "let_assert",
         FILEPATH10,
         "somachord/view/desktop",
-        156,
+        176,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3855,
-          end: 3908,
-          pattern_start: 3866,
-          pattern_end: 3873
+          start: 4167,
+          end: 4220,
+          pattern_start: 4178,
+          pattern_end: 4185
         }
       );
     }
@@ -13416,15 +13440,15 @@ function playing_bar(m) {
                                 "let_assert",
                                 FILEPATH10,
                                 "somachord/view/desktop",
-                                308,
+                                328,
                                 "playing_bar",
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 9021,
-                                  end: 9066,
-                                  pattern_start: 9032,
-                                  pattern_end: 9047
+                                  start: 9333,
+                                  end: 9378,
+                                  pattern_start: 9344,
+                                  pattern_end: 9359
                                 }
                               );
                             }
@@ -13432,7 +13456,7 @@ function playing_bar(m) {
                               seek_amount,
                               void 0,
                               "src/somachord/view/desktop.gleam",
-                              309
+                              329
                             );
                             return success(
                               new PlayerSeek(seek_amount)
