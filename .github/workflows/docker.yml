@@ -2,14 +2,6 @@ name: Build Docker Image
 
 on:
   push:
-    branches:
-    - master
-    tags:
-      - v[0-9]+.*
-  pull_request:
-    branches:
-    - master
-  workflow_dispatch:
 
 jobs:
   docker:
