@@ -9,7 +9,7 @@
 - Lightweight
 - Modern, targetting OpenSubsonic and newer servers only
 - [x] Autoplay similar music when queue is finished
-- [ ] Save and restore music queue
+- [x] Save and restore music queue
 - [ ] Lyrics
 - [ ] Playlists
 
