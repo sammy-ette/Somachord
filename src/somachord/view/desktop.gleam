@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/float
@@ -133,25 +134,18 @@ fn side_bar(_: model.Model) {
         "Liked Songs",
         [],
       ),
-      html.a(
-        [
-          //attribute.href("/albums")
-        ],
-        [
-          elements.button(
-            html.i(
-              [
-                attribute.class(
-                  "cursor-not-allowed text-3xl ph ph-vinyl-record",
-                ),
-              ],
-              [],
-            ),
-            "Albums",
+      html.a([attribute.href("/albums")], [
+        elements.button(
+          html.i(
+            [
+              attribute.class("cursor-not-allowed text-3xl ph ph-vinyl-record"),
+            ],
             [],
           ),
-        ],
-      ),
+          "Albums",
+          [],
+        ),
+      ]),
       html.a(
         [
           //attribute.href("/artists")
@@ -202,26 +196,35 @@ fn playing_bar(m: model.Model) {
                   [],
                 )
               False ->
-                html.img([
-                  attribute.src(
-                    api_helper.create_uri(
-                      "/rest/getCoverArt.view",
-                      auth_details,
-                      [
-                        #("id", m.current_song.cover_art_id),
-                        #("size", "500"),
-                      ],
-                    )
-                    |> uri.to_string,
-                  ),
-                  attribute.class("rounded-md object-cover"),
+                html.a([attribute.href("/album/" <> m.current_song.album_id)], [
+                  html.img([
+                    attribute.src(
+                      api_helper.create_uri(
+                        "/rest/getCoverArt.view",
+                        auth_details,
+                        [
+                          #("id", m.current_song.cover_art_id),
+                          #("size", "500"),
+                        ],
+                      )
+                      |> uri.to_string,
+                    ),
+                    attribute.class(
+                      "hover:opacity-50 transition-all duration-200 rounded-md object-cover",
+                    ),
+                  ]),
                 ])
             },
           ],
         ),
         html.div([attribute.class("flex flex-col")], [
-          html.span([attribute.class("font-medium text-nowrap")], [
-            element.text(m.current_song.title),
+          html.a([attribute.href("/song/" <> m.current_song.id)], [
+            html.span(
+              [attribute.class("hover:underline font-normal text-nowrap")],
+              [
+                element.text(m.current_song.title),
+              ],
+            ),
           ]),
           html.span(
             [],
@@ -328,6 +331,26 @@ fn playing_bar(m: model.Model) {
                   let assert Ok(seek_amount) = int.parse(value)
                   echo seek_amount
                   decode.success(msg.PlayerSeek(seek_amount))
+                }),
+                event.on("mousedown", {
+                  use btn <- decode.field("button", decode.int)
+                  use <- bool.guard(
+                    btn != 0,
+                    decode.success(msg.ComponentClick),
+                  )
+                  m.player |> player.toggle_play()
+
+                  decode.success(msg.ComponentClick)
+                }),
+                event.on("mouseup", {
+                  use btn <- decode.field("button", decode.int)
+                  use <- bool.guard(
+                    btn != 0,
+                    decode.success(msg.ComponentClick),
+                  )
+                  m.player |> player.toggle_play()
+
+                  decode.success(msg.ComponentClick)
                 }),
                 attribute.type_("range"),
               ]),
