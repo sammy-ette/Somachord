@@ -250,7 +250,10 @@ fn playing_bar(m: model.Model) {
             [
               attribute.class("text-xl ph ph-shuffle-simple"),
               case m.shuffled {
-                True -> attribute.class("text-violet-600")
+                True ->
+                  attribute.class(
+                    "text-violet-400 underline underline-offset-4 decoration-dotted",
+                  )
                 False -> attribute.none()
               },
               event.on_click(msg.PlayerShuffle),
