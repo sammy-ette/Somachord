@@ -144,7 +144,7 @@ fn update(
       // we dont want to use the queue if its older than 2 hours
       let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
       #(
-        model.Model(..m, queue:),
+        model.Model(..m, queue: queue |> queue.jump(queue.position)),
         case queue.changed |> date.get_time() < queue_time_range {
           True ->
             api.save_queue(
@@ -155,10 +155,9 @@ fn update(
               option.None,
             )
           False -> {
-            // m.player
-            // |> player.seek(queue.song_position |> float.truncate)
-            // play_from_queue(queue.position)
-            effect.none()
+            m.player
+            |> player.seek(queue.song_position |> float.truncate)
+            play()
           }
         },
       )
