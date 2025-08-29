@@ -1,3 +1,4 @@
+import electron
 import gleam/dynamic/decode
 import gleam/uri
 import lustre/attribute
@@ -49,7 +50,15 @@ pub type SongPageMsg {
 }
 
 pub fn on_url_change(url: uri.Uri) -> Msg {
-  router.uri_to_route(url) |> router.ChangeRoute |> Router
+  router.uri_to_route(case electron.am_i_electron() {
+    False -> url
+    True -> {
+      let assert Ok(url) = uri.parse("/#" <> url.path)
+      url
+    }
+  })
+  |> router.ChangeRoute
+  |> Router
 }
 
 pub fn on_play(
