@@ -11,6 +11,7 @@ import lustre/element/html
 import lustre/event
 import somachord/api
 import somachord/api_helper
+import somachord/api_models
 import somachord/components
 import somachord/model
 import somachord/msg
@@ -44,10 +45,10 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
 }
 
 fn init(_) {
-  #(model.new_song(), effect.none())
+  #(api_models.new_song(), effect.none())
 }
 
-fn update(m: model.Child, msg: msg.SongPageMsg) {
+fn update(m: api_models.Child, msg: msg.SongPageMsg) {
   case msg {
     msg.SongID(id) -> #(
       m,
@@ -62,8 +63,6 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
     )
     msg.SongResponse(Ok(api_helper.Song(song))) -> #(song, effect.none())
     msg.SongResponse(Ok(api_helper.SubsonicError(code, msg, _))) -> {
-      echo msg
-      echo code
       #(m, effect.none())
     }
     msg.SongResponse(_) -> #(m, effect.none())
@@ -78,7 +77,7 @@ fn update(m: model.Child, msg: msg.SongPageMsg) {
   }
 }
 
-fn view(song: model.Child) {
+fn view(song: api_models.Child) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
@@ -113,7 +112,7 @@ fn view(song: model.Child) {
               html.i([attribute.class("text-xl ph ph-user-sound")], []),
               html.span(
                 [attribute.class("text-zinc-300")],
-                list.map(song.artists, fn(artist: model.SmallArtist) {
+                list.map(song.artists, fn(artist: api_models.SmallArtist) {
                   html.a([attribute.href("/artist/" <> artist.id)], [
                     html.span(
                       [

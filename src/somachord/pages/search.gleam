@@ -9,9 +9,9 @@ import lustre/element/html
 import lustre/event
 import somachord/api
 import somachord/api_helper
+import somachord/api_models
 import somachord/components
 import somachord/elements
-import somachord/model
 import somachord/msg
 import somachord/storage
 import varasto
@@ -19,14 +19,14 @@ import varasto
 pub type Model {
   Model(
     search_query: String,
-    artists: List(model.Artist),
-    albums: List(model.Album),
+    artists: List(api_models.Artist),
+    albums: List(api_models.Album),
   )
 }
 
 pub type Msg {
   Search(String)
-  SearchResults(albums: List(model.Album))
+  SearchResults(albums: List(api_models.Album))
   PlayAlbum(id: String)
   Nothing
 }
@@ -73,12 +73,10 @@ fn update(m: Model, msg: Msg) {
       m,
       api.search(auth_details, query)
         |> effect.map(fn(msg: msg.Msg) {
-          echo query
           case msg {
             msg.SubsonicResponse(Ok(api_helper.Search(_, albums, _))) ->
               SearchResults(albums)
             _ -> {
-              echo msg
               Nothing
             }
           }
@@ -102,7 +100,7 @@ fn view(m: Model) {
       components.redirect_click(Nothing),
       attribute.class("grid auto-cols-max grid-flow-col"),
     ],
-    list.map(m.albums, fn(album: model.Album) {
+    list.map(m.albums, fn(album: api_models.Album) {
       elements.album(album, fn(id) { PlayAlbum(id) })
     }),
   )

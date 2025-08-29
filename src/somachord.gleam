@@ -11,6 +11,7 @@ import gleam/uri
 import plinth/javascript/date
 import somachord/pages/not_found
 import somachord/pages/search
+import somachord/queue
 
 import lustre
 import lustre/attribute
@@ -23,6 +24,7 @@ import varasto
 import player
 import somachord/api
 import somachord/api_helper
+import somachord/api_models
 import somachord/components/login
 import somachord/components/song_detail
 import somachord/model
@@ -62,8 +64,6 @@ fn init(_) {
     False -> model.Desktop
   }
 
-  echo layout
-
   let m =
     model.Model(
       route:,
@@ -72,16 +72,12 @@ fn init(_) {
       confirmed: False,
       albums: dict.new(),
       player: player.new(),
-      queue: model.Queue(
-        song_position: 0.0,
-        position: 0,
-        songs: dict.new(),
-        changed: date.now(),
-      ),
-      current_song: model.new_song(),
+      queue: queue.empty(),
+      current_song: api_models.new_song(),
       seeking: False,
       seek_amount: 0,
       played_seconds: 0,
+      shuffled: False,
       looping: False,
     )
   case m.storage |> varasto.get("auth") {
@@ -147,7 +143,6 @@ fn update(
     msg.SubsonicResponse(Ok(api_helper.Queue(queue))) -> {
       // we dont want to use the queue if its older than 2 hours
       let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
-      echo queue.changed
       #(
         model.Model(..m, queue:),
         case queue.changed |> date.get_time() < queue_time_range {
@@ -160,9 +155,10 @@ fn update(
               option.None,
             )
           False -> {
-            m.player
-            |> player.seek(queue.song_position |> float.truncate)
-            play_from_queue(queue.position)
+            // m.player
+            // |> player.seek(queue.song_position |> float.truncate)
+            // play_from_queue(queue.position)
+            effect.none()
           }
         },
       )
@@ -175,12 +171,11 @@ fn update(
           stg.auth
         },
         option.Some(
-          model.Queue(..m.queue, song_position: m.player |> player.time),
+          queue.Queue(..m.queue, song_position: m.player |> player.time),
         ),
       ),
     )
     msg.SubsonicResponse(Error(e)) -> {
-      echo e
       #(m, effect.none())
     }
     msg.Play(req) -> {
@@ -195,7 +190,6 @@ fn update(
           use <- bool.guard(m.albums |> dict.has_key(req.id), #(
             m,
             effect.from(fn(dispatch) {
-              echo "already have album"
               let assert Ok(album) = m.albums |> dict.get(req.id)
               msg.StreamAlbum(album) |> dispatch
             }),
@@ -222,23 +216,14 @@ fn update(
       }
     }
     msg.StreamAlbum(album) -> {
-      #(
-        model.Model(
-          ..m,
-          queue: model.Queue(
-            position: 0,
-            song_position: 0.0,
-            songs: album.songs
-              |> list.fold(#(dict.new(), 0), fn(acc, song) {
-                let #(d, idx) = acc
-                #(d |> dict.insert(idx, song), idx + 1)
-              })
-              |> pair.first,
-            changed: date.now(),
-          ),
-        ),
-        play_from_queue(0),
-      )
+      let queue = case
+        m.shuffled,
+        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+      {
+        True, queue -> queue |> queue.shuffle
+        False, queue -> queue
+      }
+      #(model.Model(..m, queue:), play())
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
       let auth_details = {
@@ -255,12 +240,7 @@ fn update(
       #(
         model.Model(
           ..m,
-          queue: model.Queue(
-            song_position: 0.0,
-            songs: dict.new() |> dict.insert(0, song),
-            position: 0,
-            changed: date.now(),
-          ),
+          queue: queue.new(songs: [song], song_position: 0.0, position: 0),
         ),
         effect.none(),
       )
@@ -294,19 +274,38 @@ fn update(
         ),
       )
     }
-    msg.PlayerPrevious -> {
-      #(m, case m.queue.position == 0, m.player |> player.time() >. 5.0 {
-        False, False -> play_from_queue(m.queue.position - 1)
+    msg.PlayerShuffle -> {
+      #(
+        model.Model(
+          ..m,
+          queue: case m.shuffled {
+            False -> queue.shuffle(m.queue)
+            True -> queue.unshuffle(m.queue)
+          },
+          shuffled: bool.negate(m.shuffled),
+        ),
+        effect.none(),
+      )
+    }
+    msg.PlayerPrevious ->
+      case m.queue.position == 0, m.player |> player.time() >. 5.0 {
+        False, False -> #(
+          model.Model(..m, queue: queue.previous(m.queue)),
+          play(),
+        )
         _, True -> {
           m.player |> player.beginning()
-          effect.none()
+          #(m, effect.none())
         }
-        _, _ -> effect.none()
-      })
-    }
+        _, _ -> #(m, effect.none())
+      }
     msg.MusicEnded | msg.PlayerNext -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
       #(
-        m,
+        model.Model(..m, queue: queue.next(m.queue)),
         effect.batch([
           check_scrobble(m),
           case
@@ -315,12 +314,8 @@ fn update(
               m.queue.songs |> dict.keys |> list.length,
             )
           {
-            order.Lt -> play_from_queue(m.queue.position + 1)
+            order.Lt -> play()
             order.Eq -> {
-              let auth_details = {
-                let assert Ok(stg) = m.storage |> varasto.get("auth")
-                stg.auth
-              }
               api.similar_songs(auth_details, m.current_song.id)
             }
             _ -> effect.none()
@@ -333,7 +328,6 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      echo m.queue.position + 1
       let new_queue =
         songs
         |> list.filter(fn(song) {
@@ -352,7 +346,7 @@ fn update(
         |> pair.first
         |> dict.merge(m.queue.songs)
       #(
-        model.Model(..m, queue: model.Queue(..m.queue, songs: new_queue)),
+        model.Model(..m, queue: queue.Queue(..m.queue, songs: new_queue)),
         case m.queue.position + 1 == new_queue |> dict.keys |> list.length {
           False -> play_from_queue(m.queue.position + 1)
           True -> {
@@ -379,25 +373,47 @@ fn update(
           let assert Ok(first_artist) = m.current_song.artists |> list.first
           #(m, api.similar_songs_artist(auth_details, first_artist.id))
         }
+        "/rest/getSimilarSongs2.rest" -> #(
+          m,
+          api.save_queue(auth_details, option.None),
+        )
         _ -> #(m, effect.none())
       }
     }
-    msg.StreamFromQueue(position) -> {
+    msg.StreamCurrent -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let assert Ok(song) = m.queue.songs |> dict.get(position)
+      let assert option.Some(song) = queue.current_song(m.queue)
       let stream_uri =
         api_helper.create_uri("/rest/stream.view", auth_details, [
           #("id", song.id),
         ])
         |> uri.to_string
-      let modified_queue = model.Queue(..m.queue, position:)
+      m.player |> player.load_song(stream_uri, song)
+      #(m, api.save_queue(auth_details, option.Some(m.queue)))
+    }
+    msg.QueueJumpTo(position) -> #(
+      model.Model(..m, queue: m.queue |> queue.jump(position)),
+      play(),
+    )
+    msg.StreamFromQueue(position) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      let queue = m.queue |> queue.jump(position)
+      let assert option.Some(song) = queue.current_song(queue)
+      let stream_uri =
+        api_helper.create_uri("/rest/stream.view", auth_details, [
+          #("id", song.id),
+        ])
+        |> uri.to_string
       m.player |> player.load_song(stream_uri, song)
       #(
-        model.Model(..m, queue: modified_queue),
-        api.save_queue(auth_details, option.Some(modified_queue)),
+        model.Model(..m, queue:),
+        api.save_queue(auth_details, option.Some(queue)),
       )
     }
     msg.PlayerPausePlay -> {
@@ -410,7 +426,7 @@ fn update(
             stg.auth
           },
           option.Some(
-            model.Queue(..m.queue, song_position: m.player |> player.time),
+            queue.Queue(..m.queue, song_position: m.player |> player.time),
           ),
         ),
       )
@@ -435,16 +451,16 @@ fn update(
       #(
         model.Model(
           ..m,
-          current_song: model.Child(
+          current_song: api_models.Child(
             ..m.current_song,
             starred: bool.negate(m.current_song.starred),
           ),
-          queue: model.Queue(
+          queue: queue.Queue(
             ..m.queue,
             songs: m.queue.songs
               |> dict.insert(
                 m.queue.position,
-                model.Child(
+                api_models.Child(
                   ..m.current_song,
                   starred: bool.negate(m.current_song.starred),
                 ),
@@ -482,6 +498,10 @@ fn check_scrobble(m: model.Model) {
 
 fn play_from_queue(position: Int) {
   effect.from(fn(dispatch) { msg.StreamFromQueue(position) |> dispatch })
+}
+
+fn play() {
+  effect.from(fn(dispatch) { msg.StreamCurrent |> dispatch })
 }
 
 fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
