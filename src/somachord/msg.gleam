@@ -34,6 +34,7 @@ pub type Msg {
   PlayerPrevious
   PlayerPausePlay
   PlayerNext
+  PlayerLoop
   Like
 
   Unload

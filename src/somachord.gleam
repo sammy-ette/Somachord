@@ -82,6 +82,7 @@ fn init(_) {
       seeking: False,
       seek_amount: 0,
       played_seconds: 0,
+      looping: False,
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -221,19 +222,6 @@ fn update(
       }
     }
     msg.StreamAlbum(album) -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
-      echo "getting first song"
-      let assert Ok(song) = album.songs |> list.first
-      let stream_uri =
-        api_helper.create_uri("/rest/stream.view", auth_details, [
-          #("id", song.id),
-        ])
-        |> uri.to_string
-
-      m.player |> player.load_song(stream_uri, song)
       #(
         model.Model(
           ..m,
@@ -249,7 +237,7 @@ fn update(
             changed: date.now(),
           ),
         ),
-        effect.none(),
+        play_from_queue(0),
       )
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
@@ -284,7 +272,7 @@ fn update(
         True -> m.played_seconds + 1
         False -> m.played_seconds
       }
-      echo playtime
+      //echo playtime
       #(model.Model(..m, played_seconds: playtime), effect.none())
     }
     msg.PlayerSongLoaded(song) -> {
@@ -440,6 +428,10 @@ fn update(
       m.player |> player.seek(amount)
       #(model.Model(..m, seeking: False), effect.none())
     }
+    msg.PlayerLoop -> {
+      m.player |> player.loop()
+      #(model.Model(..m, looping: bool.negate(m.looping)), effect.none())
+    }
     msg.Like -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
@@ -489,7 +481,10 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
     "previous" -> msg.PlayerPrevious
     "next" -> msg.PlayerNext
     "ended" -> msg.MusicEnded
-    _ -> panic as "shouldnt happen"
+    _ -> {
+      echo event
+      panic as "shouldnt happen"
+    }
   }
 }
 

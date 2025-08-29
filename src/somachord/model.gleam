@@ -23,6 +23,7 @@ pub type Model {
     seeking: Bool,
     seek_amount: Int,
     played_seconds: Int,
+    looping: Bool,
   )
 }
 

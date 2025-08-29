@@ -40,3 +40,6 @@ pub fn load_song(player: model.Player, link: String, info: model.Child) -> Nil
 
 @external(javascript, "./player.ffi.mjs", "beginning")
 pub fn beginning(player: model.Player) -> Nil
+
+@external(javascript, "./player.ffi.mjs", "loop")
+pub fn loop(player: model.Player) -> Nil
