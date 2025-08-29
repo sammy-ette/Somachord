@@ -292,8 +292,8 @@ pub fn save_queue(auth_details: auth.Auth, queue: option.Option(queue.Queue)) {
             "position",
             queue.song_position *. 1000.0 |> float.truncate |> int.to_string,
           ),
-          ..list.map(queue.songs |> dict.values, fn(song: api_models.Child) {
-            #("id", song.id)
+          ..list.map(queue.list(queue), fn(song: #(Int, api_models.Child)) {
+            #("id", { song.1 }.id)
           })
         ]
       }
