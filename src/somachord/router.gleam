@@ -24,12 +24,10 @@ pub type Route {
 }
 
 pub fn route(rel: String) {
-  let assert Ok(route) =
-    uri.parse(case electron.am_i_electron() {
-      False -> rel
-      True -> window.location() <> "?a#/login"
-    })
-  modem.load(route)
+  case electron.am_i_electron() {
+    False -> modem.push(rel, option.None, option.None)
+    True -> modem.push("/", option.None, option.Some(rel))
+  }
 }
 
 pub fn uri_to_route(uri: uri.Uri) -> Route {
@@ -52,9 +50,13 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
     }
   }
 
-  case uri.fragment {
-    option.None -> router("")
-    option.Some(path) -> router(path)
+  case electron.am_i_electron() {
+    True ->
+      case uri.fragment {
+        option.None -> router("")
+        option.Some(path) -> router(path)
+      }
+    False -> router(uri.path)
   }
 }
 

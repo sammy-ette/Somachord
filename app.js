@@ -5,7 +5,7 @@ const createWindow = () => {
     width: 1366,
     height: 768
   })
-  win.removeMenu()
+  //win.removeMenu()
 
   win.loadFile('index.html')
 }
