@@ -272,7 +272,7 @@ fn playing_bar(m: model.Model) {
           ),
           html.i(
             [
-              attribute.class("text-xl ph ph-repeat"),
+              attribute.class("text-xl ph ph-repeat-once"),
               case m.looping {
                 True ->
                   attribute.class(
