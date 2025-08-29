@@ -78,6 +78,7 @@ fn init(_) {
       seek_amount: 0,
       played_seconds: 0,
       shuffled: False,
+      looping: False,
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -215,10 +216,6 @@ fn update(
       }
     }
     msg.StreamAlbum(album) -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
       let queue = case
         m.shuffled,
         queue.new(songs: album.songs, position: 0, song_position: 0.0)
@@ -226,15 +223,7 @@ fn update(
         True, queue -> queue |> queue.shuffle
         False, queue -> queue
       }
-      let assert option.Some(song) = queue |> queue.current_song
-      let stream_uri =
-        api_helper.create_uri("/rest/stream.view", auth_details, [
-          #("id", song.id),
-        ])
-        |> uri.to_string
-
-      m.player |> player.load_song(stream_uri, song)
-      #(model.Model(..m, queue:), effect.none())
+      #(model.Model(..m, queue:), play())
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
       let auth_details = {
@@ -257,13 +246,20 @@ fn update(
       )
     }
     msg.PlayerTick(time) -> {
-      let playtime = case
-        float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
-      {
-        True -> m.played_seconds + 1
-        False -> m.played_seconds
+      let playtime = case time {
+        0.0 -> 0
+        time ->
+          case
+            float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
+          {
+            True -> m.played_seconds + 1
+            False -> m.played_seconds
+          }
       }
-      #(model.Model(..m, played_seconds: playtime), effect.none())
+      #(model.Model(..m, played_seconds: playtime), case playtime {
+        0 -> check_scrobble(m)
+        _ -> effect.none()
+      })
     }
     msg.PlayerSongLoaded(song) -> {
       #(
@@ -311,18 +307,7 @@ fn update(
       #(
         model.Model(..m, queue: queue.next(m.queue)),
         effect.batch([
-          case m.played_seconds > m.current_song.duration / 2 {
-            True ->
-              api.scrobble(
-                {
-                  let assert Ok(stg) = m.storage |> varasto.get("auth")
-                  stg.auth
-                },
-                id: m.current_song.id,
-                submission: True,
-              )
-            False -> effect.none()
-          },
+          check_scrobble(m),
           case
             int.compare(
               m.queue.position + 1,
@@ -454,6 +439,10 @@ fn update(
       m.player |> player.seek(amount)
       #(model.Model(..m, seeking: False), effect.none())
     }
+    msg.PlayerLoop -> {
+      m.player |> player.loop()
+      #(model.Model(..m, looping: bool.negate(m.looping)), effect.none())
+    }
     msg.Like -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
@@ -492,6 +481,21 @@ fn update(
   }
 }
 
+fn check_scrobble(m: model.Model) {
+  case m.played_seconds > m.current_song.duration / 2 {
+    True ->
+      api.scrobble(
+        {
+          let assert Ok(stg) = m.storage |> varasto.get("auth")
+          stg.auth
+        },
+        id: m.current_song.id,
+        submission: True,
+      )
+    False -> effect.none()
+  }
+}
+
 fn play_from_queue(position: Int) {
   effect.from(fn(dispatch) { msg.StreamFromQueue(position) |> dispatch })
 }
@@ -507,7 +511,10 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
     "previous" -> msg.PlayerPrevious
     "next" -> msg.PlayerNext
     "ended" -> msg.MusicEnded
-    _ -> panic as "shouldnt happen"
+    _ -> {
+      echo event
+      panic as "shouldnt happen"
+    }
   }
 }
 

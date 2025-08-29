@@ -285,7 +285,20 @@ fn playing_bar(m: model.Model) {
             ],
             [],
           ),
-          html.i([attribute.class("text-xl ph ph-repeat")], []),
+          html.i(
+            [
+              attribute.class("text-xl ph ph-repeat-once"),
+              case m.looping {
+                True ->
+                  attribute.class(
+                    "text-violet-400 underline underline-offset-4 decoration-dotted",
+                  )
+                False -> attribute.none()
+              },
+              event.on_click(msg.PlayerLoop),
+            ],
+            [],
+          ),
         ]),
         html.div(
           [

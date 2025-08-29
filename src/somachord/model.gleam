@@ -26,6 +26,7 @@ pub type Model {
     seek_amount: Int,
     played_seconds: Int,
     shuffled: Bool,
+    looping: Bool,
   )
 }
 

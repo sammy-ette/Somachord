@@ -38,6 +38,7 @@ pub type Msg {
   PlayerPrevious
   PlayerPausePlay
   PlayerNext
+  PlayerLoop
   Like
   QueueJumpTo(position: Int)
 

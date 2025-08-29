@@ -129,3 +129,11 @@ export function seek(player, amount) {
 export function beginning(player) {
     player.element.currentTime = 0
 }
+
+/**
+ * 
+ * @param {Player} player 
+ */
+export function loop(player) {
+    player.element.loop = true
+}
