@@ -95,7 +95,6 @@ export function load_song(player, link, info) {
             artwork: [{
                 src: album_art_url
             }],
-            
         })
     }
     player.current = info

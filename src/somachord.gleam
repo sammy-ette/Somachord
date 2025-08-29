@@ -251,7 +251,7 @@ fn update(
         ])
         |> uri.to_string
 
-      m.player |> player.load_song(stream_uri, song)
+      m.player |> player.load_song(stream_uri, song, "", model.new_song())
       #(
         model.Model(
           ..m,
@@ -393,8 +393,20 @@ fn update(
           #("id", song.id),
         ])
         |> uri.to_string
+      let assert Ok(next_song) =
+        m.queue.songs
+        |> dict.get(position + 1)
+        |> result.or(Ok(model.new_song()))
+      let next_stream_uri = case next_song.id {
+        "" -> ""
+        id ->
+          api_helper.create_uri("/rest/stream.view", auth_details, [
+            #("id", id),
+          ])
+          |> uri.to_string
+      }
       let modified_queue = model.Queue(..m.queue, position:)
-      m.player |> player.load_song(stream_uri, song)
+      m.player |> player.load_song(stream_uri, song, next_stream_uri, next_song)
       #(
         model.Model(..m, queue: modified_queue),
         api.save_queue(auth_details, option.Some(modified_queue)),
