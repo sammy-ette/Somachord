@@ -266,14 +266,20 @@ fn update(
       )
     }
     msg.PlayerTick(time) -> {
-      let playtime = case
-        float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
-      {
-        True -> m.played_seconds + 1
-        False -> m.played_seconds
+      let playtime = case time {
+        0.0 -> 0
+        time ->
+          case
+            float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
+          {
+            True -> m.played_seconds + 1
+            False -> m.played_seconds
+          }
       }
-      //echo playtime
-      #(model.Model(..m, played_seconds: playtime), effect.none())
+      #(model.Model(..m, played_seconds: playtime), case playtime {
+        0 -> check_scrobble(m)
+        _ -> effect.none()
+      })
     }
     msg.PlayerSongLoaded(song) -> {
       #(
@@ -302,18 +308,7 @@ fn update(
       #(
         m,
         effect.batch([
-          case m.played_seconds > m.current_song.duration / 2 {
-            True ->
-              api.scrobble(
-                {
-                  let assert Ok(stg) = m.storage |> varasto.get("auth")
-                  stg.auth
-                },
-                id: m.current_song.id,
-                submission: True,
-              )
-            False -> effect.none()
-          },
+          check_scrobble(m),
           case
             int.compare(
               m.queue.position + 1,
@@ -467,6 +462,21 @@ fn update(
       modem.push("/search/" <> query, option.None, option.None),
     )
     _ -> #(m, effect.none())
+  }
+}
+
+fn check_scrobble(m: model.Model) {
+  case m.played_seconds > m.current_song.duration / 2 {
+    True ->
+      api.scrobble(
+        {
+          let assert Ok(stg) = m.storage |> varasto.get("auth")
+          stg.auth
+        },
+        id: m.current_song.id,
+        submission: True,
+      )
+    False -> effect.none()
   }
 }
 
