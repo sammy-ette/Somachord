@@ -1,5 +1,7 @@
+import electron
 import gleam/option
 import gleam/uri
+import modem
 import somachord/storage
 import varasto
 
@@ -21,21 +23,38 @@ pub type Route {
   Unknown
 }
 
+pub fn route(rel: String) {
+  let assert Ok(route) =
+    uri.parse(case electron.am_i_electron() {
+      False -> rel
+      True -> window.location() <> "?a#/login"
+    })
+  modem.load(route)
+}
+
 pub fn uri_to_route(uri: uri.Uri) -> Route {
-  case uri.path {
-    "/" -> Home
-    "/login" -> Login
-    "/search" -> Search("")
-    "/search/" <> query -> {
-      let assert Ok(decoded_query) = uri.percent_decode(query)
-      Search(decoded_query)
+  let router = fn(path: String) {
+    echo path
+    case path {
+      "/" | "" -> Home
+      "/login" -> Login
+      "/search" -> Search("")
+      "/search/" <> query -> {
+        let assert Ok(decoded_query) = uri.percent_decode(query)
+        Search(decoded_query)
+      }
+      "/artists" -> Artists
+      "/artist/" <> id -> Artist(id)
+      "/albums" -> Albums
+      "/album/" <> id -> Album(id)
+      "/song/" <> id -> Song(id)
+      _ -> Unknown
     }
-    "/artists" -> Artists
-    "/artist/" <> id -> Artist(id)
-    "/albums" -> Albums
-    "/album/" <> id -> Album(id)
-    "/song/" <> id -> Song(id)
-    _ -> Unknown
+  }
+
+  case uri.fragment {
+    option.None -> router("")
+    option.Some(path) -> router(path)
   }
 }
 

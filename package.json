@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "is-electron": "^2.2.2",
     "js-md5": "^0.8.3"
+  },
+  "devDependencies": {
+    "electron": "^37.4.0"
   }
 }

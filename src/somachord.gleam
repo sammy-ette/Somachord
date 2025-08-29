@@ -96,15 +96,13 @@ fn init(_) {
       ]),
     )
     Error(_) ->
-      case router.get_route() |> router.uri_to_route {
+      case echo router.get_route() |> router.uri_to_route {
         router.Login -> #(
           model.Model(..m, confirmed: True),
           modem.init(msg.on_url_change),
         )
         _ -> {
-          let assert Ok(login) = uri.parse("/login")
-
-          #(m, modem.load(login))
+          #(m, router.route("/login"))
         }
       }
   }
