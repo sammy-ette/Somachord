@@ -3,6 +3,7 @@ import gleam/uri
 import modem
 import somachord/api_helper
 import somachord/msg
+import somachord/router
 
 import formal/form
 import lustre
@@ -76,8 +77,7 @@ fn update(m: Model, msg: Msg) {
           let _ =
             m.storage
             |> varasto.set("auth", storage.Storage(auth: m.auth_details))
-          let assert Ok(home) = uri.parse("/")
-          #(m, modem.load(home))
+          #(m, router.route("/"))
         }
         _ -> #(m, effect.none())
       }
