@@ -1,6 +1,10 @@
+import gleam/dynamic/decode
+import gleam/float
 import gleam/int
 import gleam/json
 import gleam/list
+import gleam/option
+import gleam/result
 import gleam/uri
 import lustre
 import lustre/attribute
@@ -27,6 +31,9 @@ pub fn register() {
       component.on_attribute_change("song-id", fn(value) {
         Ok(value |> msg.SongID)
       }),
+      component.on_property_change("time", {
+        decode.float |> decode.map(msg.Playtime)
+      }),
     ])
   lustre.register(app, "song-page")
 }
@@ -44,11 +51,17 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
   )
 }
 
-fn init(_) {
-  #(api_models.new_song(), effect.none())
+pub const song_time = song_detail.song_time
+
+pub type Model {
+  Model(song: api_models.Child, playtime: option.Option(Float))
 }
 
-fn update(m: api_models.Child, msg: msg.SongPageMsg) {
+fn init(_) {
+  #(Model(song: api_models.new_song(), playtime: option.None), effect.none())
+}
+
+fn update(m: Model, msg: msg.SongPageMsg) {
   case msg {
     msg.SongID(id) -> #(
       m,
@@ -61,7 +74,10 @@ fn update(m: api_models.Child, msg: msg.SongPageMsg) {
         msg: msg.SongResponse,
       ),
     )
-    msg.SongResponse(Ok(api_helper.Song(song))) -> #(song, effect.none())
+    msg.SongResponse(Ok(api_helper.Song(song))) -> #(
+      Model(..m, song:),
+      effect.none(),
+    )
     msg.SongResponse(Ok(api_helper.SubsonicError(code, msg, _))) -> {
       #(m, effect.none())
     }
@@ -70,14 +86,22 @@ fn update(m: api_models.Child, msg: msg.SongPageMsg) {
       m,
       event.emit(
         "play",
-        json.object([#("type", json.string("song")), #("id", json.string(m.id))]),
+        json.object([
+          #("type", json.string("song")),
+          #("id", json.string(m.song.id)),
+        ]),
       ),
+    )
+    msg.Playtime(time) -> #(
+      Model(..m, playtime: option.Some(time)),
+      effect.none(),
     )
     _ -> #(m, effect.none())
   }
 }
 
-fn view(song: api_models.Child) {
+fn view(m: Model) {
+  let song = m.song
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
@@ -170,6 +194,12 @@ fn view(song: api_models.Child) {
       // ]),
       ]),
     ]),
-    song_detail.element([]),
+    song_detail.element([
+      song_detail.id(song.id),
+      case m.playtime {
+        option.None -> attribute.none()
+        option.Some(time) -> song_detail.song_time(time)
+      },
+    ]),
   ])
 }

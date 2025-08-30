@@ -1,4 +1,5 @@
 import gleam/dynamic/decode
+import gleam/int
 import gleam/option
 
 pub type Artist {
@@ -146,4 +147,26 @@ pub fn song_decoder() {
     starred:,
     plays:,
   ))
+}
+
+pub type LyricSet {
+  LyricSet(synced: Bool, lang: String, lines: List(Lyric))
+}
+
+pub fn lyric_set_decoder() -> decode.Decoder(LyricSet) {
+  use synced <- decode.field("synced", decode.bool)
+  use lang <- decode.field("lang", decode.string)
+  use lines <- decode.field("line", decode.list(lyric_decoder()))
+  decode.success(LyricSet(synced:, lang:, lines:))
+}
+
+pub type Lyric {
+  Lyric(time: Float, text: String)
+}
+
+fn lyric_decoder() -> decode.Decoder(Lyric) {
+  use time_ms <- decode.field("start", decode.int)
+  let time = int.to_float(time_ms) /. 1000.0
+  use text <- decode.field("value", decode.string)
+  decode.success(Lyric(time:, text:))
 }

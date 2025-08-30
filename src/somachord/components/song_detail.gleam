@@ -1,4 +1,9 @@
+import gleam/dynamic/decode
+import gleam/float
+import gleam/json
 import gleam/list
+import gleam/option
+import gleam/result
 import lustre
 import lustre/attribute
 import lustre/component
@@ -6,11 +11,24 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
+import somachord/api
+import somachord/api_helper
+import somachord/api_models
 import somachord/elements
 import somachord/model
+import somachord/msg
+import somachord/storage
+import varasto
 
 pub type Model {
-  Model(id: String, current_tab: DetailTab)
+  Model(
+    id: String,
+    current_tab: DetailTab,
+    lyricsets: List(api_models.LyricSet),
+    // lang of lyric set chosed
+    chosen_lyric_set: String,
+    song_time: option.Option(Float),
+  )
 }
 
 pub type DetailTab {
@@ -55,31 +73,69 @@ fn tab_element(m: Model, tab: DetailTab) {
 
 type Msg {
   ChangeTab(DetailTab)
+  SongID(id: String)
+  Playtime(time: Float)
+  LyricsRetrieved(List(api_models.LyricSet))
+  Nothing
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
-      //component.on_attribute_change("id", fn(value) { todo }),
+      component.on_attribute_change("song-id", fn(value) { Ok(SongID(value)) }),
+      component.on_property_change("time", {
+        decode.float |> decode.map(Playtime)
+      }),
     ])
   lustre.register(component, "song-detail")
 }
 
 pub fn element(attrs: List(attribute.Attribute(msg))) -> element.Element(msg) {
-  element.element("song-detail", attrs, [])
+  element.element("song-detail", [attribute.class("h-screen"), ..attrs], [])
 }
 
 pub fn id(id: String) -> attribute.Attribute(msg) {
-  attribute.attribute("id", id)
+  attribute.attribute("song-id", id)
+}
+
+pub fn song_time(time: Float) -> attribute.Attribute(msg) {
+  attribute.property("time", json.float(time))
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(id: "", current_tab: Lyrics), effect.none())
+  #(
+    Model(
+      id: "",
+      current_tab: Lyrics,
+      lyricsets: [],
+      chosen_lyric_set: "xxx",
+      song_time: option.None,
+    ),
+    effect.none(),
+  )
 }
 
 fn update(m: Model, msg: Msg) {
   case msg {
     ChangeTab(tab) -> #(Model(..m, current_tab: tab), effect.none())
+    SongID(id) -> #(m, case storage.create() |> varasto.get("auth") {
+      Error(_) -> effect.none()
+      Ok(stg) ->
+        api.lyrics(stg.auth, id)
+        |> effect.map(fn(msg: msg.Msg) {
+          case msg {
+            msg.SubsonicResponse(Ok(api_helper.Lyrics(lyricsets))) ->
+              LyricsRetrieved(lyricsets)
+            _ -> {
+              echo msg
+              Nothing
+            }
+          }
+        })
+    })
+    Playtime(time) -> #(Model(..m, song_time: option.Some(time)), effect.none())
+    LyricsRetrieved(lyricsets) -> #(Model(..m, lyricsets:), effect.none())
+    Nothing -> #(m, effect.none())
   }
 }
 
@@ -94,7 +150,7 @@ fn view(m: Model) {
       [tab_element(m, Lyrics), tab_element(m, More)],
     ),
     html.div([attribute.class("p-4")], case m.current_tab {
-      //Lyrics -> view_lyrics(m)
+      Lyrics -> view_lyrics(m)
       //More -> view_more(m)
       _ -> [element.none()]
     }),
@@ -102,36 +158,40 @@ fn view(m: Model) {
 }
 
 fn view_lyrics(m: Model) {
-  let lyrics = [
-    model.SongLyric(2000, "Darling, I'm a masterpiece, a work of art"),
-    model.SongLyric(4000, "Hi, my name is Fabulous, your favorite star"),
-    model.SongLyric(6000, "Diamonds on my wrist, come, blow me a kiss"),
-    model.SongLyric(8000, "'Cause, hi, my name is Fabulous, your favorite star"),
-    model.SongLyric(11_000, "Oh, when I walk down the boulevard"),
-    model.SongLyric(12_000, "People call my name"),
-  ]
-
-  let current_time = 6000
+  let lyrics =
+    list.find(m.lyricsets, fn(lyricset: api_models.LyricSet) {
+      lyricset.lang == m.chosen_lyric_set
+    })
+    |> result.replace_error(case m.lyricsets {
+      [first, ..] -> first
+      _ -> api_models.LyricSet(synced: False, lang: "und", lines: [])
+    })
+    |> result.unwrap_both
 
   [
     html.div([attribute.class("flex px-6 py-8 gap-24")], [
       html.div([attribute.class("flex flex-col gap-4 text-zinc-500")], [
         // toggle time synced lyrics?
         html.i([attribute.class("text-4xl ph ph-clock-countdown")], []),
+        html.i([attribute.class("text-4xl ph ph-translate")], []),
         html.i([attribute.class("text-4xl ph ph-text-aa")], []),
       ]),
       html.div(
         [attribute.class("space-y-2")],
-        list.map(lyrics, fn(lyric: model.SongLyric) {
+        list.map(lyrics.lines, fn(lyric: api_models.Lyric) {
           html.p(
             [
-              attribute.class("font-semibold text-2xl"),
-              case current_time > lyric.time {
-                True -> attribute.class("text-zinc-300")
-                False -> attribute.class("text-zinc-600")
+              attribute.class("font-semibold text-2xl text-zinc-300"),
+              case m.song_time {
+                option.None -> attribute.none()
+                option.Some(current_time) ->
+                  case current_time >. { lyric.time -. 0.5 } {
+                    True -> attribute.class("text-zinc-300")
+                    False -> attribute.class("text-zinc-600")
+                  }
               },
             ],
-            [element.text(lyric.line)],
+            [element.text(lyric.text)],
           )
         }),
       ),
