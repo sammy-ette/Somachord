@@ -53,9 +53,9 @@ fn init(_) {
   #(Model(albumlists: []), case storage |> varasto.get("auth") {
     Ok(stg) ->
       effect.batch([
-        api.album_list(stg.auth, "frequent", 0, 9),
-        api.album_list(stg.auth, "newest", 0, 9),
-        api.album_list(stg.auth, "random", 0, 9),
+        api.album_list(stg.auth, "frequent", 0, 10),
+        api.album_list(stg.auth, "newest", 0, 10),
+        api.album_list(stg.auth, "random", 0, 10),
       ])
     Error(_) -> effect.none()
   })

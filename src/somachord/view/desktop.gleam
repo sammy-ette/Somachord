@@ -30,7 +30,7 @@ pub fn view(m: model.Model, page) {
     [
       top_bar(m),
       html.div([attribute.class("flex gap-2 min-w-0 min-h-0 w-full h-full")], [
-        side_bar(m),
+        //side_bar(m),
         html.div(
           [attribute.class("flex flex-col gap-2 min-w-0 min-h-0 w-full h-full")],
           [
