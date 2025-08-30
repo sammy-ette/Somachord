@@ -74,85 +74,6 @@ pub fn desktop_page(m: model.Model, id) {
         ),
       ],
       [
-        html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
-          element.text(album.name),
-        ]),
-        html.div(
-          [attribute.class("flex gap-3 text-xs text-zinc-400 items-center")],
-          [
-            html.span([attribute.class("flex gap-2 items-center")], [
-              html.i([attribute.class("text-xl ph ph-user-sound")], []),
-              ..list.map(album.artists, fn(artist: api_models.SmallArtist) {
-                html.a([attribute.href("/artist/" <> artist.id)], [
-                  html.span([attribute.class("text-zinc-300 hover:underline")], [
-                    element.text(artist.name),
-                  ]),
-                ])
-              })
-              |> list.intersperse(element.text(", "))
-            ]),
-            html.span([], [element.text("•")]),
-            html.span([], [element.text(album.year |> int.to_string)]),
-            html.span([], [element.text("•")]),
-            html.span([], [
-              element.text({
-                let song_count = album.songs |> list.length
-
-                int.to_string(song_count)
-                <> " song"
-                <> case song_count == 1 {
-                  False -> "s"
-                  True -> ""
-                }
-              }),
-            ]),
-            html.span([], [element.text("•")]),
-            html.span([], [
-              element.text({
-                let minutes = album.duration / 60
-                let seconds = album.duration % 60
-
-                int.to_string(minutes)
-                <> " min, "
-                <> int.to_string(seconds)
-                <> " sec"
-              }),
-            ]),
-          ],
-        ),
-        html.div([attribute.class("text-zinc-400 flex gap-4 items-center")], [
-          html.i(
-            [
-              attribute.class("text-5xl text-violet-500 ph-fill ph-play-circle"),
-              event.on_click({ msg.StreamAlbum(album) }),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class(
-                "text-3xl ph ph-shuffle-simple cursor-not-allowed",
-              ),
-            ],
-            [],
-          ),
-          html.i(
-            [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class(
-                "text-3xl ph ph-download-simple cursor-not-allowed",
-              ),
-            ],
-            [],
-          ),
-          html.i(
-            [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
-            [],
-          ),
-        ]),
         html.div(
           [attribute.class("flex flex-col gap-4")],
           list.index_map(album.songs, fn(song: api_models.Child, index: Int) {
@@ -173,6 +94,88 @@ pub fn desktop_page(m: model.Model, id) {
           |> uri.to_string,
         ),
         attribute.class("max-w-80 max-h-80 object-scale rounded-md"),
+      ]),
+      html.h1(
+        [attribute.class("text-3xl text-zinc-300 font-semibold text-wrap")],
+        [
+          element.text(album.name),
+        ],
+      ),
+      html.div(
+        [
+          attribute.class(
+            "flex flex-wrap gap-3 text-xs text-zinc-400 items-center",
+          ),
+        ],
+        [
+          html.span([attribute.class("flex gap-2 items-center")], [
+            html.i([attribute.class("text-xl ph ph-user-sound")], []),
+            ..list.map(album.artists, fn(artist: api_models.SmallArtist) {
+              html.a([attribute.href("/artist/" <> artist.id)], [
+                html.span([attribute.class("text-zinc-300 hover:underline")], [
+                  element.text(artist.name),
+                ]),
+              ])
+            })
+            |> list.intersperse(element.text(", "))
+          ]),
+          html.span([], [element.text("•")]),
+          html.span([], [element.text(album.year |> int.to_string)]),
+          html.span([], [element.text("•")]),
+          html.span([], [
+            element.text({
+              let song_count = album.songs |> list.length
+
+              int.to_string(song_count)
+              <> " song"
+              <> case song_count == 1 {
+                False -> "s"
+                True -> ""
+              }
+            }),
+          ]),
+          html.span([], [element.text("•")]),
+          html.span([], [
+            element.text({
+              let minutes = album.duration / 60
+              let seconds = album.duration % 60
+
+              int.to_string(minutes)
+              <> " min, "
+              <> int.to_string(seconds)
+              <> " sec"
+            }),
+          ]),
+        ],
+      ),
+      html.div([attribute.class("text-zinc-400 flex gap-4 items-center")], [
+        html.i(
+          [
+            attribute.class("text-5xl text-violet-500 ph-fill ph-play-circle"),
+            event.on_click({ msg.StreamAlbum(album) }),
+          ],
+          [],
+        ),
+        html.i(
+          [
+            attribute.class("text-3xl ph ph-shuffle-simple cursor-not-allowed"),
+          ],
+          [],
+        ),
+        html.i(
+          [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+          [],
+        ),
+        html.i(
+          [
+            attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
+          ],
+          [],
+        ),
+        html.i(
+          [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
+          [],
+        ),
       ]),
       html.div(
         [attribute.class("flex flex-wrap gap-4")],
