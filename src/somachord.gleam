@@ -287,7 +287,7 @@ fn update(
       )
     }
     msg.PlayerPrevious ->
-      case m.queue.position == 0, m.player |> player.time() >. 5.0 {
+      case m.queue.position == 0, m.player |> player.time() >. 2.0 {
         False, False -> #(
           model.Model(..m, queue: queue.previous(m.queue)),
           play(),
