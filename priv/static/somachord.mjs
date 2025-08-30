@@ -12319,9 +12319,9 @@ function init5(_) {
         let stg = $[0];
         return batch(
           toList([
-            album_list(stg.auth, "frequent", 0, 9),
-            album_list(stg.auth, "newest", 0, 9),
-            album_list(stg.auth, "random", 0, 9)
+            album_list(stg.auth, "frequent", 0, 10),
+            album_list(stg.auth, "newest", 0, 10),
+            album_list(stg.auth, "random", 0, 10)
           ])
         );
       } else {
@@ -13084,67 +13084,6 @@ function top_bar(m) {
     ])
   );
 }
-function side_bar(_) {
-  return div(
-    toList([
-      class$(
-        "flex flex-col gap-2 border border-zinc-800 rounded-lg py-4 px-1"
-      )
-    ]),
-    toList([
-      button2(
-        i(
-          toList([class$("text-3xl ph ph-playlist")]),
-          toList([])
-        ),
-        "Playlists",
-        toList([])
-      ),
-      button2(
-        i(
-          toList([class$("text-3xl ph ph-heart-straight")]),
-          toList([])
-        ),
-        "Liked Songs",
-        toList([])
-      ),
-      a(
-        toList([href("/albums")]),
-        toList([
-          button2(
-            i(
-              toList([
-                class$(
-                  "cursor-not-allowed text-3xl ph ph-vinyl-record"
-                )
-              ]),
-              toList([])
-            ),
-            "Albums",
-            toList([])
-          )
-        ])
-      ),
-      a(
-        toList([]),
-        toList([
-          button2(
-            i(
-              toList([
-                class$(
-                  "cursor-not-allowed text-3xl ph ph-user-sound"
-                )
-              ]),
-              toList([])
-            ),
-            "Artists",
-            toList([])
-          )
-        ])
-      )
-    ])
-  );
-}
 function playing_bar(m) {
   let _block;
   {
@@ -13165,10 +13104,10 @@ function playing_bar(m) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 4130,
-          end: 4183,
-          pattern_start: 4141,
-          pattern_end: 4148
+          start: 4132,
+          end: 4185,
+          pattern_start: 4143,
+          pattern_end: 4150
         }
       );
     }
@@ -13449,10 +13388,10 @@ function playing_bar(m) {
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 10414,
-                                  end: 10459,
-                                  pattern_start: 10425,
-                                  pattern_end: 10440
+                                  start: 10416,
+                                  end: 10461,
+                                  pattern_start: 10427,
+                                  pattern_end: 10442
                                 }
                               );
                             }
@@ -13620,7 +13559,6 @@ function view8(m, page3) {
       div(
         toList([class$("flex gap-2 min-w-0 min-h-0 w-full h-full")]),
         toList([
-          side_bar(m),
           div(
             toList([
               class$(
