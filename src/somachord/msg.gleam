@@ -70,21 +70,6 @@ pub fn on_url_change(url: uri.Uri) -> Msg {
   |> Router
 }
 
-pub fn route(rel: String) {
-  case electron.am_i_electron() {
-    False -> modem.push(rel, option.None, option.None)
-    True -> {
-      let assert Ok(url) = uri.parse("/#" <> rel)
-      effect.from(fn(dispatch) {
-        router.uri_to_route(url)
-        |> router.ChangeRoute
-        |> Router
-        |> dispatch
-      })
-    }
-  }
-}
-
 pub fn on_play(
   handler: fn(model.PlayRequest) -> msg,
 ) -> attribute.Attribute(msg) {

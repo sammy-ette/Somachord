@@ -1,6 +1,8 @@
+import electron
 import gleam/list
 import gleam/uri
 import modem
+import plinth/browser/window
 import somachord/api_helper
 import somachord/msg
 import somachord/router
@@ -78,7 +80,11 @@ fn update(m: Model, message: Msg) {
             m.storage
             |> varasto.set("auth", storage.Storage(auth: m.auth_details))
           #(m, {
-            let assert Ok(home) = uri.parse("/")
+            let assert Ok(home) =
+              uri.parse(case electron.am_i_electron() {
+                True -> window.location()
+                False -> "/"
+              })
             modem.load(home)
           })
         }
