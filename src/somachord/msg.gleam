@@ -29,7 +29,7 @@ pub type Msg {
 
   // player events
   ProgressDrag(Int)
-  PlayerSeek(Int)
+  PlayerSeek(Float)
   PlayerSongLoaded(api_models.Child)
   PlayerTick(time: Float)
   MusicEnded

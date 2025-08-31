@@ -156,7 +156,7 @@ fn update(
             )
           False -> {
             m.player
-            |> player.seek(queue.song_position |> float.truncate)
+            |> player.seek(queue.song_position)
             play()
           }
         },
