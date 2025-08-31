@@ -11,10 +11,10 @@ import somachord/api_helper
 import somachord/storage
 import varasto
 
-import somachord/model
+import somachord/api_models
 
 pub fn song(
-  song song: model.Child,
+  song song: api_models.Child,
   index index: Int,
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
@@ -89,7 +89,7 @@ pub fn song(
             ]),
             html.span(
               [attribute.class("text-sm text-zinc-500 font-light")],
-              list.map(song.artists, fn(artist: model.SmallArtist) {
+              list.map(song.artists, fn(artist: api_models.SmallArtist) {
                 html.a([attribute.href("/artist/" <> artist.id)], [
                   html.span([attribute.class("text-zinc-300 hover:underline")], [
                     element.text(artist.name),
@@ -138,7 +138,7 @@ pub fn song(
   )
 }
 
-pub fn album(album album: model.Album, handler handler: fn(String) -> msg) {
+pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
@@ -243,7 +243,7 @@ pub fn button(icon, name, attrs) {
   html.div(
     [
       attribute.class(
-        "w-52 text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
+        "w-52 font-semibold text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
       ),
       ..attrs
     ],
@@ -262,7 +262,7 @@ pub fn nav_button(inactive, active, name, is_active, attrs) {
       ),
       case is_active {
         True -> attribute.class("bg-zinc-900 text-zinc-100")
-        False -> attribute.class("text-zinc-500")
+        False -> attribute.class("font-semibold text-zinc-500")
       },
       ..attrs
     ],

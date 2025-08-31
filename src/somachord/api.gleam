@@ -10,9 +10,10 @@ import gleam/string
 import plinth/javascript/date
 import rsvp
 import somachord/api_helper
-import somachord/model
+import somachord/api_models
 import somachord/models/auth
 import somachord/msg
+import somachord/queue
 
 pub fn ping(auth_details: auth.Auth) {
   api_helper.construct_req(
@@ -41,7 +42,7 @@ pub fn album_list(
     decoder: {
       use albums <- decode.subfield(
         ["subsonic-response", "albumList2", "album"],
-        decode.list(model.album_decoder()),
+        decode.list(api_models.album_decoder()),
       )
       decode.success(api_helper.AlbumList(type_, albums))
     },
@@ -57,7 +58,7 @@ pub fn album(auth_details auth_details: auth.Auth, id id: String) {
     decoder: {
       use album <- decode.subfield(
         ["subsonic-response", "album"],
-        model.album_decoder(),
+        api_models.album_decoder(),
       )
       decode.success(api_helper.Album(album))
     },
@@ -73,7 +74,7 @@ pub fn artist(auth_details auth_details: auth.Auth, id id: String) {
     decoder: {
       use artist <- decode.subfield(
         ["subsonic-response", "artist"],
-        model.artist_decoder(),
+        api_models.artist_decoder(),
       )
 
       decode.success(api_helper.Artist(artist))
@@ -94,7 +95,7 @@ pub fn song(
     decoder: {
       use song <- decode.subfield(
         ["subsonic-response", "song"],
-        model.song_decoder(),
+        api_models.song_decoder(),
       )
 
       decode.success(api_helper.Song(song))
@@ -115,7 +116,7 @@ pub fn top_songs(
     decoder: {
       use songs <- decode.subfield(
         ["subsonic-response", "topSongs", "song"],
-        decode.list(model.song_decoder()),
+        decode.list(api_models.song_decoder()),
       )
       decode.success(api_helper.TopSongs(songs))
     },
@@ -169,13 +170,13 @@ pub fn search(auth_details: auth.Auth, query query: String) {
       use artists <- decode.then(decode.optionally_at(
         ["subsonic-response", "searchResult3", "artist"],
         [],
-        decode.list(model.artist_small_decoder()),
+        decode.list(api_models.artist_small_decoder()),
       ))
 
       use albums <- decode.then(decode.optionally_at(
         ["subsonic-response", "searchResult3", "album"],
         [],
-        decode.list(model.album_decoder()),
+        decode.list(api_models.album_decoder()),
       ))
 
       decode.success(
@@ -198,7 +199,7 @@ pub fn similar_songs(auth_details: auth.Auth, id id: String) {
     decoder: {
       use songs <- decode.subfield(
         ["subsonic-response", "similarSongs", "song"],
-        decode.list(model.song_decoder()),
+        decode.list(api_models.song_decoder()),
       )
 
       decode.success(api_helper.SimilarSongs(songs))
@@ -215,7 +216,7 @@ pub fn similar_songs_artist(auth_details: auth.Auth, id id: String) {
     decoder: {
       use songs <- decode.subfield(
         ["subsonic-response", "similarSongs2", "song"],
-        decode.list(model.song_decoder()),
+        decode.list(api_models.song_decoder()),
       )
 
       decode.success(api_helper.SimilarSongs(songs))
@@ -240,7 +241,7 @@ pub fn queue(auth_details: auth.Auth) {
 
       use songs <- decode.subfield(
         ["subsonic-response", "playQueue", "entry"],
-        decode.list(model.song_decoder()),
+        decode.list(api_models.song_decoder()),
       )
       let songs_indexed = list.index_map(songs, fn(idx, song) { #(song, idx) })
       // current is the id of the child/song the queue is currently on
@@ -256,14 +257,12 @@ pub fn queue(auth_details: auth.Auth) {
         date_decoder(),
       )
 
-      decode.success(
-        api_helper.Queue(model.Queue(
-          song_position:,
-          songs: songs_indexed |> dict.from_list,
-          position: current_song.0,
+      decode.success(api_helper.Queue(
+        queue.Queue(
+          ..queue.new(song_position:, songs: songs, position: current_song.0),
           changed:,
-        )),
-      )
+        ),
+      ))
     },
     msg: msg.SubsonicResponse,
   )
@@ -280,7 +279,7 @@ fn date_decoder() {
 }
 
 // saves the queue. gets cleared if queue is option.None
-pub fn save_queue(auth_details: auth.Auth, queue: option.Option(model.Queue)) {
+pub fn save_queue(auth_details: auth.Auth, queue: option.Option(queue.Queue)) {
   api_helper.construct_req(
     auth_details:,
     path: "/rest/savePlayQueue.view",
@@ -293,14 +292,31 @@ pub fn save_queue(auth_details: auth.Auth, queue: option.Option(model.Queue)) {
             "position",
             queue.song_position *. 1000.0 |> float.truncate |> int.to_string,
           ),
-          ..list.map(queue.songs |> dict.values, fn(song: model.Child) {
-            #("id", song.id)
+          ..list.map(queue.list(queue), fn(song: #(Int, api_models.Child)) {
+            #("id", { song.1 }.id)
           })
         ]
       }
       option.None -> []
     },
     decoder: decode.success(api_helper.Ping),
+    msg: msg.SubsonicResponse,
+  )
+}
+
+pub fn lyrics(auth_details: auth.Auth, id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/getLyricsBySongId.view",
+    query: [#("id", id)],
+    decoder: {
+      use lyrics <- decode.subfield(
+        ["subsonic-response", "lyricsList", "structuredLyrics"],
+        decode.list(api_models.lyric_set_decoder()),
+      )
+
+      decode.success(api_helper.Lyrics(lyrics))
+    },
     msg: msg.SubsonicResponse,
   )
 }

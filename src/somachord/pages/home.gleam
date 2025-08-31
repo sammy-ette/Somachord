@@ -11,6 +11,7 @@ import lustre/element/html
 import lustre/event
 import somachord/api
 import somachord/api_helper
+import somachord/api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
@@ -20,7 +21,7 @@ import varasto
 import somachord/components
 
 pub type AlbumList {
-  AlbumList(type_: String, albums: List(model.Album))
+  AlbumList(type_: String, albums: List(api_models.Album))
 }
 
 pub type Model {
@@ -52,9 +53,9 @@ fn init(_) {
   #(Model(albumlists: []), case storage |> varasto.get("auth") {
     Ok(stg) ->
       effect.batch([
-        api.album_list(stg.auth, "frequent", 0, 9),
-        api.album_list(stg.auth, "newest", 0, 9),
-        api.album_list(stg.auth, "random", 0, 9),
+        api.album_list(stg.auth, "frequent", 0, 11),
+        api.album_list(stg.auth, "newest", 0, 11),
+        api.album_list(stg.auth, "random", 0, 11),
       ])
     Error(_) -> effect.none()
   })
@@ -82,7 +83,6 @@ fn update(m: Model, msg: msg.Msg) {
       )
     }
     msg.SubsonicResponse(Error(e)) -> {
-      echo e
       #(m, effect.none())
     }
     msg.Play(req) -> #(

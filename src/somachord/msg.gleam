@@ -4,7 +4,9 @@ import gleam/uri
 import lustre/attribute
 import lustre/event
 import rsvp
+
 import somachord/api_helper
+import somachord/api_models
 import somachord/model
 import somachord/router
 
@@ -21,22 +23,25 @@ pub type Msg {
 
   // handles actually playing the music in the browser
   // and the queue.
-  StreamAlbum(model.Album)
-  StreamSong(model.Child)
+  StreamAlbum(api_models.Album)
+  StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
+  StreamCurrent
 
   // player events
   ProgressDrag(Int)
-  PlayerSeek(Int)
-  PlayerSongLoaded(model.Child)
+  PlayerSeek(Float)
+  PlayerSongLoaded(api_models.Child)
   PlayerTick(time: Float)
   MusicEnded
   // player msgs (user interactions)
+  PlayerShuffle
   PlayerPrevious
   PlayerPausePlay
   PlayerNext
   PlayerLoop
   Like
+  QueueJumpTo(position: Int)
 
   Unload
   ComponentClick
@@ -47,6 +52,7 @@ pub type SongPageMsg {
   PlaySong
   SongResponse(Result(api_helper.Response, rsvp.Error))
   Nothing
+  Playtime(Float)
 }
 
 pub fn on_url_change(url: uri.Uri) -> Msg {
