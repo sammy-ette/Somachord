@@ -51,6 +51,7 @@ pub type SongPageMsg {
   PlaySong
   SongResponse(Result(api_helper.Response, rsvp.Error))
   Nothing
+  Playtime(Float)
 }
 
 pub fn on_url_change(url: uri.Uri) -> Msg {
