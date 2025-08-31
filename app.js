@@ -1,13 +1,35 @@
-const { app, BrowserWindow } = require('electron/main')
+const { app, BrowserWindow, ipcMain } = require('electron/main')
+const path = require('path')
+const DiscordRPC = require('discord-rpc')
+
+const rpc = new DiscordRPC.Client({transport: 'ipc'})
 
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 1366,
-    height: 768
+    height: 768,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   })
   //win.removeMenu()
 
   win.loadFile('index.html')
+
+  ipcMain.on('update-discord-presence', (event, musicData) => {
+    rpc.setActivity({
+      type: 2, // listening activity
+      details: musicData.details,
+      state: musicData.state,
+      largeImageKey: musicData.largeImageKey,
+      largeImageText: musicData.largeImageText,
+      smallImageKey: musicData.smallImageKey,
+      smallImageText: musicData.smallImageText,
+      startTimestamp: musicData.startTimestamp,
+      endTimestamp: musicData.endTimestamp,
+      instance: false,
+    });
+  });
 }
 
 app.whenReady().then(() => {
@@ -18,6 +40,8 @@ app.whenReady().then(() => {
       createWindow()
     }
   })
+
+  rpc.login({ clientId: '1411720223114919936' }).catch(console.error);
 })
 
 app.on('window-all-closed', () => {

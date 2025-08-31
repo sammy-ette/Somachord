@@ -1,8 +1,11 @@
 import electron
 import gleam/dynamic/decode
+import gleam/option
 import gleam/uri
 import lustre/attribute
+import lustre/effect
 import lustre/event
+import modem
 import rsvp
 
 import somachord/api_helper
@@ -65,6 +68,21 @@ pub fn on_url_change(url: uri.Uri) -> Msg {
   })
   |> router.ChangeRoute
   |> Router
+}
+
+pub fn route(rel: String) {
+  case electron.am_i_electron() {
+    False -> modem.push(rel, option.None, option.None)
+    True -> {
+      let assert Ok(url) = uri.parse("/#" <> rel)
+      effect.from(fn(dispatch) {
+        router.uri_to_route(url)
+        |> router.ChangeRoute
+        |> Router
+        |> dispatch
+      })
+    }
+  }
 }
 
 pub fn on_play(

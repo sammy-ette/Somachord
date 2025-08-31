@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "discord-rpc": "github:sKiLdUsT/RPC",
     "is-electron": "^2.2.2",
     "js-md5": "^0.8.3"
   },

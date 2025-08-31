@@ -98,7 +98,8 @@ fn init(_) {
           modem.init(msg.on_url_change),
         )
         _ -> {
-          #(m, router.route("/login"))
+          echo "routing to login"
+          #(model.Model(..m, confirmed: True), msg.route("/login"))
         }
       }
   }

@@ -1,6 +1,7 @@
 import electron
 import gleam/option
 import gleam/uri
+import lustre/effect
 import modem
 import somachord/storage
 import varasto
@@ -21,13 +22,6 @@ pub type Route {
   Albums
   Song(id: String)
   Unknown
-}
-
-pub fn route(rel: String) {
-  case electron.am_i_electron() {
-    False -> modem.push(rel, option.None, option.None)
-    True -> modem.push("/", option.None, option.Some(rel))
-  }
 }
 
 pub fn uri_to_route(uri: uri.Uri) -> Route {

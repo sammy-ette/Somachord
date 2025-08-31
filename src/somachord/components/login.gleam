@@ -51,8 +51,8 @@ fn init(_) {
   )
 }
 
-fn update(m: Model, msg: Msg) {
-  case msg {
+fn update(m: Model, message: Msg) {
+  case message {
     LoginSubmitted(Ok(login_data)) -> {
       let auth =
         auth.Auth(
@@ -77,7 +77,10 @@ fn update(m: Model, msg: Msg) {
           let _ =
             m.storage
             |> varasto.set("auth", storage.Storage(auth: m.auth_details))
-          #(m, router.route("/"))
+          #(m, {
+            let assert Ok(home) = uri.parse("/")
+            modem.load(home)
+          })
         }
         _ -> #(m, effect.none())
       }
