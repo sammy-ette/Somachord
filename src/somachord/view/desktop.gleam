@@ -350,13 +350,14 @@ fn playing_bar(m: model.Model) {
                   "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full",
                 ),
                 attribute.value("0"),
+                attribute.step("any"),
                 attribute.max(int.to_string(m.current_song.duration)),
                 event.on("input", {
                   use value <- decode.subfield(
                     ["target", "value"],
                     decode.string,
                   )
-                  let assert Ok(seek_amount) = int.parse(value)
+                  let assert Ok(seek_amount) = float.parse(value)
                   decode.success(msg.PlayerSeek(seek_amount))
                 }),
                 event.on("mousedown", {

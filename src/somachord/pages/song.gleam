@@ -155,6 +155,7 @@ fn view(song: api_models.Child) {
                 attribute.class(
                   "text-5xl text-violet-500 ph-fill ph-play-circle",
                 ),
+                event.on_click(msg.PlaySong),
               ],
               [],
             ),

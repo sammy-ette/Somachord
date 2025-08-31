@@ -30,7 +30,7 @@ pub fn current(player: model.Player) -> api_models.Child
 pub fn toggle_play(player: model.Player) -> api_models.Child
 
 @external(javascript, "./player.ffi.mjs", "seek")
-pub fn seek(player: model.Player, amount: Int) -> Nil
+pub fn seek(player: model.Player, amount: Float) -> Nil
 
 // returns time in seconds
 @external(javascript, "./player.ffi.mjs", "time")
