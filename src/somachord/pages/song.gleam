@@ -107,100 +107,126 @@ fn view(m: Model) {
     stg.auth
   }
 
-  html.div([components.redirect_click(msg.Nothing)], [
-    html.div([attribute.class("flex gap-8 p-8")], [
-      case song.id {
-        // when song hasnt been retrieved yet
-        "" ->
-          html.div([attribute.class("w-80 h-80 rounded-md bg-zinc-800")], [])
-        _ ->
-          html.img([
-            attribute.src(
-              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                #("id", song.cover_art_id),
-                #("size", "500"),
-              ])
-              |> uri.to_string,
-            ),
-            attribute.class("w-80 h-80 object-cover rounded-md"),
-          ])
-      },
-      html.div([attribute.class("flex flex-col gap-4")], [
-        html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
-          element.text(song.title),
-        ]),
-        html.div(
-          [attribute.class("flex gap-3 text-xs text-zinc-400 items-center")],
-          [
-            html.span([attribute.class("flex gap-2 items-center")], [
-              html.i([attribute.class("text-xl ph ph-user-sound")], []),
-              html.span(
-                [attribute.class("text-zinc-300")],
-                list.map(song.artists, fn(artist: api_models.SmallArtist) {
-                  html.a([attribute.href("/artist/" <> artist.id)], [
-                    html.span(
-                      [
-                        attribute.class("hover:underline font-light text-sm"),
-                      ],
-                      [element.text(artist.name)],
-                    ),
+  html.div(
+    [
+      attribute.class("flex flex-row-reverse"),
+      components.redirect_click(msg.Nothing),
+    ],
+    [
+      html.div(
+        [attribute.class("fixed top-32 w-100 h-fit flex flex-col gap-8 p-8")],
+        [
+          case song.id {
+            // when song hasnt been retrieved yet
+            "" ->
+              html.div(
+                [attribute.class("w-80 h-80 rounded-md bg-zinc-800")],
+                [],
+              )
+            _ ->
+              html.img([
+                attribute.src(
+                  api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                    #("id", song.cover_art_id),
+                    #("size", "500"),
                   ])
-                })
-                  |> list.intersperse(element.text(", ")),
-              ),
+                  |> uri.to_string,
+                ),
+                attribute.class("w-80 h-80 object-cover rounded-md"),
+              ])
+          },
+          html.div([attribute.class("flex flex-col gap-4")], [
+            html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
+              element.text(song.title),
             ]),
-            html.span([], [element.text("•")]),
-            html.span([attribute.class("flex gap-2 items-center")], [
-              html.i([attribute.class("text-xl ph ph-vinyl-record")], []),
-              html.a([attribute.href("/album/" <> song.album_id)], [
-                html.span([attribute.class("hover:underline text-zinc-300")], [
-                  element.text(song.album_name),
-                ]),
-              ]),
-            ]),
-            html.span([], [element.text("•")]),
-            html.span([], [element.text(song.year |> int.to_string)]),
-            html.span([], [element.text("•")]),
-            elements.time(song.duration, []),
-            ..case song.plays > 0 {
-              False -> [element.none()]
-              True -> [
-                html.span([], [element.text("•")]),
-                html.span([], [element.text("69,727,420")]),
-              ]
-            }
-          ],
-        ),
-        html.div(
-          [attribute.class("text-zinc-400 flex gap-4 items-center -ml-1")],
-          [
-            html.i(
+            html.div(
               [
                 attribute.class(
-                  "text-5xl text-violet-500 ph-fill ph-play-circle",
+                  "flex flex-wrap gap-3 text-xs text-zinc-400 items-center",
                 ),
-                event.on_click(msg.PlaySong),
               ],
-              [],
+              [
+                html.span([attribute.class("flex gap-2 items-center")], [
+                  html.i([attribute.class("text-xl ph ph-user-sound")], []),
+                  html.span(
+                    [attribute.class("text-zinc-300")],
+                    list.map(song.artists, fn(artist: api_models.SmallArtist) {
+                      html.a([attribute.href("/artist/" <> artist.id)], [
+                        html.span(
+                          [
+                            attribute.class(
+                              "hover:underline font-light text-sm",
+                            ),
+                          ],
+                          [element.text(artist.name)],
+                        ),
+                      ])
+                    })
+                      |> list.intersperse(element.text(", ")),
+                  ),
+                ]),
+                html.span([], [element.text("•")]),
+                html.span([attribute.class("flex gap-2 items-center")], [
+                  html.i([attribute.class("text-xl ph ph-vinyl-record")], []),
+                  html.a([attribute.href("/album/" <> song.album_id)], [
+                    html.span(
+                      [attribute.class("hover:underline text-zinc-300")],
+                      [
+                        element.text(song.album_name),
+                      ],
+                    ),
+                  ]),
+                ]),
+                html.span([], [element.text("•")]),
+                html.span([], [element.text(song.year |> int.to_string)]),
+                html.span([], [element.text("•")]),
+                elements.time(song.duration, []),
+                ..case song.plays > 0 {
+                  False -> [element.none()]
+                  True -> [
+                    html.span([], [element.text("•")]),
+                    html.span([], [element.text("69,727,420")]),
+                  ]
+                }
+              ],
             ),
-            html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
-            html.i([attribute.class("text-3xl ph ph-download-simple")], []),
-            html.i([attribute.class("text-3xl ph ph-link")], []),
-            html.i([attribute.class("text-3xl ph ph-dots-three")], []),
-          ],
-        ),
-        // html.div([attribute.class("flex flex-wrap gap-4")], [
-      //   elements.tag("K-Pop"),
-      //   elements.tag("R&B"),
-      // ]),
+            html.div(
+              [
+                attribute.class(
+                  "flex flex-wrap text-zinc-400 gap-4 items-center -ml-1",
+                ),
+              ],
+              [
+                html.i(
+                  [
+                    attribute.class(
+                      "text-5xl text-violet-500 ph-fill ph-play-circle",
+                    ),
+                    event.on_click(msg.PlaySong),
+                  ],
+                  [],
+                ),
+                html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+                html.i([attribute.class("text-3xl ph ph-download-simple")], []),
+                html.i([attribute.class("text-3xl ph ph-link")], []),
+                html.i([attribute.class("text-3xl ph ph-dots-three")], []),
+              ],
+            ),
+            // html.div([attribute.class("flex flex-wrap gap-4")], [
+          //   elements.tag("K-Pop"),
+          //   elements.tag("R&B"),
+          // ]),
+          ]),
+        ],
+      ),
+      song_detail.element([
+        attribute.class("w-full"),
+        song_detail.id(song.id),
+        case m.playtime {
+          option.None -> attribute.none()
+          option.Some(time) -> song_detail.song_time(time)
+        },
       ]),
-    ]),
-    song_detail.element([
-      song_detail.id(song.id),
-      case m.playtime {
-        option.None -> attribute.none()
-        option.Some(time) -> song_detail.song_time(time)
-      },
-    ]),
-  ])
+    ],
+  )
 }

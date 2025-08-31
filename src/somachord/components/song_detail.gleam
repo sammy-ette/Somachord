@@ -171,7 +171,7 @@ fn update(m: Model, msg: Msg) {
         shadow.query_selector_all(shadow_root, ".off-time")
         |> components.elems_to_array
         |> array.to_list
-        |> list.take(5)
+        |> list.take(8)
         |> list.reverse
         |> list.first
       {
@@ -297,7 +297,7 @@ fn view_lyrics(m: Model) {
         ],
       ),
       html.div(
-        [attribute.class("space-y-2")],
+        [attribute.class("flex flex-col flex-wrap space-y-2")],
         list.map(lyrics.lines, fn(lyric: api_models.Lyric) {
           html.p(
             [
