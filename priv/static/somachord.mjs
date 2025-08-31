@@ -2979,9 +2979,9 @@ var NOT_FOUND = {};
 function identity(x) {
   return x;
 }
-function parse_int(value3) {
-  if (/^[-+]?(\d+)$/.test(value3)) {
-    return new Ok(parseInt(value3));
+function parse_float(value3) {
+  if (/^[-+]?(\d+)\.(\d+)([eE][-+]?\d+)?$/.test(value3)) {
+    return new Ok(parseFloat(value3));
   } else {
     return new Error2(Nil);
   }
@@ -4692,6 +4692,9 @@ function name(element_name) {
 }
 function placeholder(text3) {
   return attribute2("placeholder", text3);
+}
+function step(value3) {
+  return attribute2("step", value3);
 }
 function type_(control_type) {
   return attribute2("type", control_type);
@@ -12945,7 +12948,8 @@ function view7(song3) {
                     toList([
                       class$(
                         "text-5xl text-violet-500 ph-fill ph-play-circle"
-                      )
+                      ),
+                      on_click(new PlaySong())
                     ]),
                     toList([])
                   ),
@@ -13367,6 +13371,7 @@ function playing_bar(m) {
                         "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full"
                       ),
                       value("0"),
+                      step("any"),
                       max2(to_string2(m.current_song.duration)),
                       on(
                         "input",
@@ -13374,7 +13379,7 @@ function playing_bar(m) {
                           toList(["target", "value"]),
                           string3,
                           (value3) => {
-                            let $ = parse_int(value3);
+                            let $ = parse_float(value3);
                             let seek_amount;
                             if ($ instanceof Ok) {
                               seek_amount = $[0];
@@ -13383,15 +13388,15 @@ function playing_bar(m) {
                                 "let_assert",
                                 FILEPATH12,
                                 "somachord/view/desktop",
-                                359,
+                                360,
                                 "playing_bar",
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 10416,
-                                  end: 10461,
-                                  pattern_start: 10427,
-                                  pattern_end: 10442
+                                  start: 10455,
+                                  end: 10502,
+                                  pattern_start: 10466,
+                                  pattern_end: 10481
                                 }
                               );
                             }
@@ -13742,10 +13747,10 @@ function check_scrobble(m) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 13365,
-              end: 13418,
-              pattern_start: 13376,
-              pattern_end: 13383
+              start: 13347,
+              end: 13400,
+              pattern_start: 13358,
+              pattern_end: 13365
             }
           );
         }
@@ -13843,10 +13848,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 8578,
-                end: 8631,
-                pattern_start: 8589,
-                pattern_end: 8596
+                start: 8560,
+                end: 8613,
+                pattern_start: 8571,
+                pattern_end: 8578
               }
             );
           }
@@ -13945,10 +13950,10 @@ function update8(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 9426,
-                    end: 9492,
-                    pattern_start: 9437,
-                    pattern_end: 9453
+                    start: 9408,
+                    end: 9474,
+                    pattern_start: 9419,
+                    pattern_end: 9435
                   }
                 );
               }
@@ -14018,13 +14023,7 @@ function update8(m, msg) {
               );
             } else {
               let _pipe = m.player;
-              seek(
-                _pipe,
-                (() => {
-                  let _pipe$1 = queue2.song_position;
-                  return truncate(_pipe$1);
-                })()
-              );
+              seek(_pipe, queue2.song_position);
               return play();
             }
           })()
@@ -14052,10 +14051,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9749,
-                end: 9802,
-                pattern_start: 9760,
-                pattern_end: 9767
+                start: 9731,
+                end: 9784,
+                pattern_start: 9742,
+                pattern_end: 9749
               }
             );
           }
@@ -14083,10 +14082,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9969,
-                end: 10035,
-                pattern_start: 9980,
-                pattern_end: 9996
+                start: 9951,
+                end: 10017,
+                pattern_start: 9962,
+                pattern_end: 9978
               }
             );
           }
@@ -14128,10 +14127,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 5964,
-                end: 6017,
-                pattern_start: 5975,
-                pattern_end: 5982
+                start: 5946,
+                end: 5999,
+                pattern_start: 5957,
+                pattern_end: 5964
               }
             );
           }
@@ -14205,10 +14204,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 4559,
-            end: 4612,
-            pattern_start: 4570,
-            pattern_end: 4577
+            start: 4541,
+            end: 4594,
+            pattern_start: 4552,
+            pattern_end: 4559
           }
         );
       }
@@ -14243,10 +14242,10 @@ function update8(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 4815,
-                    end: 4866,
-                    pattern_start: 4826,
-                    pattern_end: 4835
+                    start: 4797,
+                    end: 4848,
+                    pattern_start: 4808,
+                    pattern_end: 4817
                   }
                 );
               }
@@ -14357,10 +14356,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 5964,
-            end: 6017,
-            pattern_start: 5975,
-            pattern_end: 5982
+            start: 5946,
+            end: 5999,
+            pattern_start: 5957,
+            pattern_end: 5964
           }
         );
       }
@@ -14416,10 +14415,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 10961,
-            end: 11014,
-            pattern_start: 10972,
-            pattern_end: 10979
+            start: 10943,
+            end: 10996,
+            pattern_start: 10954,
+            pattern_end: 10961
           }
         );
       }
@@ -14444,10 +14443,10 @@ function update8(m, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 11096,
-          end: 11152,
-          pattern_start: 11107,
-          pattern_end: 11124
+          start: 11078,
+          end: 11134,
+          pattern_start: 11089,
+          pattern_end: 11106
         }
       );
     }
@@ -14499,10 +14498,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 10347,
-            end: 10400,
-            pattern_start: 10358,
-            pattern_end: 10365
+            start: 10329,
+            end: 10382,
+            pattern_start: 10340,
+            pattern_end: 10347
           }
         );
       }
@@ -14523,10 +14522,10 @@ function update8(m, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 10432,
-          end: 10490,
-          pattern_start: 10443,
-          pattern_end: 10460
+          start: 10414,
+          end: 10472,
+          pattern_start: 10425,
+          pattern_end: 10442
         }
       );
     }
@@ -14620,10 +14619,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 7019,
-                end: 7072,
-                pattern_start: 7030,
-                pattern_end: 7037
+                start: 7001,
+                end: 7054,
+                pattern_start: 7012,
+                pattern_end: 7019
               }
             );
           }
@@ -14692,10 +14691,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 7918,
-            end: 7971,
-            pattern_start: 7929,
-            pattern_end: 7936
+            start: 7900,
+            end: 7953,
+            pattern_start: 7911,
+            pattern_end: 7918
           }
         );
       }
@@ -14823,10 +14822,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 11611,
-                end: 11664,
-                pattern_start: 11622,
-                pattern_end: 11629
+                start: 11593,
+                end: 11646,
+                pattern_start: 11604,
+                pattern_end: 11611
               }
             );
           }
@@ -14869,10 +14868,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 7918,
-            end: 7971,
-            pattern_start: 7929,
-            pattern_end: 7936
+            start: 7900,
+            end: 7953,
+            pattern_start: 7911,
+            pattern_end: 7918
           }
         );
       }
@@ -14959,10 +14958,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 12280,
-            end: 12333,
-            pattern_start: 12291,
-            pattern_end: 12298
+            start: 12262,
+            end: 12315,
+            pattern_start: 12273,
+            pattern_end: 12280
           }
         );
       }
@@ -15085,10 +15084,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 4133,
-                end: 4186,
-                pattern_start: 4144,
-                pattern_end: 4151
+                start: 4115,
+                end: 4168,
+                pattern_start: 4126,
+                pattern_end: 4133
               }
             );
           }
