@@ -1,6 +1,7 @@
 import gleam/bool
 import gleam/dynamic/decode
 import gleam/float
+import gleam/int
 import gleam/javascript/array
 import gleam/json
 import gleam/list
@@ -34,12 +35,20 @@ pub type Model {
     chosen_lyric_set: String,
     song_time: option.Option(Float),
     auto_scroll: Bool,
+    font_size: Size,
+    show_size_changer: Bool,
   )
 }
 
 pub type DetailTab {
   Lyrics
   More
+}
+
+pub type Size {
+  Small
+  Medium
+  Large
 }
 
 fn tab_as_string(tab: DetailTab) {
@@ -83,6 +92,8 @@ type Msg {
   Playtime(time: Float)
   LyricsRetrieved(List(api_models.LyricSet))
   ToggleAutoscroll
+  SizeChange(Size)
+  ToggleSizeChanger
   Nothing
 }
 
@@ -118,6 +129,8 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       chosen_lyric_set: "xxx",
       song_time: option.None,
       auto_scroll: True,
+      font_size: Medium,
+      show_size_changer: False,
     ),
     effect.none(),
   )
@@ -170,12 +183,17 @@ fn update(m: Model, msg: Msg) {
       Model(..m, auto_scroll: bool.negate(m.auto_scroll)),
       effect.none(),
     )
+    ToggleSizeChanger -> #(
+      Model(..m, show_size_changer: bool.negate(m.show_size_changer)),
+      effect.none(),
+    )
+    SizeChange(size) -> #(Model(..m, font_size: size), effect.none())
     Nothing -> #(m, effect.none())
   }
 }
 
 fn view(m: Model) {
-  html.div([attribute.class("font-[Poppins]")], [
+  html.div([attribute.class("font-[Poppins,sans-serif]")], [
     html.div(
       [
         attribute.class(
@@ -231,8 +249,48 @@ fn view_lyrics(m: Model) {
             ],
             [],
           ),
-          html.i([attribute.class("text-4xl ph ph-translate")], []),
-          html.i([attribute.class("text-4xl ph ph-text-aa")], []),
+          //html.i([attribute.class("text-4xl ph ph-translate")], []),
+          html.i(
+            [
+              event.on_click(ToggleSizeChanger),
+              attribute.class("text-4xl ph ph-text-aa"),
+            ],
+            [
+              html.span(
+                [
+                  attribute.class(
+                    "inline-flex items-center absolute self-center ml-4 bg-zinc-900 py-2 px-4 rounded-full",
+                  ),
+                  case m.show_size_changer {
+                    False -> attribute.class("invisible")
+                    True -> attribute.class("visible")
+                  },
+                ],
+                [
+                  html.input([
+                    attribute.class("accent-violet-500"),
+                    attribute.type_("range"),
+                    attribute.max("2"),
+                    event.on("input", {
+                      use value <- decode.subfield(
+                        ["target", "value"],
+                        decode.string,
+                      )
+                      let assert Ok(num) = int.parse(value)
+                      let size = case num {
+                        0 -> Small
+                        1 -> Medium
+                        2 -> Large
+                        _ -> Medium
+                      }
+
+                      decode.success(SizeChange(size))
+                    }),
+                  ]),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
       html.div(
@@ -241,6 +299,11 @@ fn view_lyrics(m: Model) {
           html.p(
             [
               attribute.class("font-semibold text-zinc-300"),
+              attribute.class(case m.font_size {
+                Small -> "text-lg"
+                Medium -> "text-2xl"
+                Large -> "text-4xl/12"
+              }),
               ..case m.song_time {
                 option.None | option.Some(-1.0) -> [attribute.none()]
                 option.Some(current_time) ->
