@@ -8,14 +8,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
-      - run: bun install
+      - run: bun install --production
 
       - uses: erlef/setup-beam@v1
         with:
