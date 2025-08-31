@@ -92,15 +92,16 @@ fn init(_) {
       ]),
     )
     Error(_) ->
-      case router.get_route() |> router.uri_to_route {
+      case echo router.get_route() |> router.uri_to_route {
         router.Login -> #(
           model.Model(..m, confirmed: True),
           modem.init(msg.on_url_change),
         )
         _ -> {
-          let assert Ok(login) = uri.parse("/login")
-
-          #(m, modem.load(login))
+          #(
+            model.Model(..m, confirmed: True, route: router.Login),
+            effect.none(),
+          )
         }
       }
   }
@@ -156,7 +157,7 @@ fn update(
             )
           False -> {
             m.player
-            |> player.seek(queue.song_position |> float.truncate)
+            |> player.seek(queue.song_position)
             play()
           }
         },
@@ -287,7 +288,7 @@ fn update(
       )
     }
     msg.PlayerPrevious ->
-      case m.queue.position == 0, m.player |> player.time() >. 5.0 {
+      case m.queue.position == 0, m.player |> player.time() >. 2.0 {
         False, False -> #(
           model.Model(..m, queue: queue.previous(m.queue)),
           play(),
@@ -535,6 +536,10 @@ fn view(m: model.Model) {
           song.element([
             msg.on_play(msg.Play),
             attribute.attribute("song-id", id),
+            case id == m.current_song.id {
+              True -> song.song_time(player.time(m.player))
+              False -> song.song_time(-1.0)
+            },
           ])
         _ -> not_found.page()
       }

@@ -308,3 +308,20 @@ pub fn save_queue(auth_details: auth.Auth, queue: option.Option(queue.Queue)) {
     msg: msg.SubsonicResponse,
   )
 }
+
+pub fn lyrics(auth_details: auth.Auth, id: String) {
+  api_helper.construct_req(
+    auth_details:,
+    path: "/rest/getLyricsBySongId.view",
+    query: [#("id", id)],
+    decoder: {
+      use lyrics <- decode.subfield(
+        ["subsonic-response", "lyricsList", "structuredLyrics"],
+        decode.list(api_models.lyric_set_decoder()),
+      )
+
+      decode.success(api_helper.Lyrics(lyrics))
+    },
+    msg: msg.SubsonicResponse,
+  )
+}

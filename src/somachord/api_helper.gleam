@@ -24,6 +24,7 @@ pub type Response {
   )
   SimilarSongs(List(model.Child))
   Queue(queue.Queue)
+  Lyrics(List(model.LyricSet))
   SubsonicError(code: Int, message: String, attempted_route: String)
 }
 
@@ -43,7 +44,7 @@ pub fn create_uri(
         #("s", auth_details.credentials.salt),
         #("t", auth_details.credentials.token),
         #("c", "somachord"),
-        #("v", "6.1.4"),
+        #("v", "1.16.0"),
         ..query
       ]),
     ),

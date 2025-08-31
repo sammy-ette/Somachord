@@ -10,7 +10,7 @@
 - Modern, targetting OpenSubsonic and newer servers only
 - [x] Autoplay similar music when queue is finished
 - [x] Save and restore music queue
-- [ ] Lyrics
+- [x] Lyrics
 - [ ] Playlists
 
 Request features you would like as an [issue](https://github.com/sammy-ette/Somachord/issues/new)
