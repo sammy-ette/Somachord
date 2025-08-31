@@ -25,7 +25,8 @@ const createWindow = () => {
     const url = req.url.substring(7);
 
     if (path.isAbsolute(url) && url.startsWith("/priv")) {
-      const filePath = path.join(__dirname, url.replace("somachord", "somachord.min"));
+      // use minified stuff if the app is packaged
+      const filePath = path.join(__dirname, app.isPackaged ? url.replace("somachord", "somachord.min") : url);
       console.log(filePath)
       callback(filePath);
     } else {
