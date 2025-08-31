@@ -150,14 +150,19 @@ pub fn song_decoder() {
 }
 
 pub type LyricSet {
-  LyricSet(synced: Bool, lang: String, lines: List(Lyric))
+  LyricSet(synced: Bool, lang: String, offset: Float, lines: List(Lyric))
 }
 
 pub fn lyric_set_decoder() -> decode.Decoder(LyricSet) {
   use synced <- decode.field("synced", decode.bool)
   use lang <- decode.field("lang", decode.string)
+  use offset_ms <- decode.optional_field("offset", 0, decode.int)
+  let offset = case offset_ms {
+    0 -> 0.0
+    _ -> int.to_float(offset_ms) /. 1000.0
+  }
   use lines <- decode.field("line", decode.list(lyric_decoder()))
-  decode.success(LyricSet(synced:, lang:, lines:))
+  decode.success(LyricSet(synced:, lang:, offset:, lines:))
 }
 
 pub type Lyric {

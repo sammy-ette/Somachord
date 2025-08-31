@@ -222,7 +222,8 @@ fn view_lyrics(m: Model) {
     })
     |> result.replace_error(case m.lyricsets {
       [first, ..] -> first
-      _ -> api_models.LyricSet(synced: False, lang: "und", lines: [])
+      _ ->
+        api_models.LyricSet(synced: False, lang: "und", offset: 0.0, lines: [])
     })
     |> result.unwrap_both
 
@@ -309,7 +310,9 @@ fn view_lyrics(m: Model) {
               case m.song_time {
                 option.None | option.Some(-1.0) -> attribute.none()
                 option.Some(current_time) ->
-                  case current_time >. { lyric.time -. 0.5 } {
+                  case
+                    { current_time +. lyrics.offset } >. { lyric.time -. 0.5 }
+                  {
                     True -> attribute.class("text-zinc-300")
                     False -> attribute.class("text-zinc-600 off-time")
                   }
