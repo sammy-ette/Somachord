@@ -141,7 +141,8 @@ fn update(m: Model, msg: Msg) {
     ChangeTab(tab) -> #(Model(..m, current_tab: tab), effect.none())
     SongID(id) -> #(m, case storage.create() |> varasto.get("auth") {
       Error(_) -> effect.none()
-      Ok(stg) ->
+      Ok(stg) -> {
+        use <- bool.guard(id == "", effect.none())
         api.lyrics(stg.auth, id)
         |> effect.map(fn(msg: msg.Msg) {
           case msg {
@@ -153,6 +154,7 @@ fn update(m: Model, msg: Msg) {
             }
           }
         })
+      }
     })
     Playtime(time) -> {
       let ret = #(Model(..m, song_time: option.Some(time)), effect.none())
@@ -166,7 +168,7 @@ fn update(m: Model, msg: Msg) {
         shadow.query_selector(parent_shadow_root, "song-detail")
       let assert Ok(shadow_root) = shadow.shadow_root(elem)
       case
-        shadow.query_selector_all(shadow_root, "#off-time")
+        shadow.query_selector_all(shadow_root, ".off-time")
         |> components.elems_to_array
         |> array.to_list
         |> list.take(5)
@@ -304,17 +306,14 @@ fn view_lyrics(m: Model) {
                 Medium -> "text-2xl"
                 Large -> "text-4xl/12"
               }),
-              ..case m.song_time {
-                option.None | option.Some(-1.0) -> [attribute.none()]
+              case m.song_time {
+                option.None | option.Some(-1.0) -> attribute.none()
                 option.Some(current_time) ->
                   case current_time >. { lyric.time -. 0.5 } {
-                    True -> [attribute.class("text-zinc-300")]
-                    False -> [
-                      attribute.class("text-zinc-600"),
-                      attribute.id("off-time"),
-                    ]
+                    True -> attribute.class("text-zinc-300")
+                    False -> attribute.class("text-zinc-600 off-time")
                   }
-              }
+              },
             ],
             [element.text(lyric.text)],
           )
