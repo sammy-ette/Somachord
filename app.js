@@ -1,6 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require('electron/main')
+const { app, BrowserWindow, ipcMain, net } = require('electron/main')
 const path = require('path')
+const url = require('url')
 const DiscordRPC = require('discord-rpc')
+const { protocol } = require('electron')
 
 const rpc = new DiscordRPC.Client({transport: 'ipc'})
 
@@ -18,6 +20,18 @@ const createWindow = () => {
   }
 
   win.loadFile('index.html')
+
+  protocol.interceptFileProtocol('file', (req, callback) => {
+    const url = req.url.substring(7);
+
+    if (path.isAbsolute(url) && url.startsWith("/priv")) {
+      const filePath = path.join(__dirname, url.replace("somachord", "somachord.min"));
+      console.log(filePath)
+      callback(filePath);
+    } else {
+      callback(url);
+    }
+  });
 
   ipcMain.on('update-discord-presence', (event, musicData) => {
     rpc.setActivity({
