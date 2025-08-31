@@ -14,10 +14,8 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
 
       - uses: erlef/setup-beam@v1
         with:
