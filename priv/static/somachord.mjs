@@ -12322,9 +12322,9 @@ function init5(_) {
         let stg = $[0];
         return batch(
           toList([
-            album_list(stg.auth, "frequent", 0, 10),
-            album_list(stg.auth, "newest", 0, 10),
-            album_list(stg.auth, "random", 0, 10)
+            album_list(stg.auth, "frequent", 0, 11),
+            album_list(stg.auth, "newest", 0, 11),
+            album_list(stg.auth, "random", 0, 11)
           ])
         );
       } else {
