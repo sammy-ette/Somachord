@@ -537,7 +537,7 @@ fn view(m: model.Model) {
             attribute.attribute("song-id", id),
             case id == m.current_song.id {
               True -> song.song_time(player.time(m.player))
-              False -> attribute.none()
+              False -> song.song_time(-1.0)
             },
           ])
         _ -> not_found.page()
