@@ -62,7 +62,7 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
     "search-page",
     [
       attribute.class(
-        "flex-1 rounded-md border border-zinc-800 overflow-y-auto overflow-x-none [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
+        "flex-1 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
       ),
       ..attrs
     ],
@@ -132,19 +132,46 @@ fn view(m: Model) {
   html.div([attribute.class("p-4 space-y-3")], [
     html.div(
       [attribute.class("space-x-3")],
-      list.map([All, Songs], fn(type_) { filter_btn(m, type_) }),
+      list.map([All, Songs, Albums], fn(type_) { filter_btn(m, type_) }),
     ),
-    html.div([attribute.class("grid grid-cols-2 grid-rows-2 gap-4")], [
-      html.div([attribute.class("space-y-4")], [
-        html.h1([attribute.class("font-[Poppins] font-bold text-2xl")], [
-          element.text("Songs"),
-        ]),
-        html.div(
-          [attribute.class("space-y-4")],
-          list.map(list.take(m.songs, 10), fn(song: api_models.Child) {
-            elements.song(song, 0, [], True, msg: PlaySong(song.id))
-          }),
-        ),
+    case m.searching_type {
+      All -> view_all(m)
+      Songs -> view_songs(m)
+      Albums -> view_albums(m)
+      _ -> element.none()
+    },
+  ])
+}
+
+fn view_all(m: Model) {
+  html.div([attribute.class("grid grid-cols-2 grid-rows-2 gap-4")], [
+    view_songs(m),
+    view_albums(m),
+  ])
+}
+
+fn view_songs(m: Model) {
+  html.div([attribute.class("space-y-4")], [
+    html.h1([attribute.class("font-[Poppins] font-bold text-2xl")], [
+      element.text("Songs"),
+    ]),
+    html.div(
+      [attribute.class("space-y-4")],
+      list.map(list.take(m.songs, 10), fn(song: api_models.Child) {
+        elements.song(song, 0, [], True, msg: PlaySong(song.id))
+      }),
+    ),
+  ])
+}
+
+fn view_albums(m: Model) {
+  html.div(
+    [
+      //attribute.class("space-y-4")
+    ],
+    [
+      html.h1([attribute.class("font-[Poppins] font-bold text-2xl")], [
+        element.text("Albums"),
       ]),
       html.div(
         [
@@ -155,8 +182,8 @@ fn view(m: Model) {
           elements.album(album, fn(id) { PlayAlbum(id) })
         }),
       ),
-    ]),
-  ])
+    ],
+  )
 }
 
 fn filter_btn(m: Model, type_: SearchType) {
@@ -173,6 +200,7 @@ fn filter_btn(m: Model, type_: SearchType) {
       element.text(case type_ {
         All -> "All"
         Songs -> "Songs"
+        Albums -> "Albums"
         _ -> "Unknown"
       }),
     ],
