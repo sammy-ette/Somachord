@@ -1,0 +1,18 @@
+appId: party.sammyette.somachord
+productName: Somachord
+files:
+  - 'priv/static/*'
+  - 'package.json'
+  - '*.js'
+  - 'index.html'
+extraResources:
+  - 'assets/**/*'
+directories:
+  buildResources: 'assets/icons'
+mac:
+  category: public.app-category.music
+linux:
+  target:
+    - AppImage
+    - tar.xz
+  icon: assets/icons/icon.png

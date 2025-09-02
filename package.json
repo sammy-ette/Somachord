@@ -6,18 +6,6 @@
     "name": "sammyette"
   },
   "main": "app.js",
-  "build": {
-    "appId": "party.sammyette.somachord",
-    "mac": {
-      "category": "public.app-category.music"
-    },
-    "extraResources": ["assets"],
-    "files": [
-      "!**/build/",
-      "!src",
-      "!.dockerignore"
-    ]
-  },
   "dependencies": {
     "discord-rpc": "github:sKiLdUsT/RPC",
     "is-electron": "^2.2.2",
