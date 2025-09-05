@@ -2794,6 +2794,11 @@ function decode_int(data) {
 function decode_float(data) {
   return run_dynamic_function(data, "Float", float);
 }
+function failure(zero, expected) {
+  return new Decoder((d) => {
+    return [zero, decode_error(expected, d)];
+  });
+}
 function new_primitive_decoder(name2, decoding_function) {
   return new Decoder(
     (d) => {
@@ -10836,7 +10841,15 @@ function lyrics(auth_details, id3) {
       toList(["subsonic-response", "lyricsList", "structuredLyrics"]),
       list2(lyric_set_decoder()),
       (lyrics2) => {
-        return success(new Lyrics(lyrics2));
+        let $ = (() => {
+          let _pipe = lyrics2;
+          return is_empty2(_pipe);
+        })();
+        if ($) {
+          return failure(new Lyrics(toList([])), "Lyrics");
+        } else {
+          return success(new Lyrics(lyrics2));
+        }
       }
     ),
     (var0) => {
