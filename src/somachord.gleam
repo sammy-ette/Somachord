@@ -33,10 +33,10 @@ import somachord/pages/album
 import somachord/pages/artist
 import somachord/pages/home
 import somachord/pages/song
+import somachord/pages/views/desktop
+import somachord/pages/views/mobile
 import somachord/router
 import somachord/storage
-import somachord/view/desktop
-import somachord/view/mobile
 
 pub fn main() {
   let app = lustre.application(init, update, view)

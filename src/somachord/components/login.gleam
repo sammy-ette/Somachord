@@ -1,8 +1,10 @@
 import electron
+import gleam/bool
 import gleam/list
 import gleam/uri
 import modem
 import plinth/browser/window
+import rsvp
 import somachord/api_helper
 import somachord/msg
 import somachord/router
@@ -14,7 +16,7 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import somachord/api
+import somachord/api/api
 import somachord/models/auth
 import varasto
 
@@ -30,7 +32,7 @@ pub type Model {
 
 pub type Msg {
   LoginSubmitted(Result(Login, form.Form(Login)))
-  SomachordMsg(msg.Msg)
+  PingResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
 }
 
 pub fn register() {
@@ -65,32 +67,43 @@ fn update(m: Model, message: Msg) {
 
       #(
         Model(..m, auth_details: auth),
-        api.ping(auth)
-          |> effect.map(fn(a) { SomachordMsg(a) }),
+        api.ping(auth_details: auth, msg: PingResponse),
       )
     }
     LoginSubmitted(Error(updated_form)) -> #(
       Model(..m, login_form: updated_form),
       effect.none(),
     )
-    SomachordMsg(msg.SubsonicResponse(resp)) ->
-      case resp {
-        Ok(api_helper.Ping) -> {
-          let _ =
-            m.storage
-            |> varasto.set("auth", storage.Storage(auth: m.auth_details))
-          #(m, {
-            let assert Ok(home) =
-              uri.parse(case electron.am_i_electron() {
-                True -> window.location()
-                False -> "/"
-              })
-            modem.load(home)
-          })
-        }
-        _ -> #(m, effect.none())
+    PingResponse(Ok(Ok(Nil))) -> #(m, {
+      let assert Ok(home) =
+        uri.parse(case electron.am_i_electron() {
+          True -> window.location()
+          False -> "/"
+        })
+      modem.load(home)
+    })
+    PingResponse(Ok(Error(e))) -> {
+      let message = case e {
+        api.WrongCredentials(msg) -> msg
+        api.SubsonicError(_, msg) -> msg
       }
-    _ -> #(m, effect.none())
+
+      #(
+        Model(
+          ..m,
+          login_form: form.add_error(
+            m.login_form,
+            "ping_error",
+            form.CustomError(message),
+          ),
+        ),
+        effect.none(),
+      )
+    }
+    PingResponse(Error(e)) -> {
+      echo e
+      panic
+    }
   }
 }
 
@@ -140,10 +153,23 @@ pub fn view(m: Model) {
           html.div(
             [attribute.class("flex bg-zinc-800 rounded-lg justify-center p-4")],
             [
-              html.div([attribute.class("flex flex-col gap-8")], [
+              html.div([attribute.class("flex flex-col")], [
                 html.h1([attribute.class("font-bold text-4xl self-center")], [
                   element.text("Somachord"),
                 ]),
+                {
+                  use <- bool.guard(
+                    form.field_error_messages(m.login_form, "ping_error")
+                      |> list.is_empty,
+                    element.none(),
+                  )
+                  let assert Ok(msg) =
+                    form.field_error_messages(m.login_form, "ping_error")
+                    |> list.first
+                  html.small([attribute.class("self-center text-red-400")], [
+                    element.text(msg),
+                  ])
+                },
                 html.form(
                   [
                     event.on_submit(submitted),
