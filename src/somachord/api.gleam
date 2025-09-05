@@ -5,6 +5,7 @@ import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option
+import gleam/pair
 import gleam/result
 import gleam/string
 import plinth/javascript/date
@@ -179,13 +180,17 @@ pub fn search(auth_details: auth.Auth, query query: String) {
         decode.list(api_models.album_decoder()),
       ))
 
-      decode.success(
-        api_helper.Search(
-          artists,
-          list.filter(albums, fn(album) { album.year != 0 }),
-          [],
-        ),
-      )
+      use songs <- decode.then(decode.optionally_at(
+        ["subsonic-response", "searchResult3", "song"],
+        [],
+        decode.list(api_models.song_decoder()),
+      ))
+
+      decode.success(api_helper.Search(
+        artists,
+        list.filter(albums, fn(album) { album.year != 0 }),
+        songs,
+      ))
     },
     msg: msg.SubsonicResponse,
   )
