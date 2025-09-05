@@ -315,7 +315,10 @@ pub fn lyrics(auth_details: auth.Auth, id: String) {
         decode.list(api_models.lyric_set_decoder()),
       )
 
-      decode.success(api_helper.Lyrics(lyrics))
+      case lyrics |> list.is_empty {
+        True -> decode.failure(api_helper.Lyrics([]), "Lyrics")
+        False -> decode.success(api_helper.Lyrics(lyrics))
+      }
     },
     msg: msg.SubsonicResponse,
   )
