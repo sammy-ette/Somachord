@@ -1,5 +1,4 @@
 import gleam/bool
-import gleam/dict
 import gleam/dynamic/decode
 import gleam/float
 import gleam/int
@@ -38,31 +37,6 @@ pub fn view(m: model.Model, page) {
             playing_bar(m),
           ],
         ),
-      ]),
-    ],
-  )
-}
-
-pub fn view_(m: model.Model, page) {
-  let auth_details = {
-    let assert Ok(stg) = m.storage |> varasto.get("auth")
-    stg.auth
-  }
-
-  html.div(
-    [
-      attribute.class(
-        "font-['Poppins'] flex flex-col h-screen w-screen px-3 py-4 gap-2 overflow-auto",
-      ),
-    ],
-    [
-      top_bar(m),
-      html.div([attribute.class("flex-1 min-h-0 flex gap-2")], [
-        side_bar(m),
-        html.div([attribute.class("flex-1 flex flex-col gap-2")], [
-          page,
-          playing_bar(m),
-        ]),
       ]),
     ],
   )

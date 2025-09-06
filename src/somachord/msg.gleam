@@ -1,22 +1,30 @@
 import electron
 import gleam/dynamic/decode
-import gleam/option
 import gleam/uri
 import lustre/attribute
-import lustre/effect
 import lustre/event
-import modem
 import rsvp
+import somachord/api/api
+import somachord/queue
 
-import somachord/api_helper
 import somachord/api_models
 import somachord/model
 import somachord/router
 
 pub type Msg {
   Router(router.Msg)
-  SubsonicResponse(Result(api_helper.Response, rsvp.Error))
-  SongRetrieval(Result(api_helper.Response, rsvp.Error))
+  SongRetrieval(Result(Result(api_models.Child, api.SubsonicError), rsvp.Error))
+  Queue(Result(Result(queue.Queue, api.SubsonicError), rsvp.Error))
+  AlbumRetrieved(
+    Result(Result(api_models.Album, api.SubsonicError), rsvp.Error),
+  )
+  DisgardedResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
+  SimilarSongs(
+    Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
+  )
+  SimilarSongsArtist(
+    Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
+  )
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)
@@ -30,6 +38,7 @@ pub type Msg {
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
   StreamCurrent
+  StreamError
 
   // player events
   ProgressDrag(Int)
@@ -37,6 +46,7 @@ pub type Msg {
   PlayerSongLoaded(api_models.Child)
   PlayerTick(time: Float)
   MusicEnded
+
   // player msgs (user interactions)
   PlayerShuffle
   PlayerPrevious
@@ -48,14 +58,6 @@ pub type Msg {
 
   Unload
   ComponentClick
-}
-
-pub type SongPageMsg {
-  SongID(String)
-  PlaySong
-  SongResponse(Result(api_helper.Response, rsvp.Error))
-  Nothing
-  Playtime(Float)
 }
 
 pub fn on_url_change(url: uri.Uri) -> Msg {

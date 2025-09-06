@@ -1,10 +1,8 @@
 import gleam/dynamic/decode
-import gleam/float
 import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option
-import gleam/result
 import gleam/uri
 import lustre
 import lustre/attribute
@@ -13,12 +11,11 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import somachord/api
+import rsvp
+import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components
-import somachord/model
-import somachord/msg
 import somachord/storage
 import varasto
 
@@ -28,11 +25,9 @@ import somachord/elements
 pub fn register() {
   let app =
     lustre.component(init, update, view, [
-      component.on_attribute_change("song-id", fn(value) {
-        Ok(value |> msg.SongID)
-      }),
+      component.on_attribute_change("song-id", fn(value) { Ok(value |> SongID) }),
       component.on_property_change("time", {
-        decode.float |> decode.map(msg.Playtime)
+        decode.float |> decode.map(Playtime)
       }),
     ])
   lustre.register(app, "song-page")
@@ -57,13 +52,21 @@ pub type Model {
   Model(song: api_models.Child, playtime: option.Option(Float))
 }
 
+pub type Msg {
+  SongID(String)
+  PlaySong
+  SongResponse(Result(Result(api_models.Child, api.SubsonicError), rsvp.Error))
+  Nothing
+  Playtime(Float)
+}
+
 fn init(_) {
   #(Model(song: api_models.new_song(), playtime: option.None), effect.none())
 }
 
-fn update(m: Model, msg: msg.SongPageMsg) {
+fn update(m: Model, msg: Msg) {
   case msg {
-    msg.SongID(id) -> #(
+    SongID(id) -> #(
       m,
       api.song(
         {
@@ -71,18 +74,11 @@ fn update(m: Model, msg: msg.SongPageMsg) {
           stg.auth
         },
         id:,
-        msg: msg.SongResponse,
+        msg: SongResponse,
       ),
     )
-    msg.SongResponse(Ok(api_helper.Song(song))) -> #(
-      Model(..m, song:),
-      effect.none(),
-    )
-    msg.SongResponse(Ok(api_helper.SubsonicError(code, msg, _))) -> {
-      #(m, effect.none())
-    }
-    msg.SongResponse(_) -> #(m, effect.none())
-    msg.PlaySong -> #(
+    SongResponse(Ok(Ok(song))) -> #(Model(..m, song:), effect.none())
+    PlaySong -> #(
       m,
       event.emit(
         "play",
@@ -92,10 +88,7 @@ fn update(m: Model, msg: msg.SongPageMsg) {
         ]),
       ),
     )
-    msg.Playtime(time) -> #(
-      Model(..m, playtime: option.Some(time)),
-      effect.none(),
-    )
+    Playtime(time) -> #(Model(..m, playtime: option.Some(time)), effect.none())
     _ -> #(m, effect.none())
   }
 }
@@ -107,7 +100,7 @@ fn view(m: Model) {
     stg.auth
   }
 
-  html.div([components.redirect_click(msg.Nothing)], [
+  html.div([components.redirect_click(Nothing)], [
     html.div([attribute.class("flex gap-8 p-8")], [
       case song.id {
         // when song hasnt been retrieved yet
@@ -166,7 +159,16 @@ fn view(m: Model) {
               False -> [element.none()]
               True -> [
                 html.span([], [element.text("•")]),
-                html.span([], [element.text("69,727,420")]),
+                html.span([], [
+                  element.text(
+                    song.plays |> int.to_string
+                    <> " play"
+                    <> case song.plays == 1 {
+                      False -> "s"
+                      True -> ""
+                    },
+                  ),
+                ]),
               ]
             }
           ],
@@ -179,7 +181,7 @@ fn view(m: Model) {
                 attribute.class(
                   "text-5xl text-violet-500 ph-fill ph-play-circle",
                 ),
-                event.on_click(msg.PlaySong),
+                event.on_click(PlaySong),
               ],
               [],
             ),

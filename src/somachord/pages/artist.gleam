@@ -1,10 +1,10 @@
-import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option
 import gleam/result
 import gleam/uri
-import somachord/api
+import rsvp
+import somachord/api/api
 import somachord/api_helper
 import somachord/components
 import somachord/models/auth
@@ -21,8 +21,6 @@ import lustre/event
 
 import somachord/api_models
 import somachord/elements
-import somachord/model
-import somachord/msg
 
 type Model {
   Model(
@@ -53,7 +51,12 @@ fn tab_as_string(tab: DetailTab) {
 type Msg {
   ChangeTab(DetailTab)
   ArtistID(String)
-  SomachordMsg(msg.Msg)
+  ArtistRetrieved(
+    Result(Result(api_models.Artist, api.SubsonicError), rsvp.Error),
+  )
+  TopSongsRetrieved(
+    Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
+  )
   PlayArtist
   PlayAlbum(id: String)
   PlaySong(id: String)
@@ -102,23 +105,21 @@ fn init(_) {
 fn update(m: Model, msg: Msg) {
   case msg {
     ArtistID(id) -> #(Model(..m, artist_id: id), case m.auth_details {
-      option.Some(auth) -> api.artist(auth, id) |> effect.map(SomachordMsg)
+      option.Some(auth) -> api.artist(auth, id, ArtistRetrieved)
       option.None -> effect.none()
     })
-    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.Artist(artist)))) -> {
+    ArtistRetrieved(Ok(Ok(artist))) -> {
       let assert option.Some(auth_details) = m.auth_details
       #(
         Model(..m, artist: option.Some(Ok(artist))),
-        api.top_songs(auth_details, artist.name) |> effect.map(SomachordMsg),
+        api.top_songs(auth_details, artist.name, TopSongsRetrieved),
       )
     }
-    SomachordMsg(msg.SubsonicResponse(Ok(api_helper.TopSongs(songs)))) -> #(
+    ArtistRetrieved(Ok(Error(_))) -> panic as "idk this guy"
+    TopSongsRetrieved(Ok(Ok(songs))) -> #(
       Model(..m, top_songs: songs),
       effect.none(),
     )
-    SomachordMsg(msg.SubsonicResponse(Error(e))) -> {
-      #(m, effect.none())
-    }
     PlayArtist -> #(m, event.emit("play", play_json(m.artist_id, "artist")))
     PlayAlbum(id) -> #(m, event.emit("play", play_json(id, "album")))
     PlaySong(id) -> #(m, event.emit("play", play_json(id, "song")))
@@ -305,7 +306,7 @@ fn view_albums(m: Model) {
   ]
 }
 
-fn view_about(m) {
+fn view_about(_) {
   [
     html.div([attribute.class("flex gap-8 p-4")], [
       html.div([attribute.class("relative")], [
