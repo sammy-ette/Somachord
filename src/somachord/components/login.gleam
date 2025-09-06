@@ -5,9 +5,6 @@ import gleam/uri
 import modem
 import plinth/browser/window
 import rsvp
-import somachord/api_helper
-import somachord/msg
-import somachord/router
 
 import formal/form
 import lustre
@@ -74,18 +71,25 @@ fn update(m: Model, message: Msg) {
       Model(..m, login_form: updated_form),
       effect.none(),
     )
-    PingResponse(Ok(Ok(Nil))) -> #(m, {
-      let assert Ok(home) =
-        uri.parse(case electron.am_i_electron() {
-          True -> window.location()
-          False -> "/"
-        })
-      modem.load(home)
-    })
+    PingResponse(Ok(Ok(Nil))) -> {
+      let _ =
+        m.storage
+        |> varasto.set("auth", storage.Storage(auth: m.auth_details))
+
+      #(m, {
+        let assert Ok(home) =
+          uri.parse(case electron.am_i_electron() {
+            True -> window.location()
+            False -> "/"
+          })
+        modem.load(home)
+      })
+    }
     PingResponse(Ok(Error(e))) -> {
       let message = case e {
         api.WrongCredentials(msg) -> msg
         api.SubsonicError(_, msg) -> msg
+        api.NotFound -> panic as "should be unreachable"
       }
 
       #(

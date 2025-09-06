@@ -22,7 +22,7 @@ import plinth/browser/window
 import varasto
 
 import player
-import somachord/api
+import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components/login
@@ -87,7 +87,7 @@ fn init(_) {
         modem.init(msg.on_url_change),
         route_effect(m, route),
         player.listen_events(m.player, player_event_handler),
-        api.queue(stg.auth),
+        api.queue(stg.auth, msg.Queue),
         unload_event(),
       ]),
     )
@@ -114,7 +114,7 @@ fn route_effect(m: model.Model, route: router.Route) {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      api.album(auth_details, id)
+      api.album(auth_details, id, msg.AlbumRetrieved)
     }
     _ -> effect.none()
   }
@@ -137,11 +137,13 @@ fn update(
       model.Model(..m, route:),
       route_effect(m, route),
     )
-    msg.SubsonicResponse(Ok(api_helper.Album(album))) -> #(
+    msg.AlbumRetrieved(Ok(Ok(album))) -> #(
       model.Model(..m, albums: m.albums |> dict.insert(album.id, album)),
       effect.none(),
     )
-    msg.SubsonicResponse(Ok(api_helper.Queue(queue))) -> {
+    msg.AlbumRetrieved(Ok(Error(_))) -> todo as "album not found"
+    msg.AlbumRetrieved(Error(_)) -> todo as "album not found: rsvp"
+    msg.Queue(Ok(Ok(queue))) -> {
       // we dont want to use the queue if its older than 2 hours
       let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
       #(
@@ -154,6 +156,7 @@ fn update(
                 stg.auth
               },
               option.None,
+              msg.DisgardedResponse,
             )
           False -> {
             m.player
@@ -163,6 +166,7 @@ fn update(
         },
       )
     }
+    msg.Queue(_) -> #(m, effect.none())
     msg.Unload -> #(
       m,
       api.save_queue(
@@ -173,11 +177,9 @@ fn update(
         option.Some(
           queue.Queue(..m.queue, song_position: m.player |> player.time),
         ),
+        msg.DisgardedResponse,
       ),
     )
-    msg.SubsonicResponse(Error(e)) -> {
-      #(m, effect.none())
-    }
     msg.Play(req) -> {
       echo "!!! play request id: " <> req.id
       echo "play request type: " <> req.type_
@@ -196,14 +198,19 @@ fn update(
           ))
           #(
             m,
-            api.album(auth_details:, id: req.id)
-              |> effect.map(fn(message: msg.Msg) {
-                case message {
-                  msg.SubsonicResponse(Error(e)) ->
-                    msg.SubsonicResponse(Error(e))
-                  msg.SubsonicResponse(Ok(api_helper.Album(album))) ->
-                    msg.StreamAlbum(album)
-                  m -> m
+            api.album(auth_details:, id: req.id, msg: msg.AlbumRetrieved)
+              |> effect.map(fn(msg) {
+                case msg {
+                  msg.AlbumRetrieved(Ok(Ok(album))) -> msg.StreamAlbum(album)
+                  msg.AlbumRetrieved(Ok(Error(e))) -> {
+                    echo e
+                    panic as "album subsonic err"
+                  }
+                  msg.AlbumRetrieved(Error(e)) -> {
+                    echo e
+                    panic as "album req fetch failed"
+                  }
+                  _ -> panic as "unreachable"
                 }
               }),
           )
@@ -225,7 +232,7 @@ fn update(
       }
       #(model.Model(..m, queue:), play())
     }
-    msg.StreamSong(song) | msg.SongRetrieval(Ok(api_helper.Song(song))) -> {
+    msg.StreamSong(song) | msg.SongRetrieval(Ok(Ok(song))) -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
@@ -245,6 +252,7 @@ fn update(
         effect.none(),
       )
     }
+    msg.StreamError | msg.SongRetrieval(_) -> todo as "handle stream error"
     msg.PlayerTick(time) -> {
       let playtime = case time {
         0.0 -> 0
@@ -271,6 +279,7 @@ fn update(
           },
           id: song.id,
           submission: False,
+          msg: msg.DisgardedResponse,
         ),
       )
     }
@@ -316,14 +325,18 @@ fn update(
           {
             order.Lt -> play()
             order.Eq -> {
-              api.similar_songs(auth_details, m.current_song.id)
+              api.similar_songs(
+                auth_details,
+                m.current_song.id,
+                msg: msg.SimilarSongs,
+              )
             }
             _ -> effect.none()
           },
         ]),
       )
     }
-    msg.SubsonicResponse(Ok(api_helper.SimilarSongs(songs))) -> {
+    msg.SimilarSongs(Ok(Ok(songs))) | msg.SimilarSongsArtist(Ok(Ok(songs))) -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
@@ -351,35 +364,62 @@ fn update(
           False -> play_from_queue(m.queue.position + 1)
           True -> {
             let assert Ok(first_artist) = m.current_song.artists |> list.first
-            api.similar_songs_artist(auth_details, first_artist.id)
+            api.similar_songs_artist(
+              auth_details,
+              first_artist.id,
+              msg: msg.SimilarSongs,
+            )
           }
         },
       )
     }
-    msg.SubsonicResponse(Ok(api_helper.SubsonicError(
-      code,
-      message,
-      attempted_path,
-    ))) -> {
+    msg.SimilarSongs(Ok(Error(_))) -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      echo attempted_path
-      echo code
-      echo message
-      case attempted_path {
-        "/rest/getSimilarSongs.rest" -> {
-          let assert Ok(first_artist) = m.current_song.artists |> list.first
-          #(m, api.similar_songs_artist(auth_details, first_artist.id))
-        }
-        "/rest/getSimilarSongs2.rest" -> #(
-          m,
-          api.save_queue(auth_details, option.None),
-        )
-        _ -> #(m, effect.none())
-      }
+      let assert Ok(first_artist) = m.current_song.artists |> list.first
+      #(
+        m,
+        api.similar_songs_artist(
+          auth_details,
+          first_artist.id,
+          msg: msg.SimilarSongsArtist,
+        ),
+      )
     }
+    msg.SimilarSongs(_) | msg.SimilarSongsArtist(_) -> #(m, effect.none())
+    // msg.SubsonicResponse(Ok(api_helper.SubsonicError(
+    //   code,
+    //   message,
+    //   attempted_path,
+    // ))) -> {
+    //   let auth_details = {
+    //     let assert Ok(stg) = m.storage |> varasto.get("auth")
+    //     stg.auth
+    //   }
+    //   echo attempted_path
+    //   echo code
+    //   echo message
+    //   case attempted_path {
+    //     "/rest/getSimilarSongs.rest" -> {
+    //       let assert Ok(first_artist) = m.current_song.artists |> list.first
+    //       #(
+    //         m,
+    //         api.similar_songs_artist(
+    //           auth_details,
+    //           first_artist.id,
+    //           msg: msg.SimilarSongs,
+    //         ),
+    //       )
+    //     }
+    //     "/rest/getSimilarSongs2.rest" -> #(
+    //       m,
+    //       api.save_queue(auth_details, option.None, msg.DisgardedResponse),
+    //     )
+    //     _ -> #(m, effect.none())
+    //   }
+    // }
     msg.StreamCurrent -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
@@ -392,7 +432,14 @@ fn update(
         ])
         |> uri.to_string
       m.player |> player.load_song(stream_uri, song)
-      #(m, api.save_queue(auth_details, option.Some(m.queue)))
+      #(
+        m,
+        api.save_queue(
+          auth_details,
+          option.Some(m.queue),
+          msg.DisgardedResponse,
+        ),
+      )
     }
     msg.QueueJumpTo(position) -> #(
       model.Model(..m, queue: m.queue |> queue.jump(position)),
@@ -413,7 +460,7 @@ fn update(
       m.player |> player.load_song(stream_uri, song)
       #(
         model.Model(..m, queue:),
-        api.save_queue(auth_details, option.Some(queue)),
+        api.save_queue(auth_details, option.Some(queue), msg.DisgardedResponse),
       )
     }
     msg.PlayerPausePlay -> {
@@ -428,6 +475,7 @@ fn update(
           option.Some(
             queue.Queue(..m.queue, song_position: m.player |> player.time),
           ),
+          msg.DisgardedResponse,
         ),
       )
     }
@@ -468,8 +516,18 @@ fn update(
           ),
         ),
         case m.current_song.starred {
-          False -> api.like(auth_details, m.current_song.id)
-          True -> api.unlike(auth_details, m.current_song.id)
+          False ->
+            api.like(
+              auth_details,
+              m.current_song.id,
+              msg: msg.DisgardedResponse,
+            )
+          True ->
+            api.unlike(
+              auth_details,
+              m.current_song.id,
+              msg: msg.DisgardedResponse,
+            )
         },
       )
     }
@@ -477,7 +535,7 @@ fn update(
       m,
       modem.push("/search/" <> query, option.None, option.None),
     )
-    _ -> #(m, effect.none())
+    msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
   }
 }
 
@@ -491,6 +549,7 @@ fn check_scrobble(m: model.Model) {
         },
         id: m.current_song.id,
         submission: True,
+        msg: msg.DisgardedResponse,
       )
     False -> effect.none()
   }

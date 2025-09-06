@@ -1,6 +1,5 @@
 import gleam/bool
 import gleam/dynamic/decode
-import gleam/float
 import gleam/int
 import gleam/javascript/array
 import gleam/json
@@ -18,12 +17,8 @@ import plinth/browser/document
 import plinth/browser/shadow
 import rsvp
 import somachord/api/api
-import somachord/api_helper
 import somachord/api_models
 import somachord/components
-import somachord/elements
-import somachord/model
-import somachord/msg
 import somachord/storage
 import varasto
 
@@ -178,8 +173,13 @@ fn update(m: Model, msg: Msg) {
       panic as "rsvp error"
     }
     LyricsRetrieved(Ok(Error(e))) -> {
-      echo e
-      panic as "subsonic error"
+      case e {
+        api.NotFound -> #(Model(..m, lyricsets: option.Some([])), effect.none())
+        _ -> {
+          echo e
+          panic as "should be unreachable"
+        }
+      }
     }
     LyricsRetrieved(Ok(Ok(lyricsets))) -> #(
       Model(..m, lyricsets: option.Some(lyricsets)),
