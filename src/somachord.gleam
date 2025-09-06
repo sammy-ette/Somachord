@@ -341,27 +341,20 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let new_queue =
-        songs
-        |> list.filter(fn(song) {
-          m.queue.songs
-          |> dict.values()
-          |> list.find(fn(potential_song) { potential_song.id == song.id })
-          |> result.is_error
-        })
-        |> list.fold(
-          #(dict.new(), m.queue.songs |> dict.keys |> list.length),
-          fn(acc, song) {
-            let #(d, idx) = acc
-            #(d |> dict.insert(idx, song), idx + 1)
+      let new_songs =
+        m.queue.songs
+        |> dict.to_list
+        |> list.sort(
+          fn(a: #(Int, api_models.Child), b: #(Int, api_models.Child)) {
+            int.compare(a.0, b.0)
           },
         )
-        |> pair.first
-        |> dict.merge(m.queue.songs)
+        |> list.map(fn(song: #(Int, api_models.Child)) { song.1 })
+        |> list.append(songs)
       #(
-        model.Model(..m, queue: queue.Queue(..m.queue, songs: new_queue)),
-        case m.queue.position + 1 == new_queue |> dict.keys |> list.length {
-          False -> play_from_queue(m.queue.position + 1)
+        model.Model(..m, queue: queue.new(m.queue.position, new_songs, 0.0)),
+        case m.queue.position + 1 == new_songs |> list.length {
+          False -> play()
           True -> {
             let assert Ok(first_artist) = m.current_song.artists |> list.first
             api.similar_songs_artist(

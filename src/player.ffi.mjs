@@ -91,13 +91,13 @@ export function load_song(player, link, info) {
 				src: album_art_url
 			}],
 		})
-		console.log(info.duration)
 	}
 	player.current = info
 }
 
 function updatePresence(player) {
 	let info = player.current
+	if (!info) {return;}
 	let link = player.element.src
 	let auth = JSON.parse(localStorage.getItem("auth")).auth
 	let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`
