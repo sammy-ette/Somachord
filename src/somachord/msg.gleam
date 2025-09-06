@@ -1,11 +1,8 @@
 import electron
 import gleam/dynamic/decode
-import gleam/option
 import gleam/uri
 import lustre/attribute
-import lustre/effect
 import lustre/event
-import modem
 import rsvp
 
 import somachord/api_helper

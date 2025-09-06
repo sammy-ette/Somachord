@@ -9,8 +9,8 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import somachord/api
-import somachord/api_helper
+import rsvp
+import somachord/api/api
 import somachord/api_models
 import somachord/elements
 import somachord/model
@@ -26,6 +26,14 @@ pub type AlbumList {
 
 pub type Model {
   Model(albumlists: List(AlbumList))
+}
+
+pub type Msg {
+  AlbumListRetrieved(
+    Result(Result(api.AlbumList, api.SubsonicError), rsvp.Error),
+  )
+  Play(model.PlayRequest)
+  ComponentClick
 }
 
 pub fn register() {
@@ -53,17 +61,17 @@ fn init(_) {
   #(Model(albumlists: []), case storage |> varasto.get("auth") {
     Ok(stg) ->
       effect.batch([
-        api.album_list(stg.auth, "frequent", 0, 11),
-        api.album_list(stg.auth, "newest", 0, 11),
-        api.album_list(stg.auth, "random", 0, 11),
+        api.album_list(stg.auth, "frequent", 0, 11, AlbumListRetrieved),
+        api.album_list(stg.auth, "newest", 0, 11, AlbumListRetrieved),
+        api.album_list(stg.auth, "random", 0, 11, AlbumListRetrieved),
       ])
     Error(_) -> effect.none()
   })
 }
 
-fn update(m: Model, msg: msg.Msg) {
+fn update(m: Model, msg: Msg) {
   case msg {
-    msg.SubsonicResponse(Ok(api_helper.AlbumList(type_, list))) -> {
+    AlbumListRetrieved(Ok(Ok(api.AlbumList(type_, list)))) -> {
       #(
         Model(
           albumlists: [AlbumList(type_:, albums: list), ..m.albumlists]
@@ -82,10 +90,17 @@ fn update(m: Model, msg: msg.Msg) {
         effect.none(),
       )
     }
-    msg.SubsonicResponse(Error(e)) -> {
+    AlbumListRetrieved(Ok(Error(e))) -> {
+      echo "subsonic error"
+      echo e
       #(m, effect.none())
     }
-    msg.Play(req) -> #(
+    AlbumListRetrieved(Error(e)) -> {
+      echo "rsvp error"
+      echo e
+      #(m, effect.none())
+    }
+    Play(req) -> #(
       m,
       event.emit(
         "play",
@@ -102,7 +117,7 @@ fn update(m: Model, msg: msg.Msg) {
 fn view(m: Model) {
   html.div(
     [
-      components.redirect_click(msg.ComponentClick),
+      components.redirect_click(ComponentClick),
       attribute.class("flex flex-col gap-4 overflow-y-auto"),
     ],
     list.map(m.albumlists, fn(album_list) {
@@ -123,7 +138,7 @@ fn view(m: Model) {
           ],
           list.map(album_list.albums, fn(album) {
             elements.album(album, fn(id) {
-              msg.Play(model.PlayRequest("album", id))
+              Play(model.PlayRequest("album", id))
             })
           }),
         ),

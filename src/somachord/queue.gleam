@@ -1,8 +1,6 @@
 import gleam/dict
-import gleam/int
 import gleam/list
 import gleam/option
-import gleam/order
 import gleam/pair
 import plinth/javascript/date
 import somachord/api_models

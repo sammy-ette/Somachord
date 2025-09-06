@@ -176,6 +176,7 @@ fn update(
       ),
     )
     msg.SubsonicResponse(Error(e)) -> {
+      echo e
       #(m, effect.none())
     }
     msg.Play(req) -> {

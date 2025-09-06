@@ -7,12 +7,11 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
-import somachord/api
-import somachord/api_helper
+import rsvp
+import somachord/api/api
 import somachord/api_models
 import somachord/components
 import somachord/elements
-import somachord/msg
 import somachord/storage
 import varasto
 
@@ -26,7 +25,7 @@ pub type Model {
 
 pub type Msg {
   Search(String)
-  SearchResults(albums: List(api_models.Album))
+  SearchResults(Result(Result(api.Search, api.SubsonicError), rsvp.Error))
   PlayAlbum(id: String)
   Nothing
 }
@@ -69,20 +68,19 @@ fn update(m: Model, msg: Msg) {
     stg.auth
   }
   case msg {
-    Search(query) -> #(
-      m,
-      api.search(auth_details, query)
-        |> effect.map(fn(msg: msg.Msg) {
-          case msg {
-            msg.SubsonicResponse(Ok(api_helper.Search(_, albums, _))) ->
-              SearchResults(albums)
-            _ -> {
-              Nothing
-            }
-          }
-        }),
+    Search(query) -> #(m, api.search(auth_details, query, SearchResults))
+    SearchResults(Ok(Ok(api.Search(_, albums)))) -> #(
+      Model(..m, albums:),
+      effect.none(),
     )
-    SearchResults(albums) -> #(Model(..m, albums:), effect.none())
+    SearchResults(Ok(Error(e))) -> {
+      echo e
+      panic as "search results subsonic error"
+    }
+    SearchResults(Error(e)) -> {
+      echo e
+      panic as "search results rsvp error"
+    }
     PlayAlbum(id) -> #(
       m,
       event.emit(

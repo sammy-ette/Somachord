@@ -1,8 +1,6 @@
 import electron
 import gleam/option
 import gleam/uri
-import lustre/effect
-import modem
 import somachord/storage
 import varasto
 
