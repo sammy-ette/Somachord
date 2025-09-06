@@ -13,6 +13,8 @@ import varasto
 
 import somachord/api_models
 
+pub const scrollbar_class = "[&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
+
 pub fn song(
   song song: api_models.Child,
   index index: Int,
@@ -28,7 +30,7 @@ pub fn song(
   html.div(
     [
       attribute.class(
-        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between",
+        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between gap-2",
       ),
       event.on("dblclick", { decode.success(msg) }),
       ..attrs
@@ -81,7 +83,7 @@ pub fn song(
               html.span(
                 [
                   attribute.class(
-                    "text-nowrap text-sm text-zinc-100 hover:underline",
+                    "text-wrap text-sm text-zinc-100 hover:underline",
                   ),
                 ],
                 [element.text(song.title)],
@@ -149,6 +151,7 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
       attribute.class(
         "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75",
       ),
+      event.on("dblclick", { decode.success(handler(album.id)) }),
     ],
     [
       html.div(
@@ -165,17 +168,19 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
             ],
             [],
           ),
-          html.img([
-            attribute.src(
-              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                #("id", album.cover_art_id),
-                #("size", "500"),
-              ])
-              |> uri.to_string,
-            ),
-            attribute.class(
-              "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
-            ),
+          html.a([attribute.href("/album/" <> album.id)], [
+            html.img([
+              attribute.src(
+                api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                  #("id", album.cover_art_id),
+                  #("size", "500"),
+                ])
+                |> uri.to_string,
+              ),
+              attribute.class(
+                "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
+              ),
+            ]),
           ]),
           html.div(
             [

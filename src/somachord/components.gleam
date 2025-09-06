@@ -1,8 +1,12 @@
 import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/javascript/array
+import lustre/attribute
+import lustre/element/html
 import lustre/event
 import plinth/browser/element
+import plinth/browser/window
+import somachord/model
 
 @external(javascript, "./components.ffi.mjs", "emit_click")
 pub fn emit_click(target: dynamic.Dynamic) -> Nil
@@ -17,6 +21,17 @@ pub fn redirect_click(msg msg: a) {
     }),
   )
   |> event.prevent_default
+}
+
+pub fn layout() {
+  case window.self() |> window.inner_width() < 800 {
+    True -> model.Mobile
+    False -> model.Desktop
+  }
+}
+
+pub fn mobile_space() {
+  html.div([attribute.class("h-28")], [])
 }
 
 @external(javascript, "./components.ffi.mjs", "get_element_by_id")

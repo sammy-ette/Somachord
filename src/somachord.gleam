@@ -9,6 +9,7 @@ import gleam/pair
 import gleam/result
 import gleam/uri
 import plinth/javascript/date
+import somachord/components
 import somachord/pages/not_found
 import somachord/pages/search
 import somachord/queue
@@ -59,10 +60,7 @@ fn init(_) {
       }
     }
 
-  let layout = case window.self() |> window.inner_width() < 800 {
-    True -> model.Mobile
-    False -> model.Desktop
-  }
+  let layout = components.layout()
 
   let m =
     model.Model(
@@ -584,6 +582,11 @@ fn view(m: model.Model) {
           artist.element([
             msg.on_play(msg.Play),
             attribute.attribute("artist-id", id),
+            case m.layout {
+              model.Desktop ->
+                attribute.class("rounded-md border border-zinc-800")
+              model.Mobile -> attribute.none()
+            },
           ])
         router.Album(id) -> album.page(m, id)
         router.Song(id) ->
@@ -593,6 +596,11 @@ fn view(m: model.Model) {
             case id == m.current_song.id {
               True -> song.song_time(player.time(m.player))
               False -> song.song_time(-1.0)
+            },
+            case m.layout {
+              model.Desktop ->
+                attribute.class("rounded-md border border-zinc-800")
+              model.Mobile -> attribute.none()
             },
           ])
         _ -> not_found.page()

@@ -12,6 +12,7 @@ import somachord/api/api
 import somachord/api_models
 import somachord/components
 import somachord/elements
+import somachord/model
 import somachord/storage
 import varasto
 
@@ -20,6 +21,7 @@ pub type Model {
     search_query: String,
     artists: List(api_models.Artist),
     albums: List(api_models.Album),
+    layout: model.Layout,
   )
 }
 
@@ -50,7 +52,7 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
     "search-page",
     [
       attribute.class(
-        "flex-1 rounded-md border border-zinc-800 overflow-y-auto overflow-x-none [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
+        "flex-1 p-4 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
       ),
       ..attrs
     ],
@@ -59,7 +61,15 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
 }
 
 fn init(_) {
-  #(Model(search_query: "", artists: [], albums: []), effect.none())
+  #(
+    Model(
+      search_query: "",
+      artists: [],
+      albums: [],
+      layout: components.layout(),
+    ),
+    effect.none(),
+  )
 }
 
 fn update(m: Model, msg: Msg) {
@@ -93,13 +103,28 @@ fn update(m: Model, msg: Msg) {
 }
 
 fn view(m: Model) {
-  html.div(
-    [
-      components.redirect_click(Nothing),
-      attribute.class("grid auto-cols-max grid-flow-col"),
-    ],
-    list.map(m.albums, fn(album: api_models.Album) {
-      elements.album(album, fn(id) { PlayAlbum(id) })
-    }),
-  )
+  html.div([attribute.class("flex flex-col")], [
+    case m.layout {
+      model.Desktop -> element.none()
+      model.Mobile ->
+        html.input([
+          attribute.class(
+            "text-zinc-500 bg-zinc-900 p-2 rounded-sm w-full focus:outline-none outline-none ring-0",
+          ),
+          attribute.placeholder("Search"),
+          //attribute.value(query),
+          attribute.autofocus(True),
+          event.on_input(Search),
+        ])
+    },
+    html.div(
+      [
+        components.redirect_click(Nothing),
+        attribute.class("flex flex-wrap gap-4"),
+      ],
+      list.map(m.albums, fn(album: api_models.Album) {
+        elements.album(album, fn(id) { PlayAlbum(id) })
+      }),
+    ),
+  ])
 }
