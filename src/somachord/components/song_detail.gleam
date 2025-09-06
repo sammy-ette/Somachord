@@ -173,8 +173,13 @@ fn update(m: Model, msg: Msg) {
       panic as "rsvp error"
     }
     LyricsRetrieved(Ok(Error(e))) -> {
-      echo e
-      panic as "subsonic error"
+      case e {
+        api.NotFound -> #(Model(..m, lyricsets: option.Some([])), effect.none())
+        _ -> {
+          echo e
+          panic as "should be unreachable"
+        }
+      }
     }
     LyricsRetrieved(Ok(Ok(lyricsets))) -> #(
       Model(..m, lyricsets: option.Some(lyricsets)),

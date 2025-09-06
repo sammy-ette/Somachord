@@ -89,6 +89,7 @@ fn update(m: Model, message: Msg) {
       let message = case e {
         api.WrongCredentials(msg) -> msg
         api.SubsonicError(_, msg) -> msg
+        api.NotFound -> panic as "should be unreachable"
       }
 
       #(

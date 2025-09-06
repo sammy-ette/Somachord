@@ -18,6 +18,7 @@ import somachord/router
 
 pub type SubsonicError {
   WrongCredentials(message: String)
+  NotFound
   SubsonicError(code: Int, message: String)
 }
 
@@ -86,6 +87,7 @@ fn subsonic_response_decoder(
       decode.success(
         Error(case code {
           40 -> WrongCredentials(message:)
+          70 -> NotFound
           _ -> SubsonicError(code:, message:)
         }),
       )
