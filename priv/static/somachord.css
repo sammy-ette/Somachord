@@ -239,9 +239,6 @@
   .top-9 {
     top: calc(var(--spacing) * 9);
   }
-  .top-24 {
-    top: calc(var(--spacing) * 24);
-  }
   .top-25 {
     top: calc(var(--spacing) * 25);
   }
@@ -537,6 +534,13 @@
       margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
+  .space-x-1 {
+    :where(& > :not(:last-child)) {
+      --tw-space-x-reverse: 0;
+      margin-inline-start: calc(calc(var(--spacing) * 1) * var(--tw-space-x-reverse));
+      margin-inline-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--tw-space-x-reverse)));
+    }
+  }
   .self-center {
     align-self: center;
   }
@@ -610,9 +614,6 @@
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-zinc-900) 75%, transparent);
     }
-  }
-  .bg-\[\#8571ee\] {
-    background-color: #8571ee;
   }
   .bg-black {
     background-color: var(--color-black);
@@ -848,6 +849,9 @@
   }
   .text-zinc-600 {
     color: var(--color-zinc-600);
+  }
+  .text-zinc-700 {
+    color: var(--color-zinc-700);
   }
   .underline {
     text-decoration-line: underline;
@@ -1223,6 +1227,11 @@
   inherits: false;
   initial-value: 0;
 }
+@property --tw-space-x-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
 @property --tw-border-style {
   syntax: "*";
   inherits: false;
@@ -1378,6 +1387,7 @@
       --tw-translate-y: 0;
       --tw-translate-z: 0;
       --tw-space-y-reverse: 0;
+      --tw-space-x-reverse: 0;
       --tw-border-style: solid;
       --tw-gradient-position: initial;
       --tw-gradient-from: #0000;

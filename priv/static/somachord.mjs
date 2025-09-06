@@ -12387,18 +12387,46 @@ function album2(album3, handler) {
           )
         ])
       ),
-      a(
-        toList([href("/album/" + album3.id)]),
+      span(
+        toList([class$("inline-flex flex-col")]),
         toList([
+          a(
+            toList([
+              href("/album/" + album3.id),
+              class$("space-x-1")
+            ]),
+            toList([
+              span(
+                toList([class$("text-zinc-100 hover:underline")]),
+                toList([text2(album3.name)])
+              )
+            ])
+          ),
           span(
-            toList([class$("text-zinc-100 hover:underline")]),
-            toList([text2(album3.name)])
+            toList([]),
+            (() => {
+              let _pipe = map(
+                album3.artists,
+                (artist2) => {
+                  return a(
+                    toList([href("/artist/" + artist2.id)]),
+                    toList([
+                      span(
+                        toList([
+                          class$(
+                            "hover:underline font-light text-sm text-zinc-400"
+                          )
+                        ]),
+                        toList([text2(artist2.name)])
+                      )
+                    ])
+                  );
+                }
+              );
+              return intersperse(_pipe, text2(", "));
+            })()
           )
         ])
-      ),
-      span(
-        toList([class$("text-zinc-500 font-light text-xs")]),
-        toList([text2(to_string2(album3.year))])
       )
     ])
   );
@@ -12483,15 +12511,15 @@ function nav_button(inactive, active, name2, is_active, attrs) {
 // build/dev/javascript/somachord/somachord/components/song_detail.mjs
 var FILEPATH10 = "src/somachord/components/song_detail.gleam";
 var Model3 = class extends CustomType {
-  constructor(id3, current_tab, lyricsets, chosen_lyric_set, song_time3, auto_scroll, font_size, show_size_changer) {
+  constructor(id3, current_tab, lyricsets, chosen_lyric_set, song_time3, auto_scroll2, font_size2, show_size_changer) {
     super();
     this.id = id3;
     this.current_tab = current_tab;
     this.lyricsets = lyricsets;
     this.chosen_lyric_set = chosen_lyric_set;
     this.song_time = song_time3;
-    this.auto_scroll = auto_scroll;
-    this.font_size = font_size;
+    this.auto_scroll = auto_scroll2;
+    this.font_size = font_size2;
     this.show_size_changer = show_size_changer;
   }
 };
@@ -12867,6 +12895,120 @@ function update3(m, msg) {
     return [m, none2()];
   }
 }
+function auto_scroll(m, lyricset) {
+  return i(
+    prepend(
+      class$(
+        "after:hidden after:font-sans after:text-xs after:self-center after:no-underline hover:after:block hover:after:absolute after:top-2 after:left-full after:ml-2 after:border after:border-black after:bg-zinc-900 after:text-white after:rounded-full after:text-nowrap after:px-4 after:py-1 after:content-[attr(data-tooltip)]"
+      ),
+      prepend(
+        class$("text-4xl ph ph-clock-countdown"),
+        prepend(
+          on_click(new ToggleAutoscroll()),
+          (() => {
+            let $ = m.auto_scroll;
+            let $1 = lyricset.synced;
+            if ($1) {
+              if ($) {
+                return toList([
+                  attribute2("data-tooltip", "Toggle Auto-scroll"),
+                  class$("text-violet-400")
+                ]);
+              } else {
+                return toList([
+                  attribute2("data-tooltip", "Toggle Auto-scroll"),
+                  none()
+                ]);
+              }
+            } else {
+              return toList([
+                attribute2("data-tooltip", "Lyrics are unsynced"),
+                class$("cursor-not-allowed text-zinc-700")
+              ]);
+            }
+          })()
+        )
+      )
+    ),
+    toList([])
+  );
+}
+function font_size(m) {
+  return i(
+    toList([
+      on_click(new ToggleSizeChanger()),
+      class$("text-4xl ph ph-text-aa")
+    ]),
+    toList([
+      span(
+        toList([
+          class$(
+            "inline-flex items-center absolute self-center ml-4 bg-zinc-900 py-2 px-4 rounded-full"
+          ),
+          (() => {
+            let $ = m.show_size_changer;
+            if ($) {
+              return class$("visible");
+            } else {
+              return class$("invisible");
+            }
+          })()
+        ]),
+        toList([
+          input(
+            toList([
+              class$("accent-violet-500"),
+              type_("range"),
+              max2("2"),
+              on(
+                "input",
+                subfield(
+                  toList(["target", "value"]),
+                  string3,
+                  (value3) => {
+                    let $ = parse_int(value3);
+                    let num;
+                    if ($ instanceof Ok) {
+                      num = $[0];
+                    } else {
+                      throw makeError(
+                        "let_assert",
+                        FILEPATH10,
+                        "somachord/components/song_detail",
+                        361,
+                        "font_size",
+                        "Pattern match failed, no pattern matched the value.",
+                        {
+                          value: $,
+                          start: 9986,
+                          end: 10023,
+                          pattern_start: 9997,
+                          pattern_end: 10004
+                        }
+                      );
+                    }
+                    let _block;
+                    if (num === 0) {
+                      _block = new Small();
+                    } else if (num === 1) {
+                      _block = new Medium();
+                    } else if (num === 2) {
+                      _block = new Large();
+                    } else {
+                      _block = new Medium();
+                    }
+                    let size2 = _block;
+                    return success(new SizeChange(size2));
+                  }
+                )
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
 function view_lyrics(m) {
   return div(
     toList([class$("flex px-6 py-8 gap-24")]),
@@ -12944,106 +13086,7 @@ function view_lyrics(m) {
                       "sticky h-fit top-25 flex flex-col gap-4 text-zinc-500"
                     )
                   ]),
-                  toList([
-                    i(
-                      toList([
-                        class$(
-                          "after:hidden after:font-sans after:text-xs after:self-center after:no-underline hover:after:block hover:after:absolute after:top-2 after:left-full after:ml-2 after:border after:border-black after:bg-zinc-900 after:text-white after:rounded-full after:text-nowrap after:px-4 after:py-1 after:content-[attr(data-tooltip)]"
-                        ),
-                        attribute2(
-                          "data-tooltip",
-                          "Toggle Auto-scroll"
-                        ),
-                        class$("text-4xl ph ph-clock-countdown"),
-                        (() => {
-                          let $ = m.auto_scroll;
-                          if ($) {
-                            return class$("text-violet-400");
-                          } else {
-                            return none();
-                          }
-                        })(),
-                        on_click(new ToggleAutoscroll())
-                      ]),
-                      toList([])
-                    ),
-                    i(
-                      toList([
-                        on_click(new ToggleSizeChanger()),
-                        class$("text-4xl ph ph-text-aa")
-                      ]),
-                      toList([
-                        span(
-                          toList([
-                            class$(
-                              "inline-flex items-center absolute self-center ml-4 bg-zinc-900 py-2 px-4 rounded-full"
-                            ),
-                            (() => {
-                              let $ = m.show_size_changer;
-                              if ($) {
-                                return class$("visible");
-                              } else {
-                                return class$("invisible");
-                              }
-                            })()
-                          ]),
-                          toList([
-                            input(
-                              toList([
-                                class$("accent-violet-500"),
-                                type_("range"),
-                                max2("2"),
-                                on(
-                                  "input",
-                                  subfield(
-                                    toList(["target", "value"]),
-                                    string3,
-                                    (value3) => {
-                                      let $ = parse_int(value3);
-                                      let num;
-                                      if ($ instanceof Ok) {
-                                        num = $[0];
-                                      } else {
-                                        throw makeError(
-                                          "let_assert",
-                                          FILEPATH10,
-                                          "somachord/components/song_detail",
-                                          314,
-                                          "view_lyrics",
-                                          "Pattern match failed, no pattern matched the value.",
-                                          {
-                                            value: $,
-                                            start: 8946,
-                                            end: 8983,
-                                            pattern_start: 8957,
-                                            pattern_end: 8964
-                                          }
-                                        );
-                                      }
-                                      let _block$1;
-                                      if (num === 0) {
-                                        _block$1 = new Small();
-                                      } else if (num === 1) {
-                                        _block$1 = new Medium();
-                                      } else if (num === 2) {
-                                        _block$1 = new Large();
-                                      } else {
-                                        _block$1 = new Medium();
-                                      }
-                                      let size2 = _block$1;
-                                      return success(
-                                        new SizeChange(size2)
-                                      );
-                                    }
-                                  )
-                                )
-                              ])
-                            )
-                          ])
-                        )
-                      ])
-                    )
-                  ])
+                  toList([auto_scroll(m, lyrics2), font_size(m)])
                 ),
                 div(
                   toList([class$("space-y-2")]),
