@@ -269,63 +269,9 @@ fn view_lyrics(m: Model) {
           ],
           [
             // toggle time synced lyrics?
-            html.i(
-              [
-                attribute.class(
-                  "after:hidden after:font-sans after:text-xs after:self-center after:no-underline hover:after:block hover:after:absolute after:top-2 after:left-full after:ml-2 after:border after:border-black after:bg-zinc-900 after:text-white after:rounded-full after:text-nowrap after:px-4 after:py-1 after:content-[attr(data-tooltip)]",
-                ),
-                attribute.attribute("data-tooltip", "Toggle Auto-scroll"),
-                attribute.class("text-4xl ph ph-clock-countdown"),
-                case m.auto_scroll {
-                  True -> attribute.class("text-violet-400")
-                  False -> attribute.none()
-                },
-                event.on_click(ToggleAutoscroll),
-              ],
-              [],
-            ),
+            auto_scroll(m, lyrics),
             //html.i([attribute.class("text-4xl ph ph-translate")], []),
-            html.i(
-              [
-                event.on_click(ToggleSizeChanger),
-                attribute.class("text-4xl ph ph-text-aa"),
-              ],
-              [
-                html.span(
-                  [
-                    attribute.class(
-                      "inline-flex items-center absolute self-center ml-4 bg-zinc-900 py-2 px-4 rounded-full",
-                    ),
-                    case m.show_size_changer {
-                      False -> attribute.class("invisible")
-                      True -> attribute.class("visible")
-                    },
-                  ],
-                  [
-                    html.input([
-                      attribute.class("accent-violet-500"),
-                      attribute.type_("range"),
-                      attribute.max("2"),
-                      event.on("input", {
-                        use value <- decode.subfield(
-                          ["target", "value"],
-                          decode.string,
-                        )
-                        let assert Ok(num) = int.parse(value)
-                        let size = case num {
-                          0 -> Small
-                          1 -> Medium
-                          2 -> Large
-                          _ -> Medium
-                        }
-
-                        decode.success(SizeChange(size))
-                      }),
-                    ]),
-                  ],
-                ),
-              ],
-            ),
+            font_size(m),
           ],
         ),
         html.div(
@@ -358,5 +304,73 @@ fn view_lyrics(m: Model) {
       |> Ok
     }
       |> result.unwrap_both,
+  )
+}
+
+fn auto_scroll(m: Model, lyricset: api_models.LyricSet) {
+  html.i(
+    [
+      attribute.class(
+        "after:hidden after:font-sans after:text-xs after:self-center after:no-underline hover:after:block hover:after:absolute after:top-2 after:left-full after:ml-2 after:border after:border-black after:bg-zinc-900 after:text-white after:rounded-full after:text-nowrap after:px-4 after:py-1 after:content-[attr(data-tooltip)]",
+      ),
+      attribute.class("text-4xl ph ph-clock-countdown"),
+      event.on_click(ToggleAutoscroll),
+      ..case m.auto_scroll, lyricset.synced {
+        True, True -> [
+          attribute.attribute("data-tooltip", "Toggle Auto-scroll"),
+          attribute.class("text-violet-400"),
+        ]
+        False, True -> [
+          attribute.attribute("data-tooltip", "Toggle Auto-scroll"),
+          attribute.none(),
+        ]
+        _, _ -> [
+          attribute.attribute("data-tooltip", "Lyrics are unsynced"),
+          attribute.class("cursor-not-allowed text-zinc-700"),
+        ]
+      }
+    ],
+    [],
+  )
+}
+
+fn font_size(m: Model) {
+  html.i(
+    [
+      event.on_click(ToggleSizeChanger),
+      attribute.class("text-4xl ph ph-text-aa"),
+    ],
+    [
+      html.span(
+        [
+          attribute.class(
+            "inline-flex items-center absolute self-center ml-4 bg-zinc-900 py-2 px-4 rounded-full",
+          ),
+          case m.show_size_changer {
+            False -> attribute.class("invisible")
+            True -> attribute.class("visible")
+          },
+        ],
+        [
+          html.input([
+            attribute.class("accent-violet-500"),
+            attribute.type_("range"),
+            attribute.max("2"),
+            event.on("input", {
+              use value <- decode.subfield(["target", "value"], decode.string)
+              let assert Ok(num) = int.parse(value)
+              let size = case num {
+                0 -> Small
+                1 -> Medium
+                2 -> Large
+                _ -> Medium
+              }
+
+              decode.success(SizeChange(size))
+            }),
+          ]),
+        ],
+      ),
+    ],
   )
 }
