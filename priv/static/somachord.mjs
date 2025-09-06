@@ -15429,16 +15429,8 @@ var song_time2 = song_time;
 var FILEPATH14 = "src/somachord/pages/views/desktop.gleam";
 function top_bar(m) {
   return div(
-    toList([class$("flex gap-4")]),
+    toList([class$("flex gap-4 justify-center")]),
     toList([
-      button2(
-        i(
-          toList([class$("text-3xl ph ph-cards-three")]),
-          toList([])
-        ),
-        "Library",
-        toList([class$("w-42")])
-      ),
       a(
         toList([href("/")]),
         toList([
@@ -15456,14 +15448,6 @@ function top_bar(m) {
             toList([class$("w-42")])
           )
         ])
-      ),
-      button2(
-        i(
-          toList([class$("text-3xl ph ph-sparkle")]),
-          toList([])
-        ),
-        "Discover",
-        toList([class$("w-42")])
       ),
       (() => {
         let $ = m.route;
@@ -15483,7 +15467,7 @@ function top_bar(m) {
               input(
                 toList([
                   class$(
-                    "w-42 focus:outline outline:none outline:ring-0"
+                    "w-80 focus:outline-none outline-none ring-0"
                   ),
                   placeholder("Search"),
                   value(query2),
@@ -15532,10 +15516,10 @@ function playing_bar(m) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3575,
-          end: 3628,
-          pattern_start: 3586,
-          pattern_end: 3593
+          start: 3617,
+          end: 3670,
+          pattern_start: 3628,
+          pattern_end: 3635
         }
       );
     }
@@ -15817,10 +15801,10 @@ function playing_bar(m) {
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 9898,
-                                  end: 9945,
-                                  pattern_start: 9909,
-                                  pattern_end: 9924
+                                  start: 9940,
+                                  end: 9987,
+                                  pattern_start: 9951,
+                                  pattern_end: 9966
                                 }
                               );
                             }
