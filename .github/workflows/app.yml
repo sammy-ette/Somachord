@@ -34,5 +34,5 @@ jobs:
         with:
           name: somachord-${{ matrix.os }}
           path: |
-            somachord*
-            Somachord*
+            dist/somachord*
+            dist/Somachord*
