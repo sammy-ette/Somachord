@@ -196,23 +196,43 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
               ),
             ],
           ),
-          // html.div(
-        //   [
-        //     attribute.class(
-        //       "h-12 w-12 rounded-full bg-[#8571ee] p-2 absolute top-24 left-24 transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
-        //     ),
-        //   ],
-        //   [solid.play()],
-        // ),
         ],
       ),
-      html.a([attribute.href("/album/" <> album.id)], [
-        html.span([attribute.class("text-zinc-100 hover:underline")], [
-          element.text(album.name),
-        ]),
-      ]),
-      html.span([attribute.class("text-zinc-500 font-light text-xs")], [
-        element.text(int.to_string(album.year)),
+      html.span([attribute.class("inline-flex flex-col")], [
+        html.a(
+          [attribute.href("/album/" <> album.id), attribute.class("space-x-1")],
+          [
+            html.span([attribute.class("text-zinc-100 hover:underline")], [
+              element.text(album.name),
+            ]),
+            // case album.year {
+          //   0 -> element.none()
+          //   year ->
+          //     html.span(
+          //       [attribute.class("text-zinc-500 font-light text-[0.6rem]")],
+          //       [
+          //         element.text(int.to_string(year)),
+          //       ],
+          //     )
+          // },
+          ],
+        ),
+        html.span(
+          [],
+          list.map(album.artists, fn(artist: api_models.SmallArtist) {
+            html.a([attribute.href("/artist/" <> artist.id)], [
+              html.span(
+                [
+                  attribute.class(
+                    "hover:underline font-light text-sm text-zinc-400",
+                  ),
+                ],
+                [element.text(artist.name)],
+              ),
+            ])
+          })
+            |> list.intersperse(element.text(", ")),
+        ),
       ]),
     ],
   )
