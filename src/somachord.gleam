@@ -193,7 +193,7 @@ fn update(
             m,
             effect.from(fn(dispatch) {
               let assert Ok(album) = m.albums |> dict.get(req.id)
-              msg.StreamAlbum(album) |> dispatch
+              msg.StreamAlbum(album, 0) |> dispatch
             }),
           ))
           #(
@@ -201,7 +201,7 @@ fn update(
             api.album(auth_details:, id: req.id, msg: msg.AlbumRetrieved)
               |> effect.map(fn(msg) {
                 case msg {
-                  msg.AlbumRetrieved(Ok(Ok(album))) -> msg.StreamAlbum(album)
+                  msg.AlbumRetrieved(Ok(Ok(album))) -> msg.StreamAlbum(album, 0)
                   msg.AlbumRetrieved(Ok(Error(e))) -> {
                     echo e
                     panic as "album subsonic err"
@@ -222,14 +222,16 @@ fn update(
         _ -> #(m, effect.none())
       }
     }
-    msg.StreamAlbum(album) -> {
-      let queue = case
-        m.shuffled,
-        queue.new(songs: album.songs, position: 0, song_position: 0.0)
-      {
-        True, queue -> queue |> queue.shuffle
-        False, queue -> queue
-      }
+    msg.StreamAlbum(album, index) -> {
+      let queue =
+        case
+          m.shuffled,
+          queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        {
+          True, queue -> queue |> queue.shuffle
+          False, queue -> queue
+        }
+        |> queue.jump(index)
       #(model.Model(..m, queue:), play())
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(Ok(song))) -> {

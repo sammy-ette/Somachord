@@ -124,7 +124,7 @@ pub fn desktop_page(m: model.Model, id) {
           html.i(
             [
               attribute.class("text-5xl text-violet-500 ph-fill ph-play-circle"),
-              event.on_click({ msg.StreamAlbum(album) }),
+              event.on_click({ msg.StreamAlbum(album, 0) }),
             ],
             [],
           ),
@@ -157,7 +157,7 @@ pub fn desktop_page(m: model.Model, id) {
           [attribute.class("flex flex-col gap-4")],
           list.index_map(album.songs, fn(song: api_models.Child, index: Int) {
             elements.song(song, index:, attrs: [], cover_art: False, msg: {
-              msg.StreamSong(song)
+              msg.StreamAlbum(album, index)
             })
           }),
         ),

@@ -34,7 +34,7 @@ pub type Msg {
 
   // handles actually playing the music in the browser
   // and the queue.
-  StreamAlbum(api_models.Album)
+  StreamAlbum(api_models.Album, Int)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
   StreamCurrent
