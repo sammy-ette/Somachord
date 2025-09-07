@@ -73,6 +73,11 @@ pub fn desktop_page(m: model.Model, id) {
     html.div(
       [
         attribute.class("flex-1 flex flex-col gap-6"),
+        case m.layout {
+          model.Desktop -> attribute.class("overflow-y-auto pr-4")
+          model.Mobile -> attribute.none()
+        },
+        attribute.class(elements.scrollbar_class),
       ],
       [
         html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
@@ -144,7 +149,10 @@ pub fn desktop_page(m: model.Model, id) {
         html.div(
           [attribute.class("flex flex-col gap-4")],
           [
-            components.mobile_space(),
+            case m.layout {
+              model.Mobile -> components.mobile_space()
+              model.Desktop -> element.none()
+            },
             ..list.index_map(
               album.songs,
               fn(song: api_models.Child, index: Int) {
@@ -181,7 +189,7 @@ pub fn desktop_page(m: model.Model, id) {
           |> uri.to_string,
         ),
         attribute.class(
-          "self-center w-52 h-52 md:max-w-80 md:max-h-80 object-scale rounded-md",
+          "self-center w-52 h-52 md:w-80 md:h-80 object-scale rounded-md",
         ),
       ]),
       case m.layout {
