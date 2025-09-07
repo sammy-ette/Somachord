@@ -165,17 +165,19 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
             ],
             [],
           ),
-          html.img([
-            attribute.src(
-              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                #("id", album.cover_art_id),
-                #("size", "500"),
-              ])
-              |> uri.to_string,
-            ),
-            attribute.class(
-              "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
-            ),
+          html.a([attribute.href("/album/" <> album.id)], [
+            html.img([
+              attribute.src(
+                api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
+                  #("id", album.cover_art_id),
+                  #("size", "500"),
+                ])
+                |> uri.to_string,
+              ),
+              attribute.class(
+                "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
+              ),
+            ]),
           ]),
           html.div(
             [
