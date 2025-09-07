@@ -4687,6 +4687,9 @@ function href(url) {
 function src(url) {
   return attribute2("src", url);
 }
+function autocomplete(value3) {
+  return attribute2("autocomplete", value3);
+}
 function max2(value3) {
   return attribute2("max", value3);
 }
@@ -11400,7 +11403,7 @@ function view2(m) {
   return div(
     toList([
       class$(
-        "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins] flex h-screen mx-auto p-4 overflow-none"
+        "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins,sans-serif] flex h-screen mx-auto p-4 overflow-hidden"
       )
     ]),
     toList([
@@ -11414,12 +11417,12 @@ function view2(m) {
           div(
             toList([
               class$(
-                "flex bg-zinc-800 rounded-lg justify-center p-4"
+                "w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4"
               )
             ]),
             toList([
               div(
-                toList([class$("flex flex-col")]),
+                toList([class$("flex flex-col w-full")]),
                 toList([
                   h1(
                     toList([class$("font-bold text-4xl self-center")]),
@@ -11450,15 +11453,15 @@ function view2(m) {
                           "let_assert",
                           FILEPATH6,
                           "somachord/components/login",
-                          170,
+                          174,
                           "view",
                           "Pattern match failed, no pattern matched the value.",
                           {
                             value: $,
-                            start: 3985,
-                            end: 4113,
-                            pattern_start: 3996,
-                            pattern_end: 4003
+                            start: 4075,
+                            end: 4203,
+                            pattern_start: 4086,
+                            pattern_end: 4093
                           }
                         );
                       }
@@ -11516,6 +11519,7 @@ function view2(m) {
                           prepend(
                             input(
                               toList([
+                                autocomplete("text"),
                                 type_("input"),
                                 name("username"),
                                 class$(
@@ -11548,6 +11552,7 @@ function view2(m) {
                           prepend(
                             input(
                               toList([
+                                autocomplete("current-password"),
                                 type_("password"),
                                 name("password"),
                                 class$(
@@ -15517,10 +15522,10 @@ function playing_bar(m) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3617,
-          end: 3670,
-          pattern_start: 3628,
-          pattern_end: 3635
+          start: 3626,
+          end: 3679,
+          pattern_start: 3637,
+          pattern_end: 3644
         }
       );
     }
@@ -15802,10 +15807,10 @@ function playing_bar(m) {
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 9940,
-                                  end: 9987,
-                                  pattern_start: 9951,
-                                  pattern_end: 9966
+                                  start: 9949,
+                                  end: 9996,
+                                  pattern_start: 9960,
+                                  pattern_end: 9975
                                 }
                               );
                             }
@@ -15965,7 +15970,7 @@ function view8(m, page3) {
   return div(
     toList([
       class$(
-        "font-['Poppins'] w-full flex flex-col px-3 py-4 gap-2 overflow-hidden"
+        "font-[Poppins,sans-serif] w-full flex flex-col px-3 py-4 gap-2 overflow-hidden"
       )
     ]),
     toList([
