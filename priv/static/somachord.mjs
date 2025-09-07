@@ -13186,20 +13186,25 @@ function album2(album3, handler) {
             ]),
             toList([])
           ),
-          img(
+          a(
+            toList([href("/album/" + album3.id)]),
             toList([
-              src(
-                (() => {
-                  let _pipe = create_uri(
-                    "/rest/getCoverArt.view",
-                    auth_details,
-                    toList([["id", album3.cover_art_id], ["size", "500"]])
-                  );
-                  return to_string3(_pipe);
-                })()
-              ),
-              class$(
-                "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute"
+              img(
+                toList([
+                  src(
+                    (() => {
+                      let _pipe = create_uri(
+                        "/rest/getCoverArt.view",
+                        auth_details,
+                        toList([["id", album3.cover_art_id], ["size", "500"]])
+                      );
+                      return to_string3(_pipe);
+                    })()
+                  ),
+                  class$(
+                    "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute"
+                  )
+                ])
               )
             ])
           ),
