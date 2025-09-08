@@ -275,18 +275,21 @@ fn view_lyrics(m: Model) {
           ],
         ),
         html.div(
-          [attribute.class("space-y-2")],
+          [
+            attribute.class("space-y-2"),
+            attribute.class(case m.font_size {
+              Small -> "text-lg"
+              Medium -> "text-2xl"
+              Large -> "text-4xl/12"
+            }),
+          ],
           list.map(lyrics.lines, fn(lyric: api_models.Lyric) {
             html.p(
               [
-                attribute.class("font-semibold text-zinc-300"),
-                attribute.class(case m.font_size {
-                  Small -> "text-lg"
-                  Medium -> "text-2xl"
-                  Large -> "text-4xl/12"
-                }),
+                attribute.class("font-semibold"),
                 case m.song_time {
-                  option.None | option.Some(-1.0) -> attribute.none()
+                  option.None | option.Some(-1.0) ->
+                    attribute.class("text-zinc-300")
                   option.Some(current_time) ->
                     case
                       { current_time +. lyrics.offset } >. { lyric.time -. 0.5 }
