@@ -7,6 +7,7 @@ import rsvp
 import somachord/api/api
 import somachord/api_helper
 import somachord/components
+import somachord/model
 import somachord/models/auth
 import somachord/storage
 import varasto
@@ -29,6 +30,7 @@ type Model {
     artist_id: String,
     top_songs: List(api_models.Child),
     auth_details: option.Option(auth.Auth),
+    layout: model.Layout,
   )
 }
 
@@ -78,7 +80,7 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
     "artist-page",
     [
       attribute.class(
-        "flex-1 rounded-md border border-zinc-800 overflow-y-auto overflow-x-none [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
+        "flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
       ),
       ..attrs
     ],
@@ -97,6 +99,7 @@ fn init(_) {
         Ok(stg) -> option.Some(stg.auth)
         Error(_) -> option.None
       },
+      layout: components.layout(),
     ),
     effect.none(),
   )
@@ -157,34 +160,41 @@ fn view(m: Model) {
               )
             Error(_) -> attribute.none()
           },
-          attribute.class("rounded-tl-md bg-cover bg-center"),
+          attribute.class("bg-cover bg-center"),
         ],
         [
           html.div(
             [
               attribute.class(
-                "bg-linear-to-l from-zinc-950 from-10% to-zinc-950/50 absolute top-0 left-0 h-full w-full",
+                "bg-linear-to-tl md:bg-linear-to-l from-zinc-950 from-30% md:from-10% to-zinc-950/50 absolute top-0 left-0 h-full w-full",
               ),
             ],
             [],
           ),
           html.div(
-            [attribute.class("z-20 flex items-center justify-between w-full")],
+            [
+              attribute.class(
+                "z-20 flex items-center justify-between gap-4 w-full",
+              ),
+            ],
             [
               html.div([], [
-                html.h1([attribute.class("font-extrabold text-5xl")], [
-                  element.text(
-                    case
-                      option.to_result(m.artist, Nil)
-                      |> result.unwrap(Error(Nil))
-                    {
-                      Ok(artist) -> artist.name
-                      Error(_) -> ""
-                    },
-                  ),
-                ]),
+                html.h1(
+                  [attribute.class("font-extrabold text-4xl sm:text-5xl")],
+                  [
+                    element.text(
+                      case
+                        option.to_result(m.artist, Nil)
+                        |> result.unwrap(Error(Nil))
+                      {
+                        Ok(artist) -> artist.name
+                        Error(_) -> ""
+                      },
+                    ),
+                  ],
+                ),
               ]),
-              html.div([attribute.class("flex items-center")], [
+              html.div([attribute.class("flex items-center w-14 h-14")], [
                 html.div(
                   [
                     attribute.class("flex items-center relative"),
@@ -225,7 +235,7 @@ fn view(m: Model) {
             tab_element(m, Home),
             tab_element(m, Albums),
             tab_element(m, SinglesEPs),
-            tab_element(m, About),
+            //tab_element(m, About),
           ],
         ),
         html.div([attribute.class("p-4 flex")], case m.current_tab {
@@ -235,6 +245,7 @@ fn view(m: Model) {
           _ -> [element.none()]
         }),
       ]),
+      components.mobile_space(),
     ])
     |> Ok
   }
@@ -278,9 +289,21 @@ fn view_home(m: Model) {
       html.div(
         [attribute.class("space-y-4")],
         list.index_map(m.top_songs, fn(song: api_models.Child, index: Int) {
-          elements.song(song:, index:, attrs: [], cover_art: True, msg: {
-            PlaySong(song.id)
-          })
+          elements.song(
+            song:,
+            index:,
+            attrs: case m.layout {
+              model.Desktop -> [attribute.none()]
+              model.Mobile -> [
+                event.on_click(PlaySong(song.id)),
+                attribute.class(
+                  "transition-all active:scale-[98%] active:bg-zinc-900",
+                ),
+              ]
+            },
+            cover_art: True,
+            msg: PlaySong(song.id),
+          )
         }),
       ),
     ]),

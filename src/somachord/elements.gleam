@@ -8,10 +8,14 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import somachord/api_helper
+import somachord/components
+import somachord/model
 import somachord/storage
 import varasto
 
 import somachord/api_models
+
+pub const scrollbar_class = "[&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
 
 pub fn song(
   song song: api_models.Child,
@@ -25,10 +29,12 @@ pub fn song(
     stg.auth
   }
 
+  let layout = components.layout()
+
   html.div(
     [
       attribute.class(
-        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between",
+        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between gap-2",
       ),
       event.on("dblclick", { decode.success(msg) }),
       ..attrs
@@ -59,9 +65,6 @@ pub fn song(
             ])
         },
         html.div([attribute.class("flex gap-2 items-center")], [
-          // html.div([attribute.class("w-8 h-8 text-zinc-400")], [
-          //   solid.musical_note(),
-          // ]),
           case cover_art {
             True ->
               html.img([
@@ -77,24 +80,33 @@ pub fn song(
             False -> element.none()
           },
           html.div([attribute.class("flex flex-col gap-0.5 justify-center")], [
-            html.a([attribute.href("/song/" <> song.id)], [
+            case
+              layout,
               html.span(
                 [
                   attribute.class(
-                    "text-nowrap text-sm text-zinc-100 hover:underline",
+                    "text-wrap text-sm text-zinc-100 hover:underline",
                   ),
                 ],
                 [element.text(song.title)],
-              ),
-            ]),
+              )
+            {
+              model.Desktop, elem ->
+                html.a([attribute.href("/song/" <> song.id)], [elem])
+              model.Mobile, elem -> elem
+            },
             html.span(
               [attribute.class("text-sm text-zinc-500 font-light")],
               list.map(song.artists, fn(artist: api_models.SmallArtist) {
-                html.a([attribute.href("/artist/" <> artist.id)], [
+                let elem =
                   html.span([attribute.class("text-zinc-300 hover:underline")], [
                     element.text(artist.name),
-                  ]),
-                ])
+                  ])
+                case layout {
+                  model.Desktop ->
+                    html.a([attribute.href("/artist/" <> artist.id)], [elem])
+                  model.Mobile -> elem
+                }
               })
                 |> list.intersperse(element.text(", ")),
             ),
@@ -149,6 +161,7 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
       attribute.class(
         "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75",
       ),
+      event.on("dblclick", { decode.success(handler(album.id)) }),
     ],
     [
       html.div(

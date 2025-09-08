@@ -1,0 +1,17 @@
+{
+    "name": "Somachord",
+    "icons": [
+        {
+            "src": "somachord-black-bg-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "somachord-black-bg.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone"
+}

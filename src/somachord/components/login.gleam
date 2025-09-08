@@ -143,7 +143,11 @@ pub fn view(m: Model) {
   html.div(
     [
       attribute.class(
+<<<<<<< HEAD
+        "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins] flex h-screen mx-auto p-4 overflow-hidden",
+=======
         "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins,sans-serif] flex h-screen mx-auto p-4 overflow-hidden",
+>>>>>>> 1410fd8290f301fedf0631f019a4d2836976bf33
       ),
     ],
     [

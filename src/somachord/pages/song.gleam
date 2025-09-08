@@ -16,6 +16,7 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components
+import somachord/model
 import somachord/storage
 import varasto
 
@@ -38,7 +39,7 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
     "song-page",
     [
       attribute.class(
-        "flex-1 rounded-md border border-zinc-800 overflow-y-auto overflow-x-none [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
+        "flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500",
       ),
       ..attrs
     ],
@@ -101,7 +102,7 @@ fn view(m: Model) {
   }
 
   html.div([components.redirect_click(Nothing)], [
-    html.div([attribute.class("flex gap-8 p-8")], [
+    html.div([attribute.class("flex flex-wrap gap-8 p-8")], [
       case song.id {
         // when song hasnt been retrieved yet
         "" ->
@@ -123,7 +124,11 @@ fn view(m: Model) {
           element.text(song.title),
         ]),
         html.div(
-          [attribute.class("flex gap-3 text-xs text-zinc-400 items-center")],
+          [
+            attribute.class(
+              "flex flex-wrap gap-3 text-xs text-zinc-400 items-center",
+            ),
+          ],
           [
             html.span([attribute.class("flex gap-2 items-center")], [
               html.i([attribute.class("text-xl ph ph-user-sound")], []),
@@ -204,5 +209,9 @@ fn view(m: Model) {
         option.Some(time) -> song_detail.song_time(time)
       },
     ]),
+    case components.layout() {
+      model.Desktop -> element.none()
+      model.Mobile -> components.mobile_space()
+    },
   ])
 }

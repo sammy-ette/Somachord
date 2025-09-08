@@ -3,5 +3,6 @@
 build
 erl_crash.dump
 node_modules/
-priv/
 dist/
+somachord*.mjs
+somachord*.css
