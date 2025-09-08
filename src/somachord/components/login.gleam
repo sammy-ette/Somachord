@@ -157,7 +157,7 @@ pub fn view(m: Model) {
           html.div(
             [
               attribute.class(
-                "w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4",
+                "md:w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4",
               ),
             ],
             [
