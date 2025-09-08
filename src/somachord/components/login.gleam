@@ -143,7 +143,11 @@ pub fn view(m: Model) {
   html.div(
     [
       attribute.class(
+<<<<<<< HEAD
         "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins] flex h-screen mx-auto p-4 overflow-hidden",
+=======
+        "bg-linear-to-t from-zinc-950 to-zinc-900 font-[Poppins,sans-serif] flex h-screen mx-auto p-4 overflow-hidden",
+>>>>>>> 1410fd8290f301fedf0631f019a4d2836976bf33
       ),
     ],
     [
@@ -155,9 +159,13 @@ pub fn view(m: Model) {
         ],
         [
           html.div(
-            [attribute.class("flex bg-zinc-800 rounded-lg justify-center p-4")],
             [
-              html.div([attribute.class("flex flex-col")], [
+              attribute.class(
+                "w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4",
+              ),
+            ],
+            [
+              html.div([attribute.class("flex flex-col w-full")], [
                 html.h1([attribute.class("font-bold text-4xl self-center")], [
                   element.text("Somachord"),
                 ]),
@@ -205,6 +213,7 @@ pub fn view(m: Model) {
                         element.text("Username"),
                       ]),
                       html.input([
+                        attribute.autocomplete("text"),
                         attribute.type_("input"),
                         attribute.name("username"),
                         attribute.class(
@@ -225,6 +234,7 @@ pub fn view(m: Model) {
                         element.text("Password"),
                       ]),
                       html.input([
+                        attribute.autocomplete("current-password"),
                         attribute.type_("password"),
                         attribute.name("password"),
                         attribute.class(

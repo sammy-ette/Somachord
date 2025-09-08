@@ -23,7 +23,7 @@ pub fn view(m: model.Model, page) {
   html.div(
     [
       attribute.class(
-        "font-['Poppins'] w-full flex flex-col px-3 py-4 gap-2 overflow-hidden",
+        "font-[Poppins,sans-serif] w-full flex flex-col px-3 py-4 gap-2 overflow-hidden",
       ),
     ],
     [
