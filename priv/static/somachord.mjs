@@ -12341,15 +12341,15 @@ function font_size(m) {
                         "let_assert",
                         FILEPATH7,
                         "somachord/components/song_detail",
-                        361,
+                        364,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 10013,
-                          end: 10050,
-                          pattern_start: 10024,
-                          pattern_end: 10031
+                          start: 10040,
+                          end: 10077,
+                          pattern_start: 10051,
+                          pattern_end: 10058
                         }
                       );
                     }
@@ -12455,31 +12455,33 @@ function view_lyrics(m) {
                   toList([auto_scroll(m, lyrics2), font_size(m)])
                 ),
                 div(
-                  toList([class$("space-y-2")]),
+                  toList([
+                    class$("space-y-2"),
+                    class$(
+                      (() => {
+                        let $ = m.font_size;
+                        if ($ instanceof Small) {
+                          return "text-lg";
+                        } else if ($ instanceof Medium) {
+                          return "text-2xl";
+                        } else {
+                          return "text-4xl/12";
+                        }
+                      })()
+                    )
+                  ]),
                   map(
                     lyrics2.lines,
                     (lyric) => {
                       return p(
                         toList([
-                          class$("font-semibold text-zinc-300"),
-                          class$(
-                            (() => {
-                              let $ = m.font_size;
-                              if ($ instanceof Small) {
-                                return "text-lg";
-                              } else if ($ instanceof Medium) {
-                                return "text-2xl";
-                              } else {
-                                return "text-4xl/12";
-                              }
-                            })()
-                          ),
+                          class$("font-semibold"),
                           (() => {
                             let $ = m.song_time;
                             if ($ instanceof Some) {
                               let $1 = $[0];
                               if ($1 === -1) {
-                                return none();
+                                return class$("text-zinc-300");
                               } else {
                                 let current_time = $1;
                                 let $2 = current_time + lyrics2.offset > lyric.time - 0.5;
@@ -12492,7 +12494,7 @@ function view_lyrics(m) {
                                 }
                               }
                             } else {
-                              return none();
+                              return class$("text-zinc-300");
                             }
                           })()
                         ]),
