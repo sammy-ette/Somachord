@@ -425,9 +425,6 @@
   .w-96 {
     width: calc(var(--spacing) * 96);
   }
-  .w-\[30\%\] {
-    width: 30%;
-  }
   .w-\[96\%\] {
     width: 96%;
   }
@@ -1201,6 +1198,11 @@
   .md\:w-80 {
     @media (width >= 48rem) {
       width: calc(var(--spacing) * 80);
+    }
+  }
+  .md\:w-\[30\%\] {
+    @media (width >= 48rem) {
+      width: 30%;
     }
   }
   .md\:bg-linear-to-l {

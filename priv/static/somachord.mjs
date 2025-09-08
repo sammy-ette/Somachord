@@ -11463,7 +11463,7 @@ function view2(m) {
           div(
             toList([
               class$(
-                "w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4"
+                "md:w-[30%] flex bg-zinc-800 rounded-lg justify-center p-4"
               )
             ]),
             toList([
@@ -11504,10 +11504,10 @@ function view2(m) {
                           "Pattern match failed, no pattern matched the value.",
                           {
                             value: $,
-                            start: 4075,
-                            end: 4203,
-                            pattern_start: 4086,
-                            pattern_end: 4093
+                            start: 4078,
+                            end: 4206,
+                            pattern_start: 4089,
+                            pattern_end: 4096
                           }
                         );
                       }
