@@ -123,7 +123,11 @@ fn view(m: Model) {
           element.text(song.title),
         ]),
         html.div(
-          [attribute.class("flex gap-3 text-xs text-zinc-400 items-center")],
+          [
+            attribute.class(
+              "flex flex-wrap gap-3 text-xs text-zinc-400 items-center",
+            ),
+          ],
           [
             html.span([attribute.class("flex gap-2 items-center")], [
               html.i([attribute.class("text-xl ph ph-user-sound")], []),

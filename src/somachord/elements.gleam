@@ -8,6 +8,8 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import somachord/api_helper
+import somachord/components
+import somachord/model
 import somachord/storage
 import varasto
 
@@ -26,6 +28,8 @@ pub fn song(
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
   }
+
+  let layout = components.layout()
 
   html.div(
     [
@@ -61,9 +65,6 @@ pub fn song(
             ])
         },
         html.div([attribute.class("flex gap-2 items-center")], [
-          // html.div([attribute.class("w-8 h-8 text-zinc-400")], [
-          //   solid.musical_note(),
-          // ]),
           case cover_art {
             True ->
               html.img([
@@ -79,7 +80,8 @@ pub fn song(
             False -> element.none()
           },
           html.div([attribute.class("flex flex-col gap-0.5 justify-center")], [
-            html.a([attribute.href("/song/" <> song.id)], [
+            case
+              layout,
               html.span(
                 [
                   attribute.class(
@@ -87,16 +89,24 @@ pub fn song(
                   ),
                 ],
                 [element.text(song.title)],
-              ),
-            ]),
+              )
+            {
+              model.Desktop, elem ->
+                html.a([attribute.href("/song/" <> song.id)], [elem])
+              model.Mobile, elem -> elem
+            },
             html.span(
               [attribute.class("text-sm text-zinc-500 font-light")],
               list.map(song.artists, fn(artist: api_models.SmallArtist) {
-                html.a([attribute.href("/artist/" <> artist.id)], [
+                let elem =
                   html.span([attribute.class("text-zinc-300 hover:underline")], [
                     element.text(artist.name),
-                  ]),
-                ])
+                  ])
+                case layout {
+                  model.Desktop ->
+                    html.a([attribute.href("/artist/" <> artist.id)], [elem])
+                  model.Mobile -> elem
+                }
               })
                 |> list.intersperse(element.text(", ")),
             ),
