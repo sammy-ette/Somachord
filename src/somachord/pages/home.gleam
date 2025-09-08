@@ -78,10 +78,10 @@ fn update(m: Model, msg: Msg) {
           |> list.sort(fn(list1: AlbumList, list2: AlbumList) {
             let list_order = fn(type_: String) -> Int {
               case type_ {
-                "frequent" -> 1
-                "newest" -> 2
-                "random" -> 3
-                _ -> 4
+                "frequent" -> 4
+                "newest" -> 3
+                "random" -> 2
+                _ -> 1
               }
             }
             int.compare(list_order(list1.type_), list_order(list2.type_))
@@ -120,29 +120,33 @@ fn view(m: Model) {
       components.redirect_click(ComponentClick),
       attribute.class("flex flex-col gap-4 overflow-y-auto"),
     ],
-    list.map(m.albumlists, fn(album_list) {
-      use <- bool.guard(album_list.albums |> list.is_empty, element.none())
-      html.div([], [
-        html.h1([attribute.class("ml-2 text-2xl font-medium")], [
-          element.text(case album_list.type_ {
-            "newest" -> "New Additions"
-            "frequent" -> "Most Played"
-            typ -> typ
-          }),
-        ]),
-        html.div(
-          [
-            attribute.class(
-              "flex overflow-auto [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
-            ),
-          ],
-          list.map(album_list.albums, fn(album) {
-            elements.album(album, fn(id) {
-              Play(model.PlayRequest("album", id))
-            })
-          }),
-        ),
-      ])
-    }),
+    [
+      components.mobile_space(),
+      ..list.map(m.albumlists, fn(album_list) {
+        use <- bool.guard(album_list.albums |> list.is_empty, element.none())
+        html.div([], [
+          html.h1([attribute.class("ml-2 text-2xl font-medium")], [
+            element.text(case album_list.type_ {
+              "newest" -> "New Additions"
+              "frequent" -> "Most Played"
+              typ -> typ
+            }),
+          ]),
+          html.div(
+            [
+              attribute.class(
+                "flex overflow-auto [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
+              ),
+            ],
+            list.map(album_list.albums, fn(album) {
+              elements.album(album, fn(id) {
+                Play(model.PlayRequest("album", id))
+              })
+            }),
+          ),
+        ])
+      })
+    ]
+      |> list.reverse,
   )
 }
