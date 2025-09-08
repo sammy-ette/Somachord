@@ -16,6 +16,7 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components
+import somachord/model
 import somachord/storage
 import varasto
 
@@ -208,5 +209,9 @@ fn view(m: Model) {
         option.Some(time) -> song_detail.song_time(time)
       },
     ]),
+    case components.layout() {
+      model.Desktop -> element.none()
+      model.Mobile -> components.mobile_space()
+    },
   ])
 }
