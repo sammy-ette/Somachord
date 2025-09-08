@@ -22,6 +22,7 @@ jobs:
           gleam run -m lustre/dev build --outdir=public/priv/static
           cp index.html public/index.html
           cp index.html public/404.html
+          cp priv/static/* public/priv/static
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
