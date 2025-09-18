@@ -151,7 +151,8 @@ export function beginning(player) {
 /**
  * 
  * @param {Player} player 
+ * @param {boolean} state 
  */
-export function loop(player) {
-	player.element.loop = true
+export function loop(player, state) {
+	player.element.loop = state
 }

@@ -47,4 +47,4 @@ pub fn load_song(
 pub fn beginning(player: model.Player) -> Nil
 
 @external(javascript, "./player.ffi.mjs", "loop")
-pub fn loop(player: model.Player) -> Nil
+pub fn loop(player: model.Player, state: Bool) -> Nil
