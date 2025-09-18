@@ -8259,8 +8259,8 @@ function beginning(player) {
   player.element.currentTime = 0;
   updatePresence(player);
 }
-function loop(player) {
-  player.element.loop = true;
+function loop(player, state) {
+  player.element.loop = state;
 }
 
 // build/dev/javascript/somachord/somachord/api_models.mjs
@@ -16622,10 +16622,10 @@ function check_scrobble(m) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 14889,
-              end: 14942,
-              pattern_start: 14900,
-              pattern_end: 14907
+              start: 14911,
+              end: 14964,
+              pattern_start: 14922,
+              pattern_end: 14929
             }
           );
         }
@@ -18001,7 +18001,7 @@ function update8(m, msg) {
     ];
   } else if (msg instanceof PlayerLoop) {
     let _pipe = m.player;
-    loop(_pipe);
+    loop(_pipe, negate(m.looping));
     return [
       new Model(
         m.route,
@@ -18040,10 +18040,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 13566,
-            end: 13619,
-            pattern_start: 13577,
-            pattern_end: 13584
+            start: 13588,
+            end: 13641,
+            pattern_start: 13599,
+            pattern_end: 13606
           }
         );
       }
