@@ -170,7 +170,7 @@ pub type Lyric {
 }
 
 fn lyric_decoder() -> decode.Decoder(Lyric) {
-  use time_ms <- decode.field("start", decode.int)
+  use time_ms <- decode.optional_field("start", 0, decode.int)
   let time = int.to_float(time_ms) /. 1000.0
   use text <- decode.field("value", decode.string)
   decode.success(Lyric(time:, text:))
