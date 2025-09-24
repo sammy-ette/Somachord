@@ -8558,8 +8558,9 @@ function artist_decoder() {
   );
 }
 function lyric_decoder() {
-  return field(
+  return optional_field(
     "start",
+    0,
     int2,
     (time_ms) => {
       let time3 = identity(time_ms) / 1e3;
