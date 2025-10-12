@@ -15,10 +15,11 @@ pub type Route {
   Login
   Search(query: String)
   Artist(id: String)
-  Artists
   Album(id: String)
-  Albums
   Song(id: String)
+
+  Artists
+  Albums
   Unknown
 }
 

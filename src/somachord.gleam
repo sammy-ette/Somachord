@@ -10,6 +10,7 @@ import gleam/result
 import gleam/uri
 import plinth/javascript/date
 import somachord/components
+import somachord/models/auth
 import somachord/pages/not_found
 import somachord/pages/search
 import somachord/queue
@@ -67,6 +68,7 @@ fn init(_) {
       route:,
       layout:,
       storage: storage.create(),
+      auth: auth.Auth("", auth.Credentials("", ""), ""),
       confirmed: False,
       albums: dict.new(),
       player: player.new(),
@@ -77,10 +79,11 @@ fn init(_) {
       played_seconds: 0,
       shuffled: False,
       looping: False,
+      playlists: dict.new(),
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
-      model.Model(..m, confirmed: True),
+      model.Model(..m, confirmed: True, auth: stg.auth),
       effect.batch([
         modem.init(msg.on_url_change),
         route_effect(m, route),
@@ -414,25 +417,21 @@ fn update(
     //   }
     // }
     msg.StreamCurrent -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
+      case queue.current_song(m.queue) {
+        option.None -> #(m, effect.none())
+        option.Some(song) -> {
+          let stream_uri =
+            api_helper.create_uri("/rest/stream.view", m.auth, [
+              #("id", song.id),
+            ])
+            |> uri.to_string
+          m.player |> player.load_song(stream_uri, song)
+          #(
+            m,
+            api.save_queue(m.auth, option.Some(m.queue), msg.DisgardedResponse),
+          )
+        }
       }
-      let assert option.Some(song) = queue.current_song(m.queue)
-      let stream_uri =
-        api_helper.create_uri("/rest/stream.view", auth_details, [
-          #("id", song.id),
-        ])
-        |> uri.to_string
-      m.player |> player.load_song(stream_uri, song)
-      #(
-        m,
-        api.save_queue(
-          auth_details,
-          option.Some(m.queue),
-          msg.DisgardedResponse,
-        ),
-      )
     }
     msg.QueueJumpTo(position) -> #(
       model.Model(..m, queue: m.queue |> queue.jump(position)),
@@ -522,6 +521,104 @@ fn update(
               msg: msg.DisgardedResponse,
             )
         },
+      )
+    }
+    msg.PlayerPlaylists -> {
+      use <- bool.guard(dict.is_empty(m.playlists) |> bool.negate, #(
+        m,
+        effect.none(),
+      ))
+
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      #(m, api.playlists(auth_details, msg.Playlists))
+    }
+    msg.Playlists(Ok(Ok(playlists))) -> #(
+      model.Model(
+        ..m,
+        playlists: playlists
+          |> list.fold(#(dict.new(), ""), fn(acc, song) {
+            let #(d, idx) = acc
+            #(d |> dict.insert(idx, song), idx)
+          })
+          |> pair.first,
+      ),
+      list.map(playlists, fn(playlist: api_models.Playlist) {
+        api.playlist(
+          {
+            let assert Ok(stg) = m.storage |> varasto.get("auth")
+            stg.auth
+          },
+          playlist.id,
+          msg.PlaylistWithSongs,
+        )
+      })
+        |> effect.batch(),
+    )
+    msg.Playlists(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    msg.PlaylistWithSongs(Ok(Ok(playlist))) -> {
+      echo playlist.name
+      echo playlist.songs
+      echo m.current_song
+      #(
+        model.Model(
+          ..m,
+          playlists: m.playlists |> dict.insert(playlist.id, playlist),
+        ),
+        effect.none(),
+      )
+    }
+    msg.PlaylistWithSongs(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    msg.AddToPlaylist(playlist_id, song_id) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+
+      let assert Ok(playlist) = dict.get(m.playlists, playlist_id)
+      let songs = case playlist.songs {
+        option.Some(songs) -> songs |> list.append([m.current_song])
+        option.None -> [m.current_song]
+      }
+
+      #(
+        model.Model(
+          ..m,
+          playlists: m.playlists
+            |> dict.insert(
+              playlist_id,
+              api_models.Playlist(..playlist, songs: option.Some(songs)),
+            ),
+        ),
+        api.add_to_playlist(
+          auth_details:,
+          playlist_id:,
+          song_id:,
+          msg: msg.DisgardedResponse,
+        ),
+      )
+    }
+    msg.RemoveFromPlaylist(playlist_id, song_id) -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      #(
+        m,
+        api.remove_from_playlist(
+          auth_details:,
+          playlist_id:,
+          song_id:,
+          msg: msg.DisgardedResponse,
+        ),
       )
     }
     msg.Search(query) -> #(
