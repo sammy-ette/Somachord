@@ -8624,46 +8624,104 @@ var Queue = class extends CustomType {
     this.changed = changed;
   }
 };
+var SongOrder = class extends CustomType {
+  constructor(played, unplayed) {
+    super();
+    this.played = played;
+    this.unplayed = unplayed;
+  }
+};
 function empty4() {
-  return new Queue(0, new_map(), [toList([]), toList([])], 0, now());
+  return new Queue(
+    0,
+    new_map(),
+    new SongOrder(toList([]), toList([])),
+    0,
+    now()
+  );
 }
 function next(queue2) {
-  let $ = queue2.song_order[1];
+  let $ = queue2.song_order.unplayed;
   if ($ instanceof Empty) {
     return queue2;
   } else {
     let front_first = $.head;
-    let front_rest = $.tail;
-    let updated_back = prepend(front_first, queue2.song_order[0]);
+    let unplayed_rest = $.tail;
+    let updated_played = prepend(front_first, queue2.song_order.played);
     return new Queue(
       queue2.song_position,
       queue2.songs,
-      [updated_back, front_rest],
+      echo(
+        new SongOrder(updated_played, unplayed_rest),
+        void 0,
+        "src/somachord/queue.gleam",
+        113
+      ),
       queue2.position + 1,
       queue2.changed
     );
   }
 }
+function next_itr(loop$queue, loop$times) {
+  while (true) {
+    let queue2 = loop$queue;
+    let times = loop$times;
+    if (times === 0) {
+      return queue2;
+    } else {
+      loop$queue = next(queue2);
+      loop$times = times - 1;
+    }
+  }
+}
 function previous(queue2) {
-  let $ = queue2.song_order[0];
+  let $ = queue2.song_order.played;
   if ($ instanceof Empty) {
     return queue2;
   } else {
-    let back_first = $.head;
-    let back_rest = $.tail;
-    let updated_front = prepend(back_first, queue2.song_order[1]);
+    let played_first = $.head;
+    let played_rest = $.tail;
+    let updated_unplayed = prepend(played_first, queue2.song_order.unplayed);
     return new Queue(
       queue2.song_position,
       queue2.songs,
-      [back_rest, updated_front],
+      new SongOrder(played_rest, updated_unplayed),
       queue2.position - 1,
       queue2.changed
     );
   }
 }
+function previous_itr(loop$queue, loop$times) {
+  while (true) {
+    let queue2 = loop$queue;
+    let times = loop$times;
+    if (times === 0) {
+      return queue2;
+    } else {
+      loop$queue = previous(queue2);
+      loop$times = times - 1;
+    }
+  }
+}
+function jump(queue2, position) {
+  let $ = compare2(position, queue2.position);
+  if ($ instanceof Lt) {
+    return previous_itr(queue2, queue2.position - position);
+  } else if ($ instanceof Eq) {
+    return queue2;
+  } else {
+    return next_itr(queue2, position - queue2.position);
+  }
+}
 function list4(queue2) {
   return map(
-    append(reverse(queue2.song_order[0]), queue2.song_order[1]),
+    (() => {
+      let _pipe = toList([
+        reverse(queue2.song_order.played),
+        queue2.song_order.unplayed
+      ]);
+      return flatten(_pipe);
+    })(),
     (idx) => {
       let _block;
       let _pipe = queue2.songs;
@@ -8677,15 +8735,15 @@ function list4(queue2) {
           "let_assert",
           FILEPATH,
           "somachord/queue",
-          119,
+          149,
           "list",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2562,
-            end: 2612,
-            pattern_start: 2573,
-            pattern_end: 2581
+            start: 3368,
+            end: 3418,
+            pattern_start: 3379,
+            pattern_end: 3387
           }
         );
       }
@@ -8694,12 +8752,16 @@ function list4(queue2) {
   );
 }
 function new$9(position, songs, song_position) {
+  let _block;
+  let _pipe = range(0, length(songs) - 1);
+  _block = split(_pipe, position);
+  let song_order = _block;
   return new Queue(
     song_position,
     (() => {
-      let _pipe = songs;
-      let _pipe$1 = fold(
-        _pipe,
+      let _pipe$1 = songs;
+      let _pipe$2 = fold(
+        _pipe$1,
         [new_map(), 0],
         (acc, song3) => {
           let d;
@@ -8708,81 +8770,66 @@ function new$9(position, songs, song_position) {
           idx = acc[1];
           return [
             (() => {
-              let _pipe$12 = d;
-              return insert(_pipe$12, idx, song3);
+              let _pipe$22 = d;
+              return insert(_pipe$22, idx, song3);
             })(),
             idx + 1
           ];
         }
       );
-      return first2(_pipe$1);
+      return first2(_pipe$2);
     })(),
-    (() => {
-      let _pipe = range(0, length(songs) - 1);
-      return split(_pipe, position);
-    })(),
+    new SongOrder(song_order[0], song_order[1]),
     position,
     now()
   );
 }
 function shuffle2(queue2) {
+  let _block;
+  let _pipe = range(
+    0,
+    length(
+      (() => {
+        let _pipe2 = queue2.songs;
+        return values(_pipe2);
+      })()
+    ) - 1
+  );
+  let _pipe$1 = shuffle(_pipe);
+  _block = split(_pipe$1, queue2.position);
+  let song_order = _block;
   return new Queue(
     queue2.song_position,
     queue2.songs,
-    (() => {
-      let _pipe = range(
-        0,
-        length(
-          (() => {
-            let _pipe2 = queue2.songs;
-            return values(_pipe2);
-          })()
-        ) - 1
-      );
-      let _pipe$1 = shuffle(_pipe);
-      echo(_pipe$1, void 0, "src/somachord/queue.gleam", 54);
-      let _pipe$2 = split(_pipe$1, queue2.position);
-      return echo(_pipe$2, void 0, "src/somachord/queue.gleam", 56);
-    })(),
+    new SongOrder(song_order[0], song_order[1]),
     queue2.position,
     queue2.changed
   );
 }
 function unshuffle(queue2) {
-  return new Queue(
-    queue2.song_position,
-    queue2.songs,
-    (() => {
-      let _pipe = range(
-        0,
-        length(
-          (() => {
-            let _pipe2 = queue2.songs;
-            return values(_pipe2);
-          })()
-        ) - 1
-      );
-      return split(_pipe, queue2.position);
-    })(),
-    queue2.position,
-    queue2.changed
+  let _block;
+  let _pipe = range(
+    0,
+    length(
+      (() => {
+        let _pipe2 = queue2.songs;
+        return values(_pipe2);
+      })()
+    ) - 1
   );
-}
-function jump(queue2, position) {
+  _block = split(_pipe, queue2.position);
+  let song_order = _block;
   return new Queue(
     queue2.song_position,
     queue2.songs,
-    (() => {
-      let _pipe = append(queue2.song_order[0], queue2.song_order[1]);
-      return split(_pipe, position);
-    })(),
-    position,
+    new SongOrder(song_order[0], song_order[1]),
+    queue2.position,
     queue2.changed
   );
 }
 function current_song(queue2) {
   let $ = (() => {
-    let _pipe = queue2.song_order[1];
+    let _pipe = queue2.song_order.unplayed;
     return first(_pipe);
   })();
   if ($ instanceof Ok) {
@@ -8799,15 +8846,15 @@ function current_song(queue2) {
         "let_assert",
         FILEPATH,
         "somachord/queue",
-        108,
+        137,
         "current_song",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2281,
-          end: 2331,
-          pattern_start: 2292,
-          pattern_end: 2300
+          start: 3064,
+          end: 3114,
+          pattern_start: 3075,
+          pattern_end: 3083
         }
       );
     }
