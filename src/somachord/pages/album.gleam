@@ -19,9 +19,9 @@ import varasto
 pub fn page(m: model.Model, id: String) {
   html.div(
     [
-      attribute.class("flex-1 flex gap-4 p-8 rounded-md border border-zinc-800"),
+      attribute.class("flex-1 flex gap-4 p-8 rounded-md border-zinc-800"),
       case m.layout {
-        model.Desktop -> attribute.class("overflow-hidden")
+        model.Desktop -> attribute.class("border overflow-hidden")
         model.Mobile -> attribute.class("flex-col overflow-y-auto")
       },
     ],
@@ -164,7 +164,7 @@ pub fn desktop_page(m: model.Model, id) {
                     model.Mobile -> [
                       event.on_click(msg.StreamAlbum(album, index)),
                       attribute.class(
-                        "transition-all active:scale-[98%] active:bg-zinc-900",
+                        "duration-50 transition-all active:scale-[98%] active:bg-zinc-900",
                       ),
                     ]
                   },

@@ -19,6 +19,7 @@ import rsvp
 import somachord/api/api
 import somachord/api_models
 import somachord/components
+import somachord/model
 import somachord/storage
 import varasto
 
@@ -127,7 +128,10 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       chosen_lyric_set: "xxx",
       song_time: option.None,
       auto_scroll: True,
-      font_size: Medium,
+      font_size: case components.layout() {
+        model.Desktop -> Medium
+        model.Mobile -> Small
+      },
       show_size_changer: False,
     ),
     effect.none(),
@@ -359,6 +363,11 @@ fn font_size(m: Model) {
             attribute.class("accent-violet-500"),
             attribute.type_("range"),
             attribute.max("2"),
+            attribute.value(case m.font_size {
+              Small -> "0"
+              Medium -> "1"
+              Large -> "2"
+            }),
             event.on("input", {
               use value <- decode.subfield(["target", "value"], decode.string)
               let assert Ok(num) = int.parse(value)

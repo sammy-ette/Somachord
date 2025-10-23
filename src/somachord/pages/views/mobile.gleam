@@ -18,7 +18,7 @@ pub fn view(m: model.Model, page) {
   html.div(
     [
       attribute.class(
-        "font-['Poppins'] w-full flex flex-col pb-4 gap-2 overflow-hidden min-w-0 min-h-0 w-full h-full",
+        "font-['Poppins'] w-full flex flex-col pb-1 gap-2 overflow-hidden min-w-0 min-h-0 w-full h-full",
       ),
     ],
     [
@@ -27,44 +27,42 @@ pub fn view(m: model.Model, page) {
         True -> element.none()
         False -> playing_bar(m)
       },
-      html.div([attribute.class("")], [
-        html.div([attribute.class("flex justify-evenly")], [
-          html.a([attribute.href("/")], [
-            mobile_nav_button(
-              html.i([attribute.class("text-3xl ph ph-house")], []),
-              html.i([attribute.class("text-3xl ph-fill ph-house")], []),
-              "Home",
-              m.route == router.Home,
-              [],
-            ),
-          ]),
-          // mobile_nav_button(
-          //   html.i([attribute.class("text-3xl ph ph-sparkles")], []),
-          //   html.i([attribute.class("text-3xl ph-fill ph-sparkles")], []),
-          //   "Discover",
-          //   False,
-          //   [],
-          // ),
-          html.a([attribute.href("/search")], [
-            mobile_nav_button(
-              html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-              html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-              "Search",
-              case m.route {
-                router.Search(_) -> True
-                _ -> False
-              },
-              [],
-            ),
-          ]),
-          // mobile_nav_button(
-        //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-        //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-        //   "Library",
+      html.div([attribute.class("h-16 flex justify-evenly")], [
+        html.a([attribute.href("/"), attribute.class("h-fit w-fit")], [
+          mobile_nav_button(
+            html.i([attribute.class("text-2xl ph ph-house")], []),
+            html.i([attribute.class("text-2xl ph-fill ph-house")], []),
+            "Home",
+            m.route == router.Home,
+            [],
+          ),
+        ]),
+        // mobile_nav_button(
+        //   html.i([attribute.class("text-3xl ph ph-sparkles")], []),
+        //   html.i([attribute.class("text-3xl ph-fill ph-sparkles")], []),
+        //   "Discover",
         //   False,
         //   [],
         // ),
+        html.a([attribute.href("/search"), attribute.class("h-fit w-fit")], [
+          mobile_nav_button(
+            html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
+            html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
+            "Search",
+            case m.route {
+              router.Search(_) -> True
+              _ -> False
+            },
+            [],
+          ),
         ]),
+        // mobile_nav_button(
+      //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+      //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+      //   "Library",
+      //   False,
+      //   [],
+      // ),
       ]),
     ],
   )
@@ -79,16 +77,16 @@ fn playing_bar(m: model.Model) {
   html.div(
     [
       attribute.class(
-        "self-center absolute bottom-28 p-3 rounded-md flex flex-col gap-2 bg-zinc-900 w-[96%]",
+        "self-center absolute bottom-20 p-2 pb-1 rounded-md flex flex-col gap-2 bg-zinc-900 w-[96%]",
       ),
     ],
     [
-      html.div([attribute.class("flex justify-between")], [
+      html.div([attribute.class("flex justify-between items-center")], [
         html.div([attribute.class("flex gap-2 items-center")], [
           html.div(
             [
               attribute.class(
-                "w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center",
+                "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center",
               ),
             ],
             [
@@ -128,31 +126,43 @@ fn playing_bar(m: model.Model) {
             ],
           ),
           html.span([attribute.class("flex flex-col")], [
-            html.a([attribute.href("/song/" <> m.current_song.id)], [
-              html.span(
-                [
-                  attribute.class(
-                    "hover:underline font-normal text-nowrap text-ellipsis",
-                  ),
-                ],
-                [
-                  element.text(m.current_song.title),
-                ],
-              ),
-            ]),
+            html.a(
+              [
+                attribute.class("text-xs"),
+                attribute.href("/song/" <> m.current_song.id),
+              ],
+              [
+                html.span(
+                  [
+                    attribute.class(
+                      "hover:underline font-normal text-nowrap text-ellipsis",
+                    ),
+                  ],
+                  [
+                    element.text(m.current_song.title),
+                  ],
+                ),
+              ],
+            ),
             html.span(
               [],
               list.map(
                 m.current_song.artists,
                 fn(artist: api_models.SmallArtist) {
-                  html.a([attribute.href("/artist/" <> artist.id)], [
-                    html.span(
-                      [
-                        attribute.class("hover:underline font-light text-sm"),
-                      ],
-                      [element.text(artist.name)],
-                    ),
-                  ])
+                  html.a(
+                    [
+                      attribute.class("text-xs"),
+                      attribute.href("/artist/" <> artist.id),
+                    ],
+                    [
+                      html.span(
+                        [
+                          attribute.class("hover:underline font-light"),
+                        ],
+                        [element.text(artist.name)],
+                      ),
+                    ],
+                  )
                 },
               )
                 |> list.intersperse(element.text(", ")),
@@ -176,7 +186,7 @@ fn playing_bar(m: model.Model) {
           ),
           html.i(
             [
-              attribute.class("text-2xl ph-fill"),
+              attribute.class("text-xl ph-fill"),
               case m.player |> player.is_paused {
                 False -> attribute.class("ph-pause")
                 True -> attribute.class("ph-play")
@@ -189,7 +199,7 @@ fn playing_bar(m: model.Model) {
       ]),
       html.div(
         [
-          attribute.class("bg-zinc-100 rounded-full h-1"),
+          attribute.class("bg-zinc-100 rounded-full h-0.5"),
           attribute.style(
             "width",
             float.to_string(
@@ -212,7 +222,9 @@ fn playing_bar(m: model.Model) {
 fn mobile_nav_button(inactive, active, name, is_active, attrs) {
   html.div(
     [
-      attribute.class("flex flex-col gap-2 items-center py-2 px-4 rounded-md"),
+      attribute.class(
+        "flex flex-col gap-2 items-center justify-center py-1 px-4 rounded-md",
+      ),
       case is_active {
         True -> attribute.class("bg-zinc-900 text-zinc-100")
         False -> attribute.class("text-zinc-500")
@@ -220,13 +232,11 @@ fn mobile_nav_button(inactive, active, name, is_active, attrs) {
       ..attrs
     ],
     [
-      html.div([attribute.class("h-8 w-8")], [
-        case is_active {
-          True -> active
-          False -> inactive
-        },
-      ]),
-      html.h1([], [element.text(name)]),
+      case is_active {
+        True -> active
+        False -> inactive
+      },
+      html.h1([attribute.class("text-xs")], [element.text(name)]),
     ],
   )
 }
