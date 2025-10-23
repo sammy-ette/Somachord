@@ -1843,6 +1843,24 @@ function reverse(list5) {
 function is_empty2(list5) {
   return isEqual(list5, toList([]));
 }
+function contains(loop$list, loop$elem) {
+  while (true) {
+    let list5 = loop$list;
+    let elem = loop$elem;
+    if (list5 instanceof Empty) {
+      return false;
+    } else {
+      let first$1 = list5.head;
+      if (isEqual(first$1, elem)) {
+        return true;
+      } else {
+        let rest$1 = list5.tail;
+        loop$list = rest$1;
+        loop$elem = elem;
+      }
+    }
+  }
+}
 function first(list5) {
   if (list5 instanceof Empty) {
     return new Error2(void 0);
@@ -1850,6 +1868,33 @@ function first(list5) {
     let first$1 = list5.head;
     return new Ok(first$1);
   }
+}
+function filter_loop(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list5 = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list5 instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first$1 = list5.head;
+      let rest$1 = list5.tail;
+      let _block;
+      let $ = fun(first$1);
+      if ($) {
+        _block = prepend(first$1, acc);
+      } else {
+        _block = acc;
+      }
+      let new_acc = _block;
+      loop$list = rest$1;
+      loop$fun = fun;
+      loop$acc = new_acc;
+    }
+  }
+}
+function filter(list5, predicate) {
+  return filter_loop(list5, predicate, toList([]));
 }
 function filter_map_loop(loop$list, loop$fun, loop$acc) {
   while (true) {
@@ -8281,7 +8326,7 @@ var SmallArtist = class extends CustomType {
   }
 };
 var Album = class extends CustomType {
-  constructor(id3, name2, artists, cover_art_id, duration, plays, created, year2, genres, songs) {
+  constructor(id3, name2, artists, cover_art_id, duration, plays, created, year2, genres, songs, release_types) {
     super();
     this.id = id3;
     this.name = name2;
@@ -8293,7 +8338,16 @@ var Album = class extends CustomType {
     this.year = year2;
     this.genres = genres;
     this.songs = songs;
+    this.release_types = release_types;
   }
+};
+var Single = class extends CustomType {
+};
+var EP = class extends CustomType {
+};
+var AlbumRelease = class extends CustomType {
+};
+var Other = class extends CustomType {
 };
 var Child = class extends CustomType {
   constructor(id3, album_name, album_id, cover_art_id, artists, duration, title2, track, year2, starred, plays) {
@@ -8486,19 +8540,45 @@ function album_decoder() {
                                         toList([]),
                                         list2(song_decoder()),
                                         (songs) => {
-                                          return success(
-                                            new Album(
-                                              id3,
-                                              name2,
-                                              artists,
-                                              cover_art_id,
-                                              duration,
-                                              plays,
-                                              created,
-                                              year2,
-                                              genres,
-                                              songs
-                                            )
+                                          return optional_field(
+                                            "releaseTypes",
+                                            toList([]),
+                                            list2(
+                                              (() => {
+                                                let _pipe = string3;
+                                                return map2(
+                                                  _pipe,
+                                                  (rt) => {
+                                                    if (rt === "Single") {
+                                                      return new Single();
+                                                    } else if (rt === "EP") {
+                                                      return new EP();
+                                                    } else if (rt === "Album") {
+                                                      return new AlbumRelease();
+                                                    } else {
+                                                      return new Other();
+                                                    }
+                                                  }
+                                                );
+                                              })()
+                                            ),
+                                            (release_types) => {
+                                              return success(
+                                                new Album(
+                                                  id3,
+                                                  name2,
+                                                  artists,
+                                                  cover_art_id,
+                                                  duration,
+                                                  plays,
+                                                  created,
+                                                  year2,
+                                                  genres,
+                                                  songs,
+                                                  release_types
+                                                )
+                                              );
+                                            }
                                           );
                                         }
                                       );
@@ -13860,8 +13940,6 @@ var Albums2 = class extends CustomType {
 };
 var SinglesEPs = class extends CustomType {
 };
-var About = class extends CustomType {
-};
 var ChangeTab2 = class extends CustomType {
   constructor($0) {
     super();
@@ -14010,15 +14088,15 @@ function update4(m, msg) {
             "let_assert",
             FILEPATH11,
             "somachord/pages/artist",
-            115,
+            116,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 2512,
-              end: 2565,
-              pattern_start: 2523,
-              pattern_end: 2548
+              start: 2530,
+              end: 2583,
+              pattern_start: 2541,
+              pattern_end: 2566
             }
           );
         }
@@ -14044,7 +14122,7 @@ function update4(m, msg) {
           "panic",
           FILEPATH11,
           "somachord/pages/artist",
-          121,
+          122,
           "update",
           "idk this guy",
           {}
@@ -14177,7 +14255,77 @@ function view_albums(m) {
               to_result(artist2.albums, void 0),
               (albums) => {
                 let _pipe2 = map(
-                  albums,
+                  (() => {
+                    let _pipe3 = albums;
+                    return filter(
+                      _pipe3,
+                      (album3) => {
+                        let _pipe$1 = (() => {
+                          let _pipe$12 = album3.release_types;
+                          return contains(
+                            _pipe$12,
+                            new Single()
+                          );
+                        })() || (() => {
+                          let _pipe$12 = album3.release_types;
+                          return contains(_pipe$12, new EP());
+                        })();
+                        return negate(_pipe$1);
+                      }
+                    );
+                  })(),
+                  (album3) => {
+                    return album2(
+                      album3,
+                      (id3) => {
+                        return new PlayAlbum(id3);
+                      }
+                    );
+                  }
+                );
+                return new Ok(_pipe2);
+              }
+            );
+          }
+        );
+        return unwrap2(_pipe, toList([none3()]));
+      })()
+    )
+  ]);
+}
+function view_singles(m) {
+  return toList([
+    div(
+      toList([class$("flex flex-wrap gap-4")]),
+      (() => {
+        let _pipe = try$(
+          (() => {
+            let _pipe2 = to_result(m.artist, void 0);
+            return unwrap2(_pipe2, new Error2(void 0));
+          })(),
+          (artist2) => {
+            return try$(
+              to_result(artist2.albums, void 0),
+              (albums) => {
+                let _pipe2 = map(
+                  (() => {
+                    let _pipe3 = albums;
+                    return filter(
+                      _pipe3,
+                      (album3) => {
+                        return (() => {
+                          let _pipe$1 = album3.release_types;
+                          return contains(
+                            _pipe$1,
+                            new Single()
+                          );
+                        })() || (() => {
+                          let _pipe$1 = album3.release_types;
+                          return contains(_pipe$1, new EP());
+                        })();
+                      }
+                    );
+                  })(),
                   (album3) => {
                     return album2(
                       album3,
@@ -14382,10 +14530,10 @@ function view4(m) {
                     return view_home(m);
                   } else if ($ instanceof Albums2) {
                     return view_albums(m);
-                  } else if ($ instanceof About) {
-                    return view_about(m);
+                  } else if ($ instanceof SinglesEPs) {
+                    return view_singles(m);
                   } else {
-                    return toList([none3()]);
+                    return view_about(m);
                   }
                 })()
               )
