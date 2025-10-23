@@ -549,11 +549,39 @@ pub fn remove_from_playlist(
   let req =
     get_request(auth_details:, path: "/rest/updatePlaylist.view", query: [
       #("playlistId", playlist_id),
-      #("songIdToRemove", song_id),
+      #("songIndexToRemove", song_id),
     ])
 
   rsvp.send(
     req,
     rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}
+
+pub fn create_playlist(
+  auth_details auth_details: auth.Auth,
+  name name: String,
+  songs songs: List(api_models.Child),
+  msg msg: Response(api_models.Playlist, b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/createPlaylist.view", query: [
+      #("name", name),
+      ..list.map(songs, fn(song: api_models.Child) { #("songId", song.id) })
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use playlist <- decode.subfield(
+          ["subsonic-response", "playlist"],
+          api_models.playlist_decoder(),
+        )
+
+        decode.success(playlist)
+      }),
+      msg,
+    ),
   )
 }

@@ -12,6 +12,7 @@ import plinth/javascript/date
 import somachord/components
 import somachord/models/auth
 import somachord/pages/not_found
+import somachord/pages/playlist
 import somachord/pages/search
 import somachord/queue
 
@@ -48,6 +49,7 @@ pub fn main() {
   let assert Ok(_) = song.register()
   let assert Ok(_) = song_detail.register()
   let assert Ok(_) = search.register()
+  let assert Ok(_) = playlist.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
 }
 
@@ -216,6 +218,34 @@ fn update(
               }),
           )
         }
+        "playlist" -> {
+          use <- bool.guard(m.playlists |> dict.has_key(req.id), #(
+            m,
+            effect.from(fn(dispatch) {
+              let assert Ok(playlist) = m.playlists |> dict.get(req.id)
+              msg.StreamPlaylist(playlist, req.index) |> dispatch
+            }),
+          ))
+          #(
+            m,
+            api.playlist(auth_details:, id: req.id, msg: msg.PlaylistWithSongs)
+              |> effect.map(fn(msg) {
+                case msg {
+                  msg.PlaylistWithSongs(Ok(Ok(playlist))) ->
+                    msg.StreamPlaylist(playlist, req.index)
+                  msg.PlaylistWithSongs(Ok(Error(e))) -> {
+                    echo e
+                    panic as "playlist subsonic err"
+                  }
+                  msg.PlaylistWithSongs(Error(e)) -> {
+                    echo e
+                    panic as "playlist req fetch failed"
+                  }
+                  _ -> panic as "unreachable"
+                }
+              }),
+          )
+        }
         "song" -> #(
           m,
           api.song(auth_details:, id: req.id, msg: msg.SongRetrieval),
@@ -228,6 +258,18 @@ fn update(
         case
           m.shuffled,
           queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        {
+          True, queue -> queue |> queue.shuffle
+          False, queue -> queue
+        }
+        |> queue.jump(index)
+      #(model.Model(..m, queue:), play())
+    }
+    msg.StreamPlaylist(playlist, index) -> {
+      let queue =
+        case
+          m.shuffled,
+          queue.new(songs: playlist.songs, position: 0, song_position: 0.0)
         {
           True, queue -> queue |> queue.shuffle
           False, queue -> queue
@@ -543,7 +585,8 @@ fn update(
             let #(d, idx) = acc
             #(d |> dict.insert(idx, song), idx)
           })
-          |> pair.first,
+          |> pair.first
+          |> dict.delete(""),
       ),
       list.map(playlists, fn(playlist: api_models.Playlist) {
         api.playlist(
@@ -584,19 +627,13 @@ fn update(
       }
 
       let assert Ok(playlist) = dict.get(m.playlists, playlist_id)
-      let songs = case playlist.songs {
-        option.Some(songs) -> songs |> list.append([m.current_song])
-        option.None -> [m.current_song]
-      }
+      let songs = playlist.songs |> list.append([m.current_song])
 
       #(
         model.Model(
           ..m,
           playlists: m.playlists
-            |> dict.insert(
-              playlist_id,
-              api_models.Playlist(..playlist, songs: option.Some(songs)),
-            ),
+            |> dict.insert(playlist_id, api_models.Playlist(..playlist, songs:)),
         ),
         api.add_to_playlist(
           auth_details:,
@@ -611,8 +648,17 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
+
+      let assert Ok(playlist) = dict.get(m.playlists, playlist_id)
+      let songs =
+        playlist.songs
+        |> list.filter(fn(s) { s.id != song_id })
       #(
-        m,
+        model.Model(
+          ..m,
+          playlists: m.playlists
+            |> dict.insert(playlist_id, api_models.Playlist(..playlist, songs:)),
+        ),
         api.remove_from_playlist(
           auth_details:,
           playlist_id:,
@@ -626,6 +672,34 @@ fn update(
       modem.push("/search/" <> query, option.None, option.None),
     )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
+    msg.NewPlaylist -> {
+      let auth_details = {
+        let assert Ok(stg) = m.storage |> varasto.get("auth")
+        stg.auth
+      }
+      #(
+        m,
+        api.create_playlist(
+          auth_details:,
+          name: "New Playlist",
+          songs: [m.current_song],
+          msg: msg.CreatePlaylist,
+        ),
+      )
+    }
+    msg.CreatePlaylist(Ok(Ok(playlist))) -> {
+      #(
+        model.Model(
+          ..m,
+          playlists: m.playlists |> dict.insert(playlist.id, playlist),
+        ),
+        effect.none(),
+      )
+    }
+    msg.CreatePlaylist(e) -> {
+      echo e
+      #(m, effect.none())
+    }
   }
 }
 
@@ -699,6 +773,11 @@ fn view(m: model.Model) {
                 attribute.class("rounded-md border border-zinc-800")
               model.Mobile -> attribute.none()
             },
+          ])
+        router.Playlist(id) ->
+          playlist.element([
+            msg.on_play(msg.Play),
+            attribute.attribute("playlist-id", id),
           ])
         _ -> not_found.page()
       }

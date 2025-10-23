@@ -85,6 +85,58 @@ pub fn album_decoder() {
   ))
 }
 
+pub type Playlist {
+  Playlist(
+    id: String,
+    name: String,
+    owner: String,
+    public: Bool,
+    cover_art_id: String,
+    created: String,
+    updated: String,
+    duration: Int,
+    songs: List(Child),
+  )
+}
+
+pub fn new_playlist() {
+  Playlist(
+    id: "",
+    name: "",
+    owner: "",
+    public: False,
+    cover_art_id: "",
+    created: "",
+    updated: "",
+    duration: 0,
+    songs: [],
+  )
+}
+
+pub fn playlist_decoder() -> decode.Decoder(Playlist) {
+  use id <- decode.field("id", decode.string)
+  use name <- decode.field("name", decode.string)
+  use owner <- decode.optional_field("owner", "", decode.string)
+  use public <- decode.optional_field("public", False, decode.bool)
+  use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
+  use created <- decode.field("created", decode.string)
+  use updated <- decode.field("changed", decode.string)
+  use duration <- decode.field("duration", decode.int)
+  use songs <- decode.optional_field("entry", [], decode.list(song_decoder()))
+
+  decode.success(Playlist(
+    id:,
+    name:,
+    owner:,
+    public:,
+    cover_art_id:,
+    created:,
+    updated:,
+    duration:,
+    songs:,
+  ))
+}
+
 pub type Child {
   Child(
     id: String,
@@ -174,43 +226,4 @@ fn lyric_decoder() -> decode.Decoder(Lyric) {
   let time = int.to_float(time_ms) /. 1000.0
   use text <- decode.field("value", decode.string)
   decode.success(Lyric(time:, text:))
-}
-
-pub type Playlist {
-  Playlist(
-    id: String,
-    name: String,
-    owner: String,
-    public: Bool,
-    cover_art_id: String,
-    created: String,
-    updated: String,
-    songs: option.Option(List(Child)),
-  )
-}
-
-pub fn playlist_decoder() -> decode.Decoder(Playlist) {
-  use id <- decode.field("id", decode.string)
-  use name <- decode.field("name", decode.string)
-  use owner <- decode.optional_field("owner", "", decode.string)
-  use public <- decode.optional_field("public", False, decode.bool)
-  use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
-  use created <- decode.field("created", decode.string)
-  use updated <- decode.field("changed", decode.string)
-  use songs <- decode.optional_field(
-    "entry",
-    option.None,
-    decode.list(song_decoder()) |> decode.map(option.Some),
-  )
-
-  decode.success(Playlist(
-    id:,
-    name:,
-    owner:,
-    public:,
-    cover_art_id:,
-    created:,
-    updated:,
-    songs: songs,
-  ))
 }

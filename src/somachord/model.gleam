@@ -30,7 +30,7 @@ pub type Model {
 }
 
 pub type PlayRequest {
-  PlayRequest(type_: String, id: String)
+  PlayRequest(type_: String, id: String, index: Int)
 }
 
 pub type Layout {

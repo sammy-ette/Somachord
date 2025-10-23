@@ -31,6 +31,9 @@ pub type Msg {
   PlaylistWithSongs(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
+  CreatePlaylist(
+    Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
+  )
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)
@@ -41,6 +44,7 @@ pub type Msg {
   // handles actually playing the music in the browser
   // and the queue.
   StreamAlbum(api_models.Album, Int)
+  StreamPlaylist(api_models.Playlist, Int)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
   StreamCurrent
@@ -66,6 +70,8 @@ pub type Msg {
   AddToPlaylist(playlist_id: String, song_id: String)
   RemoveFromPlaylist(playlist_id: String, song_id: String)
 
+  NewPlaylist
+
   Unload
   ComponentClick
 }
@@ -88,7 +94,13 @@ pub fn on_play(
   event.on("play", {
     use type_ <- decode.subfield(["detail", "type"], decode.string)
     use id <- decode.subfield(["detail", "id"], decode.string)
+    use index <- decode.then(decode.optionally_at(
+      ["detail", "index"],
+      0,
+      decode.int,
+    ))
 
-    decode.success(model.PlayRequest(type_:, id:)) |> decode.map(handler)
+    decode.success(model.PlayRequest(type_:, id:, index:))
+    |> decode.map(handler)
   })
 }

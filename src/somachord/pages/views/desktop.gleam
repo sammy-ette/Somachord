@@ -12,6 +12,7 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
+import modem
 import player
 import somachord/api_helper
 import somachord/api_models
@@ -455,8 +456,21 @@ fn playlist_menu(m: model.Model) {
       ),
     ],
     [
-      html.h1([attribute.class("font-semibold text-lg")], [
-        element.text("Add to playlist"),
+      html.div([attribute.class("inline-flex justify-between")], [
+        html.h1([attribute.class("font-semibold text-lg")], [
+          element.text("Add to playlist"),
+        ]),
+        html.div(
+          [
+            event.on_click(msg.NewPlaylist),
+            attribute.class(
+              "p-1 bg-white hover:bg-white/80 active:scale-[95%] transition-scale duration-200 cursor-pointer text-black font-medium rounded-md w-fit",
+            ),
+          ],
+          [
+            element.text("New Playlist"),
+          ],
+        ),
       ]),
       html.div(
         [
@@ -471,21 +485,14 @@ fn playlist_menu(m: model.Model) {
               string.compare({ pl1.1 }.name, { pl2.1 }.name)
             }),
           fn(playlist) {
-            let song_in_playlist = case { playlist.1 }.songs {
-              option.None -> False
-              option.Some(songs) -> songs |> list.contains(m.current_song)
-            }
+            let song_in_playlist =
+              { playlist.1 }.songs |> list.contains(m.current_song)
 
             html.div(
               [
                 attribute.class(
                   "hover:bg-zinc-800 px-2 py-1 rounded cursor-pointer inline-flex items-center gap-2",
                 ),
-                event.on_click(case song_in_playlist {
-                  True ->
-                    playlist.0 |> msg.RemoveFromPlaylist(m.current_song.id)
-                  False -> playlist.0 |> msg.AddToPlaylist(m.current_song.id)
-                }),
               ],
               [
                 html.img([
@@ -512,10 +519,25 @@ fn playlist_menu(m: model.Model) {
                     ),
                   ],
                   [
-                    element.text({ playlist.1 }.name),
+                    html.a(
+                      [
+                        attribute.href("/playlist/" <> { playlist.1 }.id),
+                        attribute.class("hover:underline"),
+                      ],
+                      [
+                        element.text({ playlist.1 }.name),
+                      ],
+                    ),
                     html.i(
                       [
                         attribute.class("text-2xl"),
+                        event.on_click(case song_in_playlist {
+                          True ->
+                            playlist.0
+                            |> msg.RemoveFromPlaylist(m.current_song.id)
+                          False ->
+                            playlist.0 |> msg.AddToPlaylist(m.current_song.id)
+                        }),
                         case song_in_playlist {
                           True ->
                             attribute.class(

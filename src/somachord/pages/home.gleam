@@ -121,7 +121,10 @@ fn view(m: Model) {
       attribute.class("flex flex-col gap-4 overflow-y-auto"),
     ],
     [
-      components.mobile_space(),
+      case components.layout() {
+        model.Desktop -> element.none()
+        model.Mobile -> components.mobile_space()
+      },
       ..list.map(m.albumlists, fn(album_list) {
         use <- bool.guard(album_list.albums |> list.is_empty, element.none())
         html.div([], [
@@ -140,7 +143,7 @@ fn view(m: Model) {
             ],
             list.map(album_list.albums, fn(album) {
               elements.album(album, fn(id) {
-                Play(model.PlayRequest("album", id))
+                Play(model.PlayRequest("album", id, 0))
               })
             }),
           ),
