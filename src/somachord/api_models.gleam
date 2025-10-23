@@ -1,6 +1,7 @@
 import gleam/dynamic/decode
 import gleam/int
 import gleam/option
+import plinth/browser/element
 
 pub type Artist {
   Artist(
@@ -49,7 +50,15 @@ pub type Album {
     year: Int,
     genres: List(String),
     songs: List(Child),
+    release_types: List(ReleaseType),
   )
+}
+
+pub type ReleaseType {
+  Single
+  EP
+  AlbumRelease
+  Other
 }
 
 pub fn album_decoder() {
@@ -70,6 +79,21 @@ pub fn album_decoder() {
     }),
   )
   use songs <- decode.optional_field("song", [], decode.list(song_decoder()))
+  use release_types <- decode.optional_field(
+    "releaseTypes",
+    [],
+    decode.list(
+      decode.string
+      |> decode.map(fn(rt) {
+        case rt {
+          "Single" -> Single
+          "EP" -> EP
+          "Album" -> AlbumRelease
+          _ -> Other
+        }
+      }),
+    ),
+  )
 
   decode.success(Album(
     id:,
@@ -82,6 +106,7 @@ pub fn album_decoder() {
     year:,
     genres:,
     songs:,
+    release_types:,
   ))
 }
 

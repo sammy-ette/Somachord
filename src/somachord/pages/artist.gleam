@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/json
 import gleam/list
 import gleam/option
@@ -241,8 +242,8 @@ fn view(m: Model) {
         html.div([attribute.class("p-4 flex")], case m.current_tab {
           Home -> view_home(m)
           Albums -> view_albums(m)
+          SinglesEPs -> view_singles(m)
           About -> view_about(m)
-          _ -> [element.none()]
         }),
       ]),
       components.mobile_space(),
@@ -319,9 +320,45 @@ fn view_albums(m: Model) {
           option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)),
         )
         use albums <- result.try(option.to_result(artist.albums, Nil))
-        list.map(albums, fn(album: api_models.Album) {
-          elements.album(album, fn(id) { PlayAlbum(id) })
-        })
+        list.map(
+          albums
+            |> list.filter(fn(album) {
+              {
+                album.release_types |> list.contains(api_models.Single)
+                || album.release_types |> list.contains(api_models.EP)
+              }
+              |> bool.negate
+            }),
+          fn(album: api_models.Album) {
+            elements.album(album, fn(id) { PlayAlbum(id) })
+          },
+        )
+        |> Ok
+      }
+        |> result.unwrap([element.none()]),
+    ),
+  ]
+}
+
+fn view_singles(m: Model) {
+  [
+    html.div(
+      [attribute.class("flex flex-wrap gap-4")],
+      {
+        use artist <- result.try(
+          option.to_result(m.artist, Nil) |> result.unwrap(Error(Nil)),
+        )
+        use albums <- result.try(option.to_result(artist.albums, Nil))
+        list.map(
+          albums
+            |> list.filter(fn(album) {
+              album.release_types |> list.contains(api_models.Single)
+              || album.release_types |> list.contains(api_models.EP)
+            }),
+          fn(album: api_models.Album) {
+            elements.album(album, fn(id) { PlayAlbum(id) })
+          },
+        )
         |> Ok
       }
         |> result.unwrap([element.none()]),
