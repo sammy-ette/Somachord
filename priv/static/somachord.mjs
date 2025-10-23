@@ -12122,7 +12122,14 @@ function init3(_) {
       "xxx",
       new None(),
       true,
-      new Medium(),
+      (() => {
+        let $ = layout();
+        if ($ instanceof Desktop) {
+          return new Medium();
+        } else {
+          return new Small();
+        }
+      })(),
       false
     ),
     none2()
@@ -12204,15 +12211,15 @@ function update3(m, msg) {
             "let_assert",
             FILEPATH7,
             "somachord/components/song_detail",
-            152,
+            156,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 3607,
-              end: 3706,
-              pattern_start: 3618,
-              pattern_end: 3633
+              start: 3720,
+              end: 3819,
+              pattern_start: 3731,
+              pattern_end: 3746
             }
           );
         }
@@ -12225,15 +12232,15 @@ function update3(m, msg) {
             "let_assert",
             FILEPATH7,
             "somachord/components/song_detail",
-            154,
+            158,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 3713,
-              end: 3780,
-              pattern_start: 3724,
-              pattern_end: 3746
+              start: 3826,
+              end: 3893,
+              pattern_start: 3837,
+              pattern_end: 3859
             }
           );
         }
@@ -12246,15 +12253,15 @@ function update3(m, msg) {
             "let_assert",
             FILEPATH7,
             "somachord/components/song_detail",
-            155,
+            159,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 3787,
-              end: 3873,
-              pattern_start: 3798,
-              pattern_end: 3806
+              start: 3900,
+              end: 3986,
+              pattern_start: 3911,
+              pattern_end: 3919
             }
           );
         }
@@ -12267,15 +12274,15 @@ function update3(m, msg) {
             "let_assert",
             FILEPATH7,
             "somachord/components/song_detail",
-            157,
+            161,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $3,
-              start: 3880,
-              end: 3933,
-              pattern_start: 3891,
-              pattern_end: 3906
+              start: 3993,
+              end: 4046,
+              pattern_start: 4004,
+              pattern_end: 4019
             }
           );
         }
@@ -12331,12 +12338,12 @@ function update3(m, msg) {
             none2()
           ];
         } else {
-          echo5(e, void 0, "src/somachord/components/song_detail.gleam", 179);
+          echo5(e, void 0, "src/somachord/components/song_detail.gleam", 183);
           throw makeError(
             "panic",
             FILEPATH7,
             "somachord/components/song_detail",
-            180,
+            184,
             "update",
             "should be unreachable",
             {}
@@ -12345,12 +12352,12 @@ function update3(m, msg) {
       }
     } else {
       let e = $[0];
-      echo5(e, void 0, "src/somachord/components/song_detail.gleam", 172);
+      echo5(e, void 0, "src/somachord/components/song_detail.gleam", 176);
       throw makeError(
         "panic",
         FILEPATH7,
         "somachord/components/song_detail",
-        173,
+        177,
         "update",
         "rsvp error",
         {}
@@ -12468,6 +12475,18 @@ function font_size(m) {
               class$("accent-violet-500"),
               type_("range"),
               max2("2"),
+              value(
+                (() => {
+                  let $ = m.font_size;
+                  if ($ instanceof Small) {
+                    return "0";
+                  } else if ($ instanceof Medium) {
+                    return "1";
+                  } else {
+                    return "2";
+                  }
+                })()
+              ),
               on(
                 "input",
                 subfield(
@@ -12483,15 +12502,15 @@ function font_size(m) {
                         "let_assert",
                         FILEPATH7,
                         "somachord/components/song_detail",
-                        364,
+                        373,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 10040,
-                          end: 10077,
-                          pattern_start: 10051,
-                          pattern_end: 10058
+                          start: 10298,
+                          end: 10335,
+                          pattern_start: 10309,
+                          pattern_end: 10316
                         }
                       );
                     }
@@ -13833,7 +13852,7 @@ function desktop_page(m, id3) {
                                     new StreamAlbum(album3, index5)
                                   ),
                                   class$(
-                                    "transition-all active:scale-[98%] active:bg-zinc-900"
+                                    "duration-50 transition-all active:scale-[98%] active:bg-zinc-900"
                                   )
                                 ]);
                               }
@@ -13892,13 +13911,11 @@ function desktop_page(m, id3) {
 function page(m, id3) {
   return div(
     toList([
-      class$(
-        "flex-1 flex gap-4 p-8 rounded-md border border-zinc-800"
-      ),
+      class$("flex-1 flex gap-4 p-8 rounded-md border-zinc-800"),
       (() => {
         let $ = m.layout;
         if ($ instanceof Desktop) {
-          return class$("overflow-hidden");
+          return class$("border overflow-hidden");
         } else {
           return class$("flex-col overflow-y-auto");
         }
@@ -14601,10 +14618,20 @@ function element7(attrs) {
   return element2(
     "home-page",
     prepend(
-      class$(
-        "flex-1 p-4 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
-      ),
-      attrs
+      (() => {
+        let $ = layout();
+        if ($ instanceof Desktop) {
+          return class$("border");
+        } else {
+          return none();
+        }
+      })(),
+      prepend(
+        class$(
+          "flex-1 p-4 rounded-md border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
+        ),
+        attrs
+      )
     ),
     toList([])
   );
@@ -14695,14 +14722,14 @@ function update5(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo6("subsonic error", void 0, "src/somachord/pages/home.gleam", 94);
-        echo6(e, void 0, "src/somachord/pages/home.gleam", 95);
+        echo6("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
+        echo6(e, void 0, "src/somachord/pages/home.gleam", 99);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo6("rsvp error", void 0, "src/somachord/pages/home.gleam", 99);
-      echo6(e, void 0, "src/somachord/pages/home.gleam", 100);
+      echo6("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
+      echo6(e, void 0, "src/somachord/pages/home.gleam", 104);
       return [m, none2()];
     }
   } else if (msg instanceof Play2) {
@@ -16441,15 +16468,15 @@ function playing_bar2(m) {
         "let_assert",
         FILEPATH15,
         "somachord/pages/views/mobile",
-        75,
+        73,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2110,
-          end: 2163,
-          pattern_start: 2121,
-          pattern_end: 2128
+          start: 2055,
+          end: 2108,
+          pattern_start: 2066,
+          pattern_end: 2073
         }
       );
     }
@@ -16459,12 +16486,12 @@ function playing_bar2(m) {
   return div(
     toList([
       class$(
-        "self-center absolute bottom-28 p-3 rounded-md flex flex-col gap-2 bg-zinc-900 w-[96%]"
+        "self-center absolute bottom-20 p-2 pb-1 rounded-md flex flex-col gap-2 bg-zinc-900 w-[96%]"
       )
     ]),
     toList([
       div(
-        toList([class$("flex justify-between")]),
+        toList([class$("flex justify-between items-center")]),
         toList([
           div(
             toList([class$("flex gap-2 items-center")]),
@@ -16472,7 +16499,7 @@ function playing_bar2(m) {
               div(
                 toList([
                   class$(
-                    "w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center"
+                    "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center"
                   )
                 ]),
                 toList([
@@ -16523,7 +16550,10 @@ function playing_bar2(m) {
                 toList([class$("flex flex-col")]),
                 toList([
                   a(
-                    toList([href("/song/" + m.current_song.id)]),
+                    toList([
+                      class$("text-xs"),
+                      href("/song/" + m.current_song.id)
+                    ]),
                     toList([
                       span(
                         toList([
@@ -16542,12 +16572,15 @@ function playing_bar2(m) {
                         m.current_song.artists,
                         (artist2) => {
                           return a(
-                            toList([href("/artist/" + artist2.id)]),
+                            toList([
+                              class$("text-xs"),
+                              href("/artist/" + artist2.id)
+                            ]),
                             toList([
                               span(
                                 toList([
                                   class$(
-                                    "hover:underline font-light text-sm"
+                                    "hover:underline font-light"
                                   )
                                 ]),
                                 toList([text2(artist2.name)])
@@ -16582,7 +16615,7 @@ function playing_bar2(m) {
               ),
               i(
                 toList([
-                  class$("text-2xl ph-fill"),
+                  class$("text-xl ph-fill"),
                   (() => {
                     let $ = (() => {
                       let _pipe = m.player;
@@ -16604,7 +16637,7 @@ function playing_bar2(m) {
       ),
       div(
         toList([
-          class$("bg-zinc-100 rounded-full h-1"),
+          class$("bg-zinc-100 rounded-full h-0.5"),
           style(
             "width",
             float_to_string(
@@ -16631,7 +16664,9 @@ function playing_bar2(m) {
 function mobile_nav_button(inactive, active, name2, is_active, attrs) {
   return div(
     prepend(
-      class$("flex flex-col gap-2 items-center py-2 px-4 rounded-md"),
+      class$(
+        "flex flex-col gap-2 items-center justify-center py-1 px-4 rounded-md"
+      ),
       prepend(
         (() => {
           if (is_active) {
@@ -16644,19 +16679,17 @@ function mobile_nav_button(inactive, active, name2, is_active, attrs) {
       )
     ),
     toList([
-      div(
-        toList([class$("h-8 w-8")]),
-        toList([
-          (() => {
-            if (is_active) {
-              return active;
-            } else {
-              return inactive;
-            }
-          })()
-        ])
-      ),
-      h1(toList([]), toList([text2(name2)]))
+      (() => {
+        if (is_active) {
+          return active;
+        } else {
+          return inactive;
+        }
+      })(),
+      h1(
+        toList([class$("text-xs")]),
+        toList([text2(name2)])
+      )
     ])
   );
 }
@@ -16664,7 +16697,7 @@ function view9(m, page3) {
   return div(
     toList([
       class$(
-        "font-['Poppins'] w-full flex flex-col pb-4 gap-2 overflow-hidden min-w-0 min-h-0 w-full h-full"
+        "font-['Poppins'] w-full flex flex-col pb-1 gap-2 overflow-hidden min-w-0 min-h-0 w-full h-full"
       )
     ]),
     toList([
@@ -16678,57 +16711,51 @@ function view9(m, page3) {
         }
       })(),
       div(
-        toList([class$("")]),
+        toList([class$("h-16 flex justify-evenly")]),
         toList([
-          div(
-            toList([class$("flex justify-evenly")]),
+          a(
+            toList([href("/"), class$("h-fit w-fit")]),
             toList([
-              a(
-                toList([href("/")]),
-                toList([
-                  mobile_nav_button(
-                    i(
-                      toList([class$("text-3xl ph ph-house")]),
-                      toList([])
-                    ),
-                    i(
-                      toList([class$("text-3xl ph-fill ph-house")]),
-                      toList([])
-                    ),
-                    "Home",
-                    isEqual(m.route, new Home()),
-                    toList([])
-                  )
-                ])
-              ),
-              a(
-                toList([href("/search")]),
-                toList([
-                  mobile_nav_button(
-                    i(
-                      toList([
-                        class$("text-3xl ph ph-magnifying-glass")
-                      ]),
-                      toList([])
-                    ),
-                    i(
-                      toList([
-                        class$("text-3xl ph ph-magnifying-glass")
-                      ]),
-                      toList([])
-                    ),
-                    "Search",
-                    (() => {
-                      let $ = m.route;
-                      if ($ instanceof Search) {
-                        return true;
-                      } else {
-                        return false;
-                      }
-                    })(),
-                    toList([])
-                  )
-                ])
+              mobile_nav_button(
+                i(
+                  toList([class$("text-2xl ph ph-house")]),
+                  toList([])
+                ),
+                i(
+                  toList([class$("text-2xl ph-fill ph-house")]),
+                  toList([])
+                ),
+                "Home",
+                isEqual(m.route, new Home()),
+                toList([])
+              )
+            ])
+          ),
+          a(
+            toList([
+              href("/search"),
+              class$("h-fit w-fit")
+            ]),
+            toList([
+              mobile_nav_button(
+                i(
+                  toList([class$("text-2xl ph ph-magnifying-glass")]),
+                  toList([])
+                ),
+                i(
+                  toList([class$("text-2xl ph ph-magnifying-glass")]),
+                  toList([])
+                ),
+                "Search",
+                (() => {
+                  let $ = m.route;
+                  if ($ instanceof Search) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })(),
+                toList([])
               )
             ])
           )
