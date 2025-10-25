@@ -12020,8 +12020,6 @@ var Model3 = class extends CustomType {
 };
 var Lyrics = class extends CustomType {
 };
-var More = class extends CustomType {
-};
 var Small = class extends CustomType {
 };
 var Medium = class extends CustomType {
@@ -12505,15 +12503,15 @@ function font_size(m) {
                         "let_assert",
                         FILEPATH7,
                         "somachord/components/song_detail",
-                        373,
+                        376,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 10298,
-                          end: 10335,
-                          pattern_start: 10309,
-                          pattern_end: 10316
+                          start: 10326,
+                          end: 10363,
+                          pattern_start: 10337,
+                          pattern_end: 10344
                         }
                       );
                     }
@@ -12687,7 +12685,7 @@ function view3(m) {
             "sticky top-0 border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950"
           )
         ]),
-        toList([tab_element(m, new Lyrics()), tab_element(m, new More())])
+        toList([tab_element(m, new Lyrics())])
       ),
       div(
         toList([class$("p-4")]),
