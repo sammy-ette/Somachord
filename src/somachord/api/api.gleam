@@ -211,7 +211,9 @@ pub fn lyrics(
         use lyrics <- decode.then(decode.optionally_at(
           ["subsonic-response", "lyricsList", "structuredLyrics"],
           [],
-          decode.list(api_models.lyric_set_decoder()),
+          decode.one_of(decode.list(api_models.lyric_set_decoder()), [
+            { decode.success([]) },
+          ]),
         ))
 
         decode.success(lyrics)
