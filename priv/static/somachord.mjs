@@ -10308,7 +10308,10 @@ function lyrics(auth_details, id3, msg) {
           optionally_at(
             toList(["subsonic-response", "lyricsList", "structuredLyrics"]),
             toList([]),
-            list2(lyric_set_decoder())
+            one_of(
+              list2(lyric_set_decoder()),
+              toList([success(toList([]))])
+            )
           ),
           (lyrics2) => {
             return success(lyrics2);
@@ -10392,15 +10395,15 @@ function queue(auth_details, msg) {
                         "let_assert",
                         FILEPATH4,
                         "somachord/api/api",
-                        259,
+                        261,
                         "queue",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 6357,
-                          end: 6460,
-                          pattern_start: 6368,
-                          pattern_end: 6384
+                          start: 6423,
+                          end: 6526,
+                          pattern_start: 6434,
+                          pattern_end: 6450
                         }
                       );
                     }
@@ -10456,15 +10459,15 @@ function save_queue(auth_details, queue2, msg) {
             "let_assert",
             FILEPATH4,
             "somachord/api/api",
-            301,
+            303,
             "save_queue",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 7370,
-              end: 7439,
-              pattern_start: 7381,
-              pattern_end: 7397
+              start: 7436,
+              end: 7505,
+              pattern_start: 7447,
+              pattern_end: 7463
             }
           );
         }
