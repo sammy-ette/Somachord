@@ -210,11 +210,14 @@ fn view(m: Model) {
           "sticky top-0 border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950",
         ),
       ],
-      [tab_element(m, Lyrics), tab_element(m, More)],
+      [
+        tab_element(m, Lyrics),
+        // tab_element(m, More)
+      ],
     ),
     html.div([attribute.class("p-4")], case m.current_tab {
       Lyrics -> [view_lyrics(m)]
-      //More -> view_more(m)
+      // More -> view_more(m)
       _ -> [element.none()]
     }),
   ])
