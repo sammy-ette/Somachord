@@ -253,6 +253,128 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
   )
 }
 
+pub fn playlist(
+  playlist playlist: api_models.Playlist,
+  handler handler: fn(String) -> msg,
+) {
+  let auth_details = {
+    let assert Ok(stg) = storage.create() |> varasto.get("auth")
+    stg.auth
+  }
+
+  html.div(
+    [
+      attribute.class(
+        "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75",
+      ),
+      event.on("dblclick", { decode.success(handler(playlist.id)) }),
+    ],
+    [
+      html.div(
+        [
+          attribute.class("relative mt-4 h-42"),
+          attribute.style("clip-path", "inset(0 0 0 0);"),
+        ],
+        [
+          html.div(
+            [
+              attribute.class(
+                "w-34 h-28 -mt-2 mx-2 bg-zinc-700 rounded-md absolute",
+              ),
+            ],
+            [],
+          ),
+          html.a([attribute.href("/playlist/" <> playlist.id)], [
+            case
+              playlist.cover_art_id,
+              attribute.class(
+                "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
+              )
+            {
+              "", classes ->
+                html.div(
+                  [
+                    classes,
+                    attribute.class(
+                      "bg-zinc-900 justify-center items-center flex w-full h-fit aspect-square",
+                    ),
+                  ],
+                  [
+                    html.i(
+                      [
+                        attribute.class(
+                          "text-zinc-500 text-3xl ph ph-music-notes-simple",
+                        ),
+                      ],
+                      [],
+                    ),
+                  ],
+                )
+              cover_art_id, classes ->
+                html.img([
+                  attribute.src(
+                    api_helper.create_uri(
+                      "/rest/getCoverArt.view",
+                      auth_details,
+                      [
+                        #("id", cover_art_id),
+                        #("size", "500"),
+                      ],
+                    )
+                    |> uri.to_string,
+                  ),
+                  classes,
+                ])
+            },
+          ]),
+          html.div(
+            [
+              event.on_click(handler(playlist.id)),
+              attribute.class(
+                "absolute top-26 left-26 relative transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
+              ),
+            ],
+            [
+              html.div([attribute.class("rounded-full bg-black w-8 h-8")], []),
+              html.i(
+                [
+                  attribute.class(
+                    "absolute -top-2 -left-2 ph-fill ph-play-circle text-5xl text-violet-500",
+                  ),
+                ],
+                [],
+              ),
+            ],
+          ),
+        ],
+      ),
+      html.span([attribute.class("inline-flex flex-col")], [
+        html.a(
+          [
+            attribute.href("/playlist/" <> playlist.id),
+            attribute.class("space-x-1"),
+          ],
+          [
+            html.span([attribute.class("text-zinc-100 hover:underline")], [
+              element.text(playlist.name),
+            ]),
+          ],
+        ),
+        html.span([attribute.class("text-zinc-500 font-light text-sm")], [
+          element.text(
+            int.to_string(playlist.song_count)
+            <> " song"
+            <> case playlist.song_count == 1 {
+              False -> "s"
+              True -> ""
+            },
+          ),
+        ]),
+      ]),
+    ],
+  )
+}
+
 pub fn tag(name: String) {
   html.div([attribute.class("rounded-full border border-zinc-400 py-2 px-6")], [
     html.span([attribute.class("text-zinc-400 text-light text-xs")], [

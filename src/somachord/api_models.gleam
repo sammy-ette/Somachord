@@ -121,6 +121,7 @@ pub type Playlist {
     updated: String,
     duration: Int,
     songs: List(Child),
+    song_count: Int,
   )
 }
 
@@ -135,6 +136,7 @@ pub fn new_playlist() {
     updated: "",
     duration: 0,
     songs: [],
+    song_count: 0,
   )
 }
 
@@ -148,6 +150,7 @@ pub fn playlist_decoder() -> decode.Decoder(Playlist) {
   use updated <- decode.field("changed", decode.string)
   use duration <- decode.field("duration", decode.int)
   use songs <- decode.optional_field("entry", [], decode.list(song_decoder()))
+  use song_count <- decode.optional_field("songCount", 0, decode.int)
 
   decode.success(Playlist(
     id:,
@@ -159,6 +162,7 @@ pub fn playlist_decoder() -> decode.Decoder(Playlist) {
     updated:,
     duration:,
     songs:,
+    song_count:,
   ))
 }
 

@@ -585,3 +585,25 @@ pub fn create_playlist(
     ),
   )
 }
+
+pub fn update_playlist(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  name name: String,
+  description description: String,
+  public public: Bool,
+  msg msg: EmptyResponse(a),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/updatePlaylist.view", query: [
+      #("playlistId", id),
+      #("name", name),
+      #("comment", description),
+      #("public", bool.to_string(public) |> string.lowercase),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}

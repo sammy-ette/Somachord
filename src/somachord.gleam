@@ -11,6 +11,7 @@ import gleam/uri
 import plinth/javascript/date
 import somachord/components
 import somachord/models/auth
+import somachord/pages/library
 import somachord/pages/not_found
 import somachord/pages/playlist
 import somachord/pages/search
@@ -50,6 +51,7 @@ pub fn main() {
   let assert Ok(_) = song_detail.register()
   let assert Ok(_) = search.register()
   let assert Ok(_) = playlist.register()
+  let assert Ok(_) = library.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
 }
 
@@ -779,6 +781,7 @@ fn view(m: model.Model) {
             msg.on_play(msg.Play),
             attribute.attribute("playlist-id", id),
           ])
+        router.Library -> library.element([msg.on_play(msg.Play)])
         _ -> not_found.page()
       }
 

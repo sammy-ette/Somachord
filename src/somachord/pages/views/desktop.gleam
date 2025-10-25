@@ -48,11 +48,13 @@ pub fn view(m: model.Model, page) {
 
 fn top_bar(m: model.Model) {
   html.div([attribute.class("flex gap-4")], [
-    elements.button(
-      html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-      "Library",
-      [attribute.class("w-42")],
-    ),
+    html.a([attribute.href("/library")], [
+      elements.button(
+        html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+        "Library",
+        [attribute.class("w-42")],
+      ),
+    ]),
     html.a([attribute.href("/")], [
       elements.nav_button(
         html.i([attribute.class("text-3xl ph ph-house")], []),

@@ -1,3 +1,4 @@
+import formal/form
 import gleam/int
 import gleam/json
 import gleam/list
@@ -26,12 +27,27 @@ pub type Msg {
   PlaylistResponse(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
+
   PlayPlaylist(index: Int)
+
+  ShowEditor(Bool)
+  PlaylistUpdate(Result(PlaylistForm, form.Form(PlaylistForm)))
+  PlaylistUpdateResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
+
   ComponentClick
 }
 
 pub type Model {
-  Model(playlist: api_models.Playlist, layout: model.Layout)
+  Model(
+    playlist: api_models.Playlist,
+    layout: model.Layout,
+    show_editor: Bool,
+    playlist_form: form.Form(PlaylistForm),
+  )
+}
+
+pub type PlaylistForm {
+  PlaylistForm(name: String, description: String, public: Bool)
 }
 
 pub fn register() {
@@ -59,7 +75,28 @@ pub fn element(attrs: List(attribute.Attribute(a))) {
 
 fn init(_) {
   #(
-    Model(playlist: api_models.new_playlist(), layout: components.layout()),
+    Model(
+      playlist: api_models.new_playlist(),
+      layout: components.layout(),
+      show_editor: False,
+      playlist_form: form.new({
+        use playlist_name <- form.field(
+          "playlistName",
+          form.parse_string |> form.check_not_empty,
+        )
+        use playlist_description <- form.field(
+          "playlistDescription",
+          form.parse_string,
+        )
+        use playlist_public <- form.field("playlistPublic", form.parse_checkbox)
+
+        form.success(PlaylistForm(
+          name: playlist_name,
+          description: playlist_description,
+          public: playlist_public,
+        ))
+      }),
+    ),
     effect.none(),
   )
 }
@@ -91,6 +128,57 @@ fn update(m: Model, msg: Msg) {
       m,
       event.emit("play", play_json(m.playlist.id, index)),
     )
+    ShowEditor(show) -> #(Model(..m, show_editor: show), effect.none())
+    PlaylistUpdate(Ok(playlist_update_info)) -> {
+      echo "updating playlist..."
+      #(
+        Model(
+          ..m,
+          playlist_form: m.playlist_form
+            |> form.set_values([
+              #("playlistName", playlist_update_info.name),
+              #("playlistDescription", playlist_update_info.description),
+              #("playlistPublic", case playlist_update_info.public {
+                True -> "True"
+                False -> "False"
+              }),
+            ]),
+        ),
+        api.update_playlist(
+          auth_details: {
+            let assert Ok(stg) = storage.create() |> varasto.get("auth")
+            stg.auth
+          },
+          id: m.playlist.id,
+          name: playlist_update_info.name,
+          description: playlist_update_info.description,
+          public: playlist_update_info.public,
+          msg: PlaylistUpdateResponse,
+        ),
+      )
+    }
+    PlaylistUpdate(Error(_)) -> {
+      echo "form error!"
+      // ignore
+      #(m, effect.none())
+    }
+    PlaylistUpdateResponse(Ok(Ok(_))) -> {
+      #(
+        Model(
+          ..m,
+          show_editor: False,
+          playlist: api_models.Playlist(
+            ..m.playlist,
+            name: m.playlist_form |> form.field_value("playlistName"),
+          ),
+        ),
+        effect.none(),
+      )
+    }
+    PlaylistUpdateResponse(e) -> {
+      echo e
+      #(m, effect.none())
+    }
     ComponentClick -> #(m, effect.none())
   }
 }
@@ -112,10 +200,120 @@ fn view(m: Model) {
         model.Mobile -> attribute.class("flex-col overflow-y-auto")
       },
     ],
-    case m.layout, page(m) {
-      model.Desktop, elems -> elems
-      model.Mobile, elems -> elems |> list.reverse
-    },
+    [
+      editor(m),
+      ..case m.layout, page(m) {
+        model.Desktop, elems -> elems
+        model.Mobile, elems -> elems |> list.reverse
+      }
+    ],
+  )
+}
+
+fn editor(m: Model) {
+  let editor_submit = fn(fields) {
+    m.playlist_form |> form.add_values(fields) |> form.run |> PlaylistUpdate
+  }
+
+  html.div(
+    [
+      case m.show_editor {
+        False -> attribute.class("hidden")
+        True -> attribute.none()
+      },
+      attribute.class(
+        "bg-zinc-950/75 z-100 absolute inset-0 flex justify-center items-center",
+      ),
+    ],
+    [
+      html.form(
+        [
+          event.on_submit(editor_submit),
+          attribute.class("bg-zinc-900 rounded-md p-4 flex flex-col gap-2"),
+        ],
+        [
+          html.div(
+            [
+              attribute.class("flex justify-between items-center"),
+            ],
+            [
+              html.h1([attribute.class("text-xl font-black text-white")], [
+                element.text("Edit Playlist"),
+              ]),
+              html.i(
+                [
+                  event.on_click(ShowEditor(False)),
+                  attribute.class(
+                    "text-2xl p-2 ph ph-x cursor-pointer text-white hover:bg-zinc-700 rounded-full",
+                  ),
+                ],
+                [],
+              ),
+            ],
+          ),
+          html.div([attribute.class("flex flex-col gap-1")], [
+            html.label([attribute.class("text-sm text-zinc-400")], [
+              element.text("Playlist Name"),
+            ]),
+            html.input([
+              attribute.class(
+                "bg-zinc-800 text-white rounded-md p-2 w-64 focus:outline-none",
+              ),
+              attribute.value(m.playlist.name),
+              attribute.name("playlistName"),
+            ]),
+          ]),
+          html.div([attribute.class("flex flex-col gap-1")], [
+            html.label([attribute.class("text-sm text-zinc-400")], [
+              element.text("Playlist Description"),
+            ]),
+            html.textarea(
+              [
+                attribute.class(
+                  "bg-zinc-800 text-white rounded-md p-2 w-64 h-32 focus:outline-none resize-none",
+                ),
+                attribute.name("playlistDescription"),
+              ],
+              "",
+            ),
+          ]),
+          html.div([attribute.class("flex flex-col gap-1")], [
+            html.div([attribute.class("flex justify-between items-center")], [
+              html.label([attribute.class("text-sm text-zinc-400")], [
+                element.text("Public Playlist"),
+              ]),
+              html.label(
+                [attribute.class("relative inline-flex cursor-pointer")],
+                [
+                  html.input([
+                    attribute.type_("checkbox"),
+                    attribute.class("sr-only peer"),
+                    attribute.checked(m.playlist.public),
+                    attribute.name("playlistPublic"),
+                  ]),
+                  html.div(
+                    [
+                      attribute.class(
+                        "w-11 h-6 bg-zinc-800 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-400",
+                      ),
+                    ],
+                    [],
+                  ),
+                ],
+              ),
+            ]),
+          ]),
+          html.button(
+            [
+              attribute.class(
+                "bg-violet-600 text-white rounded-md px-4 py-2 mt-4 hover:bg-violet-700",
+              ),
+            ],
+            [element.text("Save Changes")],
+          ),
+        ],
+      ),
+    ],
   )
 }
 
@@ -154,17 +352,14 @@ fn page(m: Model) {
             ]),
             html.span([], [element.text("•")]),
             html.span([attribute.class("text-nowrap")], [
-              element.text({
-                let songs = m.playlist.songs
-                let song_count = songs |> list.length
-
-                int.to_string(song_count)
+              element.text(
+                int.to_string(m.playlist.song_count)
                 <> " song"
-                <> case song_count == 1 {
+                <> case m.playlist.song_count == 1 {
                   False -> "s"
                   True -> ""
-                }
-              }),
+                },
+              ),
             ]),
             html.span([], [element.text("•")]),
             html.span([attribute.class("text-nowrap")], [
@@ -296,7 +491,8 @@ fn buttons(m: Model) {
         ),
         html.i(
           [
-            attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
+            event.on_click(ShowEditor(True)),
+            attribute.class("text-3xl ph ph-pencil-simple"),
           ],
           [],
         ),
