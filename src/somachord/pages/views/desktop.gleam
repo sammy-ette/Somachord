@@ -1,14 +1,18 @@
 import gleam/bool
+import gleam/dict
 import gleam/dynamic/decode
 import gleam/float
 import gleam/int
 import gleam/list
+import gleam/option
+import gleam/result
 import gleam/string
 import gleam/uri
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
+import modem
 import player
 import somachord/api_helper
 import somachord/api_models
@@ -29,7 +33,7 @@ pub fn view(m: model.Model, page) {
     [
       top_bar(m),
       html.div([attribute.class("flex gap-2 min-w-0 min-h-0 w-full h-full")], [
-        //side_bar(m),
+        side_bar(m),
         html.div(
           [attribute.class("flex flex-col gap-2 min-w-0 min-h-0 w-full h-full")],
           [
@@ -43,12 +47,14 @@ pub fn view(m: model.Model, page) {
 }
 
 fn top_bar(m: model.Model) {
-  html.div([attribute.class("flex gap-4 justify-center")], [
-    // elements.button(
-    //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-    //   "Library",
-    //   [attribute.class("w-42")],
-    // ),
+  html.div([attribute.class("flex gap-4")], [
+    html.a([attribute.href("/library")], [
+      elements.button(
+        html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+        "Library",
+        [attribute.class("w-42")],
+      ),
+    ]),
     html.a([attribute.href("/")], [
       elements.nav_button(
         html.i([attribute.class("text-3xl ph ph-house")], []),
@@ -100,43 +106,45 @@ fn side_bar(_: model.Model) {
       ),
     ],
     [
-      elements.button(
-        html.i([attribute.class("text-3xl ph ph-playlist")], []),
-        "Playlists",
-        [],
-      ),
-      elements.button(
-        html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
-        "Liked Songs",
-        [],
-      ),
-      html.a([attribute.href("/albums")], [
+      html.a([attribute.href("/playlists")], [
         elements.button(
-          html.i(
-            [
-              attribute.class("cursor-not-allowed text-3xl ph ph-vinyl-record"),
-            ],
-            [],
-          ),
-          "Albums",
+          html.i([attribute.class("text-3xl ph ph-playlist")], []),
+          "Playlists",
           [],
         ),
       ]),
-      html.a(
-        [
-          //attribute.href("/artists")
-        ],
-        [
-          elements.button(
-            html.i(
-              [attribute.class("cursor-not-allowed text-3xl ph ph-user-sound")],
-              [],
-            ),
-            "Artists",
-            [],
-          ),
-        ],
-      ),
+      // elements.button(
+    //   html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
+    //   "Liked Songs",
+    //   [],
+    // ),
+    // html.a([attribute.href("/albums")], [
+    //   elements.button(
+    //     html.i(
+    //       [
+    //         attribute.class("cursor-not-allowed text-3xl ph ph-vinyl-record"),
+    //       ],
+    //       [],
+    //     ),
+    //     "Albums",
+    //     [],
+    //   ),
+    // ]),
+    // html.a(
+    //   [
+    //     //attribute.href("/artists")
+    //   ],
+    //   [
+    //     elements.button(
+    //       html.i(
+    //         [attribute.class("cursor-not-allowed text-3xl ph ph-user-sound")],
+    //         [],
+    //       ),
+    //       "Artists",
+    //       [],
+    //     ),
+    //   ],
+    // ),
     ],
   )
 }
@@ -380,30 +388,7 @@ fn playing_bar(m: model.Model) {
             ]),
             html.i([attribute.class("text-3xl ph ph-queue")], []),
           ]),
-          html.div(
-            [
-              attribute.class(
-                "not-peer-has-checked:hidden absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 -top-83 -left-69 p-4",
-              ),
-            ],
-            [
-              html.h1([attribute.class("font-semibold text-lg")], [
-                element.text("Queue"),
-              ]),
-              html.div(
-                [
-                  attribute.class(
-                    "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
-                  ),
-                ],
-                list.map(queue.list(m.queue), fn(queue_entry) {
-                  elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
-                    msg.QueueJumpTo(queue_entry.0)
-                  })
-                }),
-              ),
-            ],
-          ),
+          queue_menu(m),
         ]),
         html.i(
           [
@@ -416,8 +401,162 @@ fn playing_bar(m: model.Model) {
           ],
           [],
         ),
-        html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+        html.div([attribute.class("inline-flex relative")], [
+          html.label([attribute.class("peer")], [
+            html.input([
+              attribute.type_("checkbox"),
+              attribute.id("playlist-toggle"),
+              attribute.class("hidden"),
+            ]),
+            html.i(
+              [
+                attribute.class("text-3xl ph ph-plus-circle"),
+                event.on_click(msg.PlayerPlaylists),
+              ],
+              [],
+            ),
+          ]),
+          playlist_menu(m),
+        ]),
       ]),
+    ],
+  )
+}
+
+fn queue_menu(m: model.Model) {
+  html.div(
+    [
+      attribute.class(
+        "not-peer-has-checked:hidden absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 -top-83 -left-69 p-4",
+      ),
+    ],
+    [
+      html.h1([attribute.class("font-semibold text-lg")], [
+        element.text("Queue"),
+      ]),
+      html.div(
+        [
+          attribute.class(
+            "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
+          ),
+        ],
+        list.map(queue.list(m.queue), fn(queue_entry) {
+          elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
+            msg.QueueJumpTo(queue_entry.0)
+          })
+        }),
+      ),
+    ],
+  )
+}
+
+fn playlist_menu(m: model.Model) {
+  html.div(
+    [
+      attribute.class(
+        "not-peer-has-checked:hidden absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 -top-83 -left-88 p-4",
+      ),
+    ],
+    [
+      html.div([attribute.class("inline-flex justify-between")], [
+        html.h1([attribute.class("font-semibold text-lg")], [
+          element.text("Add to playlist"),
+        ]),
+        html.div(
+          [
+            event.on_click(msg.NewPlaylist),
+            attribute.class(
+              "p-1 bg-white hover:bg-white/80 active:scale-[95%] transition-scale duration-200 cursor-pointer text-black font-medium rounded-md w-fit",
+            ),
+          ],
+          [
+            element.text("New Playlist"),
+          ],
+        ),
+      ]),
+      html.div(
+        [
+          attribute.class(
+            "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
+          ),
+        ],
+        list.map(
+          m.playlists
+            |> dict.to_list
+            |> list.sort(fn(pl1, pl2) {
+              string.compare({ pl1.1 }.name, { pl2.1 }.name)
+            }),
+          fn(playlist) {
+            let song_in_playlist =
+              { playlist.1 }.songs |> list.contains(m.current_song)
+
+            html.div(
+              [
+                attribute.class(
+                  "hover:bg-zinc-800 px-2 py-1 rounded cursor-pointer inline-flex items-center gap-2",
+                ),
+              ],
+              [
+                html.img([
+                  attribute.src(
+                    api_helper.create_uri(
+                      "/rest/getCoverArt.view",
+                      {
+                        let assert Ok(stg) = m.storage |> varasto.get("auth")
+                        stg.auth
+                      },
+                      [
+                        #("id", playlist.0),
+                        #("size", "500"),
+                      ],
+                    )
+                    |> uri.to_string,
+                  ),
+                  attribute.class("w-12 h-12 rounded object-cover inline-block"),
+                ]),
+                html.span(
+                  [
+                    attribute.class(
+                      "font-normal inline-flex w-full items-center justify-between",
+                    ),
+                  ],
+                  [
+                    html.a(
+                      [
+                        attribute.href("/playlist/" <> { playlist.1 }.id),
+                        attribute.class("hover:underline"),
+                      ],
+                      [
+                        element.text({ playlist.1 }.name),
+                      ],
+                    ),
+                    html.i(
+                      [
+                        attribute.class("text-2xl"),
+                        event.on_click(case song_in_playlist {
+                          True ->
+                            playlist.0
+                            |> msg.RemoveFromPlaylist(m.current_song.id)
+                          False ->
+                            playlist.0 |> msg.AddToPlaylist(m.current_song.id)
+                        }),
+                        case song_in_playlist {
+                          True ->
+                            attribute.class(
+                              "text-violet-500 ph-fill ph-check-circle",
+                            )
+                          False -> attribute.class("ph ph-plus-circle")
+                        },
+                      ],
+                      [],
+                    ),
+                  ],
+                ),
+              ],
+            )
+          },
+        ),
+      ),
     ],
   )
 }

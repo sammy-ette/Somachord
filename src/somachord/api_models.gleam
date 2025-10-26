@@ -110,6 +110,62 @@ pub fn album_decoder() {
   ))
 }
 
+pub type Playlist {
+  Playlist(
+    id: String,
+    name: String,
+    owner: String,
+    public: Bool,
+    cover_art_id: String,
+    created: String,
+    updated: String,
+    duration: Int,
+    songs: List(Child),
+    song_count: Int,
+  )
+}
+
+pub fn new_playlist() {
+  Playlist(
+    id: "",
+    name: "",
+    owner: "",
+    public: False,
+    cover_art_id: "",
+    created: "",
+    updated: "",
+    duration: 0,
+    songs: [],
+    song_count: 0,
+  )
+}
+
+pub fn playlist_decoder() -> decode.Decoder(Playlist) {
+  use id <- decode.field("id", decode.string)
+  use name <- decode.field("name", decode.string)
+  use owner <- decode.optional_field("owner", "", decode.string)
+  use public <- decode.optional_field("public", False, decode.bool)
+  use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
+  use created <- decode.field("created", decode.string)
+  use updated <- decode.field("changed", decode.string)
+  use duration <- decode.field("duration", decode.int)
+  use songs <- decode.optional_field("entry", [], decode.list(song_decoder()))
+  use song_count <- decode.optional_field("songCount", 0, decode.int)
+
+  decode.success(Playlist(
+    id:,
+    name:,
+    owner:,
+    public:,
+    cover_art_id:,
+    created:,
+    updated:,
+    duration:,
+    songs:,
+    song_count:,
+  ))
+}
+
 pub type Child {
   Child(
     id: String,
