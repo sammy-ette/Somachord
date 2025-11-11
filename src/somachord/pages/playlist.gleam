@@ -155,10 +155,14 @@ fn update(m: Model, msg: Msg) {
       echo e
       #(m, effect.none())
     }
-    PlayPlaylist(index) -> #(
-      m,
-      event.emit("play", play_json(m.playlist.id, index)),
-    )
+    PlayPlaylist(index) -> {
+      echo "playing playlist"
+      #(
+        m,
+        event.emit("playPlaylist", playlist_json(m.playlist, index)),
+        // event.emit("play", play_json(m.playlist.id, index)),
+      )
+    }
     ShowEditor(show) -> #(Model(..m, show_editor: show), effect.none())
     PlaylistUpdate(Ok(playlist_update_info)) -> {
       #(
@@ -217,6 +221,13 @@ fn play_json(id: String, index: Int) {
   json.object([
     #("id", json.string(id)),
     #("type", json.string("playlist")),
+    #("index", json.int(index)),
+  ])
+}
+
+fn playlist_json(playlist: api_models.Playlist, index: Int) {
+  json.object([
+    #("playlist", api_models.playlist_encode(playlist)),
     #("index", json.int(index)),
   ])
 }

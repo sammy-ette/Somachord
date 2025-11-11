@@ -45,6 +45,7 @@ pub type Msg {
   // and the queue.
   StreamAlbum(api_models.Album, Int)
   StreamPlaylist(api_models.Playlist, Int)
+  StreamPlaylistWithRequest(model.PlaylistPlayRequest)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
   StreamCurrent
@@ -101,6 +102,28 @@ pub fn on_play(
     ))
 
     decode.success(model.PlayRequest(type_:, id:, index:))
+    |> decode.map(handler)
+  })
+}
+
+pub fn on_playlist(
+  handler: fn(model.PlaylistPlayRequest) -> msg,
+) -> attribute.Attribute(msg) {
+  event.on("playPlaylist", {
+    echo "hey"
+    use playlist <- decode.subfield(
+      ["detail", "playlist"],
+      api_models.playlist_decoder(),
+    )
+    echo "decoded playlist!"
+    // use index <- decode.then(decode.optionally_at(
+    //   ["detail", "index"],
+    //   0,
+    //   decode.int,
+    // ))
+    echo "index got"
+
+    decode.success(model.PlaylistPlayRequest(echo playlist, echo 0))
     |> decode.map(handler)
   })
 }

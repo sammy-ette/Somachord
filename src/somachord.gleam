@@ -268,7 +268,18 @@ fn update(
         |> queue.jump(index)
       #(model.Model(..m, queue:), play())
     }
+    msg.StreamPlaylistWithRequest(request) -> {
+      echo request
+      echo request.playlist.name
+      #(
+        m,
+        effect.from(fn(dispatch) {
+          msg.StreamPlaylist(request.playlist, request.index) |> dispatch
+        }),
+      )
+    }
     msg.StreamPlaylist(playlist, index) -> {
+      echo playlist.name
       let queue =
         case
           m.shuffled,
@@ -779,12 +790,14 @@ fn view(m: model.Model) {
           ])
         router.Playlist(id) ->
           playlist.element([
+            msg.on_playlist(msg.StreamPlaylistWithRequest),
             msg.on_play(msg.Play),
             attribute.attribute("playlist-id", id),
           ])
         router.Library -> library.element([msg.on_play(msg.Play)])
         router.Likes ->
           playlist.element([
+            msg.on_playlist(msg.StreamPlaylistWithRequest),
             msg.on_play(msg.Play),
             attribute.attribute(
               "playlist-id",

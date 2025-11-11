@@ -33,6 +33,10 @@ pub type PlayRequest {
   PlayRequest(type_: String, id: String, index: Int)
 }
 
+pub type PlaylistPlayRequest {
+  PlaylistPlayRequest(playlist: api_models.Playlist, index: Int)
+}
+
 pub type Layout {
   Desktop
   Mobile
