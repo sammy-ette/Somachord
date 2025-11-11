@@ -17,6 +17,7 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components
+import somachord/constants
 import somachord/elements
 import somachord/model
 import somachord/storage
@@ -26,6 +27,9 @@ pub type Msg {
   PlaylistID(String)
   PlaylistResponse(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
+  )
+  LikedSongsResponse(
+    Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
   )
 
   PlayPlaylist(index: Int)
@@ -104,17 +108,44 @@ fn init(_) {
 fn update(m: Model, msg: Msg) {
   case msg {
     PlaylistID(id) -> {
-      #(
-        m,
-        api.playlist(
-          auth_details: {
-            let assert Ok(stg) = storage.create() |> varasto.get("auth")
-            stg.auth
-          },
-          id:,
-          msg: PlaylistResponse,
-        ),
-      )
+      #(m, case id == constants.somachord_likes_playlist_id {
+        True ->
+          api.likes(
+            auth_details: {
+              let assert Ok(stg) = storage.create() |> varasto.get("auth")
+              stg.auth
+            },
+            msg: LikedSongsResponse,
+          )
+        False ->
+          api.playlist(
+            auth_details: {
+              let assert Ok(stg) = storage.create() |> varasto.get("auth")
+              stg.auth
+            },
+            id:,
+            msg: PlaylistResponse,
+          )
+      })
+    }
+    LikedSongsResponse(Ok(Ok(songs))) -> {
+      let playlist =
+        api_models.Playlist(
+          ..api_models.new_playlist(),
+          id: constants.somachord_likes_playlist_id,
+          name: "Liked Songs",
+          owner: "You",
+          song_count: list.length(songs),
+          duration: list.fold(songs, 0, fn(acc, song) { acc + song.duration }),
+          cover_art_id: "",
+          public: False,
+          songs: songs,
+        )
+      #(Model(..m, playlist:), effect.none())
+    }
+    LikedSongsResponse(e) -> {
+      echo e
+      #(m, effect.none())
     }
     PlaylistResponse(Ok(Ok(playlist))) -> #(
       Model(..m, playlist:),
@@ -130,7 +161,6 @@ fn update(m: Model, msg: Msg) {
     )
     ShowEditor(show) -> #(Model(..m, show_editor: show), effect.none())
     PlaylistUpdate(Ok(playlist_update_info)) -> {
-      echo "updating playlist..."
       #(
         Model(
           ..m,
@@ -332,6 +362,7 @@ fn page(m: Model) {
           model.Mobile -> attribute.none()
         },
         attribute.class(elements.scrollbar_class),
+        components.redirect_click(ComponentClick),
       ],
       [
         html.h1([attribute.class("text-3xl text-zinc-300 font-semibold")], [
@@ -373,6 +404,13 @@ fn page(m: Model) {
                 <> " sec"
               }),
             ]),
+            ..case m.playlist.public {
+              True -> [element.none()]
+              False -> [
+                html.span([], [element.text("•")]),
+                html.i([attribute.class("text-xl ph ph-lock-simple")], []),
+              ]
+            }
           ],
         ),
         // case m.layout {
@@ -444,18 +482,58 @@ fn page(m: Model) {
       ],
     ),
     html.div([attribute.class("flex flex-col gap-8")], [
-      html.img([
-        attribute.src(
-          api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-            #("id", m.playlist.cover_art_id),
-            #("size", "500"),
-          ])
-          |> uri.to_string,
-        ),
-        attribute.class(
-          "self-center w-52 h-52 md:w-80 md:h-80 object-scale rounded-md",
-        ),
-      ]),
+      html.div(
+        [
+          case m.playlist.id == constants.somachord_likes_playlist_id {
+            True ->
+              attribute.class(
+                "bg-linear-to-tl from-violet-500 from-20% to-violet-200",
+              )
+            False -> attribute.class("bg-zinc-900")
+          },
+          attribute.class(
+            "flex justify-center items-center w-52 h-52 md:w-80 md:h-80 rounded-md",
+          ),
+        ],
+        [
+          case m.playlist.id == constants.somachord_likes_playlist_id {
+            True ->
+              html.i(
+                [
+                  attribute.class(
+                    "text-[12rem] ph-fill ph-heart-straight text-zinc-900",
+                  ),
+                ],
+                [],
+              )
+            False ->
+              case m.playlist.cover_art_id {
+                "" ->
+                  html.span(
+                    [
+                      attribute.class("text-4xl p-2 font-black text-zinc-700"),
+                    ],
+                    [element.text("No Cover Art!")],
+                  )
+                _ ->
+                  html.img([
+                    attribute.src(
+                      api_helper.create_uri(
+                        "/rest/getCoverArt.view",
+                        auth_details,
+                        [
+                          #("id", m.playlist.cover_art_id),
+                          #("size", "500"),
+                        ],
+                      )
+                      |> uri.to_string,
+                    ),
+                    attribute.class("object-scale"),
+                  ])
+              }
+          },
+        ],
+      ),
       //   case m.layout {
     //     model.Mobile -> element.none()
     //     model.Desktop ->
@@ -489,13 +567,10 @@ fn buttons(m: Model) {
           [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
           [],
         ),
-        html.i(
-          [
-            event.on_click(ShowEditor(True)),
-            attribute.class("text-3xl ph ph-pencil-simple"),
-          ],
-          [],
-        ),
+        case m.playlist.id == constants.somachord_likes_playlist_id {
+          False -> html.i([attribute.class("text-3xl ph ph-pencil-simple")], [])
+          True -> element.none()
+        },
         html.i(
           [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
           [],

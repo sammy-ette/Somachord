@@ -1,5 +1,6 @@
 import gleam/dynamic/decode
 import gleam/int
+import gleam/json
 import gleam/option
 import plinth/browser/element
 
@@ -14,6 +15,14 @@ pub type Artist {
 
 pub type SmallArtist {
   SmallArtist(id: String, name: String)
+}
+
+pub fn artist_encode(small_artist: SmallArtist) -> json.Json {
+  let SmallArtist(id:, name:) = small_artist
+  json.object([
+    #("id", json.string(id)),
+    #("name", json.string(name)),
+  ])
 }
 
 pub fn artist_decoder() {
@@ -166,6 +175,33 @@ pub fn playlist_decoder() -> decode.Decoder(Playlist) {
   ))
 }
 
+pub fn playlist_encode(playlist: Playlist) -> json.Json {
+  let Playlist(
+    id:,
+    name:,
+    owner:,
+    public:,
+    cover_art_id:,
+    created:,
+    updated:,
+    duration:,
+    songs:,
+    song_count:,
+  ) = playlist
+  json.object([
+    #("id", json.string(id)),
+    #("name", json.string(name)),
+    #("owner", json.string(owner)),
+    #("public", json.bool(public)),
+    #("coverArt", json.string(cover_art_id)),
+    #("created", json.string(created)),
+    #("updated", json.string(updated)),
+    #("duration", json.int(duration)),
+    #("entry", json.array(songs, child_encode)),
+    #("songCount", json.int(song_count)),
+  ])
+}
+
 pub type Child {
   Child(
     id: String,
@@ -228,6 +264,35 @@ pub fn song_decoder() {
     starred:,
     plays:,
   ))
+}
+
+pub fn child_encode(child: Child) -> json.Json {
+  let Child(
+    id:,
+    album_name:,
+    album_id:,
+    cover_art_id:,
+    artists:,
+    duration:,
+    title:,
+    track:,
+    year:,
+    starred:,
+    plays:,
+  ) = child
+  json.object([
+    #("id", json.string(id)),
+    #("album_name", json.string(album_name)),
+    #("album_id", json.string(album_id)),
+    #("cover_art_id", json.string(cover_art_id)),
+    #("artists", json.array(artists, artist_encode)),
+    #("duration", json.int(duration)),
+    #("title", json.string(title)),
+    #("track", json.int(track)),
+    #("year", json.int(year)),
+    #("starred", json.bool(starred)),
+    #("plays", json.int(plays)),
+  ])
 }
 
 pub type LyricSet {

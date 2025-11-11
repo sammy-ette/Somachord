@@ -106,19 +106,22 @@ fn side_bar(_: model.Model) {
       ),
     ],
     [
-      html.a([attribute.href("/playlists")], [
+      // the query doesn't actually filter to playlists only (yet)
+      html.a([attribute.href("/library?filter=0")], [
         elements.button(
           html.i([attribute.class("text-3xl ph ph-playlist")], []),
           "Playlists",
           [],
         ),
       ]),
-      // elements.button(
-    //   html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
-    //   "Liked Songs",
-    //   [],
-    // ),
-    // html.a([attribute.href("/albums")], [
+      html.a([attribute.href("/likes")], [
+        elements.button(
+          html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
+          "Liked Songs",
+          [],
+        ),
+      ]),
+      // html.a([attribute.href("/albums")], [
     //   elements.button(
     //     html.i(
     //       [

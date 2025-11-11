@@ -184,6 +184,30 @@ pub fn like(auth_details: auth.Auth, id id: String, msg msg: EmptyResponse(a)) {
   )
 }
 
+pub fn likes(
+  auth_details auth_details: auth.Auth,
+  msg msg: Response(List(api_models.Child), b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/getStarred2.view", query: [])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use songs <- decode.then(decode.optionally_at(
+          ["subsonic-response", "starred2", "song"],
+          [],
+          decode.list(api_models.song_decoder()),
+        ))
+
+        decode.success(songs)
+      }),
+      msg,
+    ),
+  )
+}
+
 pub fn unlike(auth_details: auth.Auth, id id: String, msg msg: EmptyResponse(a)) {
   let req =
     get_request(auth_details:, path: "/rest/unstar.view", query: [#("id", id)])

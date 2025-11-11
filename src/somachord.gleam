@@ -10,6 +10,7 @@ import gleam/result
 import gleam/uri
 import plinth/javascript/date
 import somachord/components
+import somachord/constants
 import somachord/models/auth
 import somachord/pages/library
 import somachord/pages/not_found
@@ -782,6 +783,14 @@ fn view(m: model.Model) {
             attribute.attribute("playlist-id", id),
           ])
         router.Library -> library.element([msg.on_play(msg.Play)])
+        router.Likes ->
+          playlist.element([
+            msg.on_play(msg.Play),
+            attribute.attribute(
+              "playlist-id",
+              constants.somachord_likes_playlist_id,
+            ),
+          ])
         _ -> not_found.page()
       }
 

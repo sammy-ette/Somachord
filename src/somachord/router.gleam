@@ -18,6 +18,7 @@ pub type Route {
   Album(id: String)
   Song(id: String)
   Playlist(id: String)
+  Likes
 
   Library
   Playlists
@@ -45,6 +46,7 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
       "/playlist/" <> id -> Playlist(id)
       "/playlists/" -> Playlists
       "/library" -> Library
+      "/likes" -> Likes
       _ -> Unknown
     }
   }
