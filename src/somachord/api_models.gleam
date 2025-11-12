@@ -197,7 +197,7 @@ pub fn playlist_encode(playlist: Playlist) -> json.Json {
     #("created", json.string(created)),
     #("updated", json.string(updated)),
     #("duration", json.int(duration)),
-    #("entry", json.array(songs, child_encode)),
+    #("entry", json.array(songs, song_encode)),
     #("songCount", json.int(song_count)),
   ])
 }
@@ -266,7 +266,7 @@ pub fn song_decoder() {
   ))
 }
 
-pub fn child_encode(child: Child) -> json.Json {
+pub fn song_encode(child: Child) -> json.Json {
   let Child(
     id:,
     album_name:,
@@ -282,16 +282,16 @@ pub fn child_encode(child: Child) -> json.Json {
   ) = child
   json.object([
     #("id", json.string(id)),
-    #("album_name", json.string(album_name)),
-    #("album_id", json.string(album_id)),
-    #("cover_art_id", json.string(cover_art_id)),
+    #("album", json.string(album_name)),
+    #("albumID", json.string(album_id)),
+    #("coverArt", json.string(cover_art_id)),
     #("artists", json.array(artists, artist_encode)),
     #("duration", json.int(duration)),
     #("title", json.string(title)),
     #("track", json.int(track)),
     #("year", json.int(year)),
     #("starred", json.bool(starred)),
-    #("plays", json.int(plays)),
+    #("playCount", json.int(plays)),
   ])
 }
 
