@@ -195,6 +195,7 @@ pub fn playlist_encode(playlist: Playlist) -> json.Json {
     #("public", json.bool(public)),
     #("coverArt", json.string(cover_art_id)),
     #("created", json.string(created)),
+    #("changed", json.string(created)),
     #("updated", json.string(updated)),
     #("duration", json.int(duration)),
     #("entry", json.array(songs, song_encode)),
