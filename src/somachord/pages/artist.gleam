@@ -303,6 +303,7 @@ fn view_home(m: Model) {
               ]
             },
             cover_art: True,
+            playing: False,
             msg: PlaySong(song.id),
           )
         }),

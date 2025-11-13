@@ -397,9 +397,14 @@ fn playing_bar(m: model.Model) {
                   ),
                 ],
                 list.map(queue.list(m.queue), fn(queue_entry) {
-                  elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
-                    msg.QueueJumpTo(queue_entry.0)
-                  })
+                  elements.song(
+                    queue_entry.1,
+                    -1,
+                    [],
+                    cover_art: True,
+                    playing: m.current_song.id == { queue_entry.1 }.id,
+                    msg: { msg.QueueJumpTo(queue_entry.0) },
+                  )
                 }),
               ),
             ],

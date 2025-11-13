@@ -169,6 +169,7 @@ pub fn desktop_page(m: model.Model, id) {
                     ]
                   },
                   cover_art: False,
+                  playing: m.current_song.id == song.id,
                   msg: { msg.StreamAlbum(album, index) },
                 )
               },
