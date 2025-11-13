@@ -232,6 +232,13 @@ fn update(
         |> queue.jump(index)
       #(model.Model(..m, queue:), play())
     }
+    msg.StreamAlbumShuffled(album, index) -> {
+      let queue =
+        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        |> queue.shuffle
+        |> queue.jump(index)
+      #(model.Model(..m, queue:, shuffled: True), play())
+    }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(Ok(song))) -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
