@@ -5097,6 +5097,17 @@ function text(key3, mapper, content) {
   return new Text(text_kind, key3, mapper, content);
 }
 var unsafe_inner_html_kind = 3;
+function unsafe_inner_html(key3, mapper, namespace, tag2, attributes, inner_html) {
+  return new UnsafeInnerHtml(
+    unsafe_inner_html_kind,
+    key3,
+    mapper,
+    namespace,
+    tag2,
+    prepare(attributes),
+    inner_html
+  );
+}
 
 // build/dev/javascript/lustre/lustre/internals/equals.ffi.mjs
 var isReferenceEqual = (a2, b) => a2 === b;
@@ -5409,6 +5420,16 @@ function text2(content) {
 }
 function none3() {
   return text("", identity2, "");
+}
+function unsafe_raw_html(namespace, tag2, attributes, inner_html) {
+  return unsafe_inner_html(
+    "",
+    identity2,
+    namespace,
+    tag2,
+    attributes,
+    inner_html
+  );
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
@@ -13121,7 +13142,15 @@ function on_play(handler) {
 
 // build/dev/javascript/somachord/somachord/elements.mjs
 var FILEPATH9 = "src/somachord/elements.gleam";
-function song2(song3, index5, attrs, cover_art, msg) {
+function waveform(attrs) {
+  return unsafe_raw_html(
+    "",
+    "waveform",
+    attrs,
+    "\n<svg width='32' height='32' viewBox='0 0 120 100' xmlns='http://www.w3.org/2000/svg'>\n  <rect x='20' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 60; 10; 40; 0' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>\n    <animate attributeName='y' values='90; 30; 80; 50; 90' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>\n  </rect>\n\n  <rect x='40' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 45; 20; 70; 0' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>\n    <animate attributeName='y' values='90; 45; 70; 20; 90' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>\n  </rect>\n\n  <rect x='60' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 70; 30; 50; 0' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>\n    <animate attributeName='y' values='90; 20; 60; 40; 90' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>\n  </rect>\n</svg>\n    "
+  );
+}
+function song2(song3, index5, attrs, cover_art, playing, msg) {
   let _block;
   {
     let _block$1;
@@ -13136,10 +13165,10 @@ function song2(song3, index5, attrs, cover_art, msg) {
         "let_assert",
         FILEPATH9,
         "somachord/elements",
-        28,
+        29,
         "song",
         "Pattern match failed, no pattern matched the value.",
-        { value: $, start: 780, end: 840, pattern_start: 791, pattern_end: 798 }
+        { value: $, start: 805, end: 865, pattern_start: 816, pattern_end: 823 }
       );
     }
     _block = stg.auth;
@@ -13164,14 +13193,26 @@ function song2(song3, index5, attrs, cover_art, msg) {
               return div(
                 toList([class$("w-5 grid grid-rows-1 grid-cols-1")]),
                 toList([
-                  span(
-                    toList([
-                      class$(
-                        "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-smtext-right"
-                      )
-                    ]),
-                    toList([text2(to_string2(index5 + 1))])
-                  ),
+                  (() => {
+                    if (playing) {
+                      return waveform(
+                        toList([
+                          class$(
+                            "col-start-1 row-start-1 group-hover:hidden fill-violet-400"
+                          )
+                        ])
+                      );
+                    } else {
+                      return span(
+                        toList([
+                          class$(
+                            "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-sm text-right"
+                          )
+                        ]),
+                        toList([text2(to_string2(index5 + 1))])
+                      );
+                    }
+                  })(),
                   i(
                     toList([
                       on_click(msg),
@@ -13217,9 +13258,14 @@ function song2(song3, index5, attrs, cover_art, msg) {
                   (() => {
                     let $ = span(
                       toList([
-                        class$(
-                          "text-wrap text-sm text-zinc-100 hover:underline"
-                        )
+                        class$("text-wrap text-sm hover:underline"),
+                        (() => {
+                          if (playing) {
+                            return class$("text-violet-400");
+                          } else {
+                            return class$("text-zinc-100");
+                          }
+                        })()
                       ]),
                       toList([text2(song3.title)])
                     );
@@ -13329,15 +13375,15 @@ function album2(album3, handler) {
         "let_assert",
         FILEPATH9,
         "somachord/elements",
-        155,
+        193,
         "album",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 4739,
-          end: 4799,
-          pattern_start: 4750,
-          pattern_end: 4757
+          start: 6432,
+          end: 6492,
+          pattern_start: 6443,
+          pattern_end: 6450
         }
       );
     }
@@ -13865,6 +13911,7 @@ function desktop_page(m, id3) {
                               }
                             })(),
                             false,
+                            m.current_song.id === song3.id,
                             new StreamAlbum(album3, index5)
                           );
                         }
@@ -14255,6 +14302,7 @@ function view_home(m) {
                   }
                 })(),
                 true,
+                false,
                 new PlaySong(song3.id)
               );
             }
@@ -16399,6 +16447,7 @@ function playing_bar(m) {
                           -1,
                           toList([]),
                           true,
+                          m.current_song.id === queue_entry[1].id,
                           new QueueJumpTo(queue_entry[0])
                         );
                       }

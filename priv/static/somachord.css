@@ -695,6 +695,9 @@
   .bg-center {
     background-position: center;
   }
+  .fill-violet-400 {
+    fill: var(--color-violet-400);
+  }
   .object-cover {
     object-fit: cover;
   }
@@ -748,6 +751,9 @@
   }
   .text-center {
     text-align: center;
+  }
+  .text-right {
+    text-align: right;
   }
   .font-\[\'Poppins\'\] {
     font-family: 'Poppins';
