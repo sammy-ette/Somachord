@@ -567,7 +567,14 @@ fn buttons(m: Model) {
           [],
         ),
         case m.playlist.id == constants.somachord_likes_playlist_id {
-          False -> html.i([attribute.class("text-3xl ph ph-pencil-simple")], [])
+          False ->
+            html.i(
+              [
+                attribute.class("text-3xl ph ph-pencil-simple"),
+                event.on_click(ShowEditor(True)),
+              ],
+              [],
+            )
           True -> element.none()
         },
         html.i(
