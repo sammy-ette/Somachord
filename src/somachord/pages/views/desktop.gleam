@@ -405,12 +405,10 @@ fn playing_bar(m: model.Model) {
           ],
           [],
         ),
-        playlist_menu.element(
-          button_attrs: [
-            event.on_click(msg.PlayerPlaylists),
-          ],
-          menu_attrs: [attribute.class("absolute bottom-92 right-96")],
-        ),
+        playlist_menu.element(button_attrs: [], menu_attrs: [
+          attribute.class("absolute bottom-92 right-96"),
+          playlist_menu.song_id(m.current_song.id),
+        ]),
       ]),
     ],
   )

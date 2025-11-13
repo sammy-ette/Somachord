@@ -1,14 +1,18 @@
 import gleam/bool
 import gleam/dict
 import gleam/list
+import gleam/pair
 import gleam/string
 import gleam/uri
 import lustre
 import lustre/attribute
+import lustre/component
 import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
+import rsvp
+import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/storage
@@ -17,19 +21,36 @@ import varasto
 type Model {
   Model(
     playlists: dict.Dict(String, api_models.Playlist),
-    song: api_models.Child,
+    added_songs: dict.Dict(String, List(String)),
+    song_id: String,
     open: Bool,
   )
 }
 
 type Msg {
+  SongID(id: String)
+
   NewPlaylist
   AddToPlaylist(playlist_id: String)
   RemoveFromPlaylist(playlist_id: String)
+
+  Playlists(
+    Result(Result(List(api_models.Playlist), api.SubsonicError), rsvp.Error),
+  )
+  PlaylistWithSongs(
+    Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
+  )
+  CreatePlaylist(
+    Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
+  )
+  DisgardedResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
 }
 
 pub fn register() {
-  let component = lustre.component(init, update, view, [])
+  let component =
+    lustre.component(init, update, view, [
+      component.on_attribute_change("song-id", fn(id) { Ok(id |> SongID) }),
+    ])
   lustre.register(component, "playlist-menu")
 }
 
@@ -68,14 +89,127 @@ pub fn song_id(id: String) {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(dict.new(), api_models.new_song(), True), effect.none())
+  #(
+    Model(dict.new(), dict.new(), "", True),
+    case storage.create() |> varasto.get("auth") {
+      Ok(stg) -> api.playlists(stg.auth, Playlists)
+      Error(_) -> effect.none()
+    },
+  )
 }
 
 fn update(m: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
-    NewPlaylist -> #(m, effect.none())
-    AddToPlaylist(playlist_id) -> #(m, effect.none())
-    RemoveFromPlaylist(playlist_id) -> #(m, effect.none())
+    SongID(id) -> #(Model(..m, song_id: id), effect.none())
+    NewPlaylist -> {
+      let auth_details = {
+        let assert Ok(stg) = storage.create() |> varasto.get("auth")
+        stg.auth
+      }
+      #(
+        m,
+        api.create_playlist(
+          auth_details:,
+          name: "New Playlist",
+          songs: [m.song_id],
+          msg: CreatePlaylist,
+        ),
+      )
+    }
+    CreatePlaylist(Ok(Ok(playlist))) -> {
+      #(
+        Model(..m, playlists: m.playlists |> dict.insert(playlist.id, playlist)),
+        effect.none(),
+      )
+    }
+    CreatePlaylist(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    AddToPlaylist(playlist_id) -> {
+      let auth_details = {
+        let assert Ok(stg) = storage.create() |> varasto.get("auth")
+        stg.auth
+      }
+
+      let added_songs = case dict.get(m.added_songs, playlist_id) {
+        Error(_) -> m.added_songs |> dict.insert(playlist_id, [m.song_id])
+        Ok(songs) ->
+          m.added_songs
+          |> dict.insert(playlist_id, songs |> list.append([m.song_id]))
+      }
+
+      #(
+        Model(..m, added_songs:),
+        api.add_to_playlist(
+          auth_details:,
+          playlist_id:,
+          song_id: m.song_id,
+          msg: DisgardedResponse,
+        ),
+      )
+    }
+    RemoveFromPlaylist(playlist_id) -> {
+      let auth_details = {
+        let assert Ok(stg) = storage.create() |> varasto.get("auth")
+        stg.auth
+      }
+
+      let added_songs = case dict.get(m.added_songs, playlist_id) {
+        Error(_) -> m.added_songs |> dict.insert(playlist_id, [m.song_id])
+        Ok(songs) ->
+          m.added_songs
+          |> dict.insert(playlist_id, songs |> list.append([m.song_id]))
+      }
+
+      #(
+        Model(..m, added_songs:),
+        api.remove_from_playlist(
+          auth_details:,
+          playlist_id:,
+          song_id: m.song_id,
+          msg: DisgardedResponse,
+        ),
+      )
+    }
+    Playlists(Ok(Ok(playlists))) -> #(
+      Model(
+        ..m,
+        playlists: playlists
+          |> list.fold(#(dict.new(), ""), fn(acc, song) {
+            let #(d, idx) = acc
+            #(d |> dict.insert(idx, song), idx)
+          })
+          |> pair.first
+          |> dict.delete(""),
+      ),
+      list.map(playlists, fn(playlist: api_models.Playlist) {
+        api.playlist(
+          {
+            let assert Ok(stg) = storage.create() |> varasto.get("auth")
+            stg.auth
+          },
+          playlist.id,
+          PlaylistWithSongs,
+        )
+      })
+        |> effect.batch(),
+    )
+    Playlists(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    PlaylistWithSongs(Ok(Ok(playlist))) -> {
+      #(
+        Model(..m, playlists: m.playlists |> dict.insert(playlist.id, playlist)),
+        effect.none(),
+      )
+    }
+    PlaylistWithSongs(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    DisgardedResponse(_) -> #(m, effect.none())
   }
 }
 
@@ -91,7 +225,7 @@ fn view(m: Model) {
         html.h1([attribute.class("font-semibold text-lg")], [
           element.text("Add to playlist"),
         ]),
-        html.div(
+        html.button(
           [
             event.on_click(NewPlaylist),
             attribute.class(
@@ -116,7 +250,12 @@ fn view(m: Model) {
               string.compare({ pl1.1 }.name, { pl2.1 }.name)
             }),
           fn(playlist) {
-            let song_in_playlist = { playlist.1 }.songs |> list.contains(m.song)
+            let song_in_playlist = case dict.get(m.added_songs, playlist.0) {
+              Error(_) ->
+                list.map({ playlist.1 }.songs, fn(song) { song.id })
+                |> list.contains(m.song_id)
+              Ok(songs) -> songs |> list.contains(m.song_id)
+            }
 
             html.div(
               [
@@ -159,23 +298,25 @@ fn view(m: Model) {
                         element.text({ playlist.1 }.name),
                       ],
                     ),
-                    html.i(
-                      [
-                        attribute.class("text-2xl"),
-                        event.on_click(case song_in_playlist {
-                          True -> RemoveFromPlaylist(playlist.0)
-                          False -> AddToPlaylist(playlist.0)
-                        }),
-                        case song_in_playlist {
-                          True ->
-                            attribute.class(
-                              "text-violet-500 ph-fill ph-check-circle",
-                            )
-                          False -> attribute.class("ph ph-plus-circle")
-                        },
-                      ],
-                      [],
-                    ),
+                    html.button([], [
+                      html.i(
+                        [
+                          attribute.class("text-2xl"),
+                          event.on_click(case song_in_playlist {
+                            True -> RemoveFromPlaylist(playlist.0)
+                            False -> AddToPlaylist(playlist.0)
+                          }),
+                          case song_in_playlist {
+                            True ->
+                              attribute.class(
+                                "text-violet-500 ph-fill ph-check-circle",
+                              )
+                            False -> attribute.class("ph ph-plus-circle")
+                          },
+                        ],
+                        [],
+                      ),
+                    ]),
                   ],
                 ),
               ],

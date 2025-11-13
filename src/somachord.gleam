@@ -572,45 +572,6 @@ fn update(
         },
       )
     }
-    msg.PlayerPlaylists -> {
-      use <- bool.guard(dict.is_empty(m.playlists) |> bool.negate, #(
-        m,
-        effect.none(),
-      ))
-
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
-      #(m, api.playlists(auth_details, msg.Playlists))
-    }
-    msg.Playlists(Ok(Ok(playlists))) -> #(
-      model.Model(
-        ..m,
-        playlists: playlists
-          |> list.fold(#(dict.new(), ""), fn(acc, song) {
-            let #(d, idx) = acc
-            #(d |> dict.insert(idx, song), idx)
-          })
-          |> pair.first
-          |> dict.delete(""),
-      ),
-      list.map(playlists, fn(playlist: api_models.Playlist) {
-        api.playlist(
-          {
-            let assert Ok(stg) = m.storage |> varasto.get("auth")
-            stg.auth
-          },
-          playlist.id,
-          msg.PlaylistWithSongs,
-        )
-      })
-        |> effect.batch(),
-    )
-    msg.Playlists(e) -> {
-      echo e
-      #(m, effect.none())
-    }
     msg.PlaylistWithSongs(Ok(Ok(playlist))) -> {
       echo playlist.name
       echo playlist.songs
@@ -627,86 +588,11 @@ fn update(
       echo e
       #(m, effect.none())
     }
-    msg.AddToPlaylist(playlist_id, song_id) -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
-
-      let assert Ok(playlist) = dict.get(m.playlists, playlist_id)
-      let songs = playlist.songs |> list.append([m.current_song])
-
-      #(
-        model.Model(
-          ..m,
-          playlists: m.playlists
-            |> dict.insert(playlist_id, api_models.Playlist(..playlist, songs:)),
-        ),
-        api.add_to_playlist(
-          auth_details:,
-          playlist_id:,
-          song_id:,
-          msg: msg.DisgardedResponse,
-        ),
-      )
-    }
-    msg.RemoveFromPlaylist(playlist_id, song_id) -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
-
-      let assert Ok(playlist) = dict.get(m.playlists, playlist_id)
-      let songs =
-        playlist.songs
-        |> list.filter(fn(s) { s.id != song_id })
-      #(
-        model.Model(
-          ..m,
-          playlists: m.playlists
-            |> dict.insert(playlist_id, api_models.Playlist(..playlist, songs:)),
-        ),
-        api.remove_from_playlist(
-          auth_details:,
-          playlist_id:,
-          song_id:,
-          msg: msg.DisgardedResponse,
-        ),
-      )
-    }
     msg.Search(query) -> #(
       m,
       modem.push("/search/" <> query, option.None, option.None),
     )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
-    msg.NewPlaylist -> {
-      let auth_details = {
-        let assert Ok(stg) = m.storage |> varasto.get("auth")
-        stg.auth
-      }
-      #(
-        m,
-        api.create_playlist(
-          auth_details:,
-          name: "New Playlist",
-          songs: [m.current_song],
-          msg: msg.CreatePlaylist,
-        ),
-      )
-    }
-    msg.CreatePlaylist(Ok(Ok(playlist))) -> {
-      #(
-        model.Model(
-          ..m,
-          playlists: m.playlists |> dict.insert(playlist.id, playlist),
-        ),
-        effect.none(),
-      )
-    }
-    msg.CreatePlaylist(e) -> {
-      echo e
-      #(m, effect.none())
-    }
   }
 }
 

@@ -587,13 +587,13 @@ pub fn remove_from_playlist(
 pub fn create_playlist(
   auth_details auth_details: auth.Auth,
   name name: String,
-  songs songs: List(api_models.Child),
+  songs songs: List(String),
   msg msg: Response(api_models.Playlist, b),
 ) {
   let req =
     get_request(auth_details:, path: "/rest/createPlaylist.view", query: [
       #("name", name),
-      ..list.map(songs, fn(song: api_models.Child) { #("songId", song.id) })
+      ..list.map(songs, fn(song_id: String) { #("songId", song_id) })
     ])
 
   rsvp.send(

@@ -169,8 +169,8 @@ fn update(m: Model, msg: Msg) {
               #("playlistName", playlist_update_info.name),
               #("playlistDescription", playlist_update_info.description),
               #("playlistPublic", case playlist_update_info.public {
-                True -> "True"
-                False -> "False"
+                True -> "true"
+                False -> "false"
               }),
             ]),
         ),
@@ -200,6 +200,10 @@ fn update(m: Model, msg: Msg) {
           playlist: api_models.Playlist(
             ..m.playlist,
             name: m.playlist_form |> form.field_value("playlistName"),
+            public: case m.playlist_form |> form.field_value("playlistPublic") {
+              "true" -> True
+              _ -> False
+            },
           ),
         ),
         effect.none(),

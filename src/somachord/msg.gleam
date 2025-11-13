@@ -25,13 +25,7 @@ pub type Msg {
   SimilarSongsArtist(
     Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
   )
-  Playlists(
-    Result(Result(List(api_models.Playlist), api.SubsonicError), rsvp.Error),
-  )
   PlaylistWithSongs(
-    Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
-  )
-  CreatePlaylist(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
@@ -65,12 +59,6 @@ pub type Msg {
   PlayerLoop
   Like
   QueueJumpTo(position: Int)
-  PlayerPlaylists
-
-  AddToPlaylist(playlist_id: String, song_id: String)
-  RemoveFromPlaylist(playlist_id: String, song_id: String)
-
-  NewPlaylist
 
   Unload
   ComponentClick
