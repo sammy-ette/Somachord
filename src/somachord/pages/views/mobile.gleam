@@ -81,12 +81,12 @@ fn playing_bar(m: model.Model) {
       ),
     ],
     [
-      html.div([attribute.class("flex justify-between items-center")], [
-        html.div([attribute.class("flex gap-2 items-center")], [
+      html.div([attribute.class("flex justify-between items-center gap-2")], [
+        html.div([attribute.class("flex gap-2 items-center flex-1 min-w-0")], [
           html.div(
             [
               attribute.class(
-                "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center",
+                "w-12 h-12 bg-zinc-900 rounded-md flex items-center justify-center",
               ),
             ],
             [
@@ -102,7 +102,10 @@ fn playing_bar(m: model.Model) {
                   )
                 False ->
                   html.a(
-                    [attribute.href("/album/" <> m.current_song.album_id)],
+                    [
+                      attribute.href("/album/" <> m.current_song.album_id),
+                      attribute.class("w-12 h-12"),
+                    ],
                     [
                       html.img([
                         attribute.src(
@@ -125,43 +128,27 @@ fn playing_bar(m: model.Model) {
               },
             ],
           ),
-          html.span([attribute.class("flex flex-col")], [
-            html.a(
+          html.span([attribute.class("flex flex-col min-w-0")], [
+            html.span(
               [
-                attribute.class("text-xs"),
-                attribute.href("/song/" <> m.current_song.id),
+                attribute.class(
+                  "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0",
+                ),
               ],
               [
-                html.span(
-                  [
-                    attribute.class(
-                      "hover:underline font-normal text-nowrap text-ellipsis",
-                    ),
-                  ],
-                  [
-                    element.text(m.current_song.title),
-                  ],
-                ),
+                element.text(m.current_song.title),
               ],
             ),
             html.span(
-              [],
+              [attribute.class("text-xs font-light")],
               list.map(
                 m.current_song.artists,
                 fn(artist: api_models.SmallArtist) {
-                  html.a(
+                  html.span(
                     [
-                      attribute.class("text-xs"),
-                      attribute.href("/artist/" <> artist.id),
+                      attribute.class("hover:underline"),
                     ],
-                    [
-                      html.span(
-                        [
-                          attribute.class("hover:underline font-light"),
-                        ],
-                        [element.text(artist.name)],
-                      ),
-                    ],
+                    [element.text(artist.name)],
                   )
                 },
               )
