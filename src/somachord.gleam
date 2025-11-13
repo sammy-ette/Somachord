@@ -10,6 +10,7 @@ import gleam/result
 import gleam/uri
 import plinth/javascript/date
 import somachord/components
+import somachord/components/playlist_menu
 import somachord/constants
 import somachord/models/auth
 import somachord/pages/library
@@ -45,11 +46,13 @@ import somachord/storage
 
 pub fn main() {
   let app = lustre.application(init, update, view)
+  let assert Ok(_) = playlist_menu.register()
+  let assert Ok(_) = song_detail.register()
+
   let assert Ok(_) = login.register()
   let assert Ok(_) = home.register()
   let assert Ok(_) = artist.register()
   let assert Ok(_) = song.register()
-  let assert Ok(_) = song_detail.register()
   let assert Ok(_) = search.register()
   let assert Ok(_) = playlist.register()
   let assert Ok(_) = library.register()
