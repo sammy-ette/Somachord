@@ -11,7 +11,7 @@
 - [x] Autoplay similar music when queue is finished
 - [x] Save and restore music queue
 - [x] Lyrics
-- [ ] Playlists
+- [x] Playlists
 
 Request features you would like as an [issue](https://github.com/sammy-ette/Somachord/issues/new)
 and I may or may not work on it.
