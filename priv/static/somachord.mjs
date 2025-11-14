@@ -24,25 +24,6 @@ var __toESM = (mod, isNodeMode, target2) => (target2 = mod != null ? __create(__
   mod
 ));
 
-// node_modules/is-electron/index.js
-var require_is_electron = __commonJS({
-  "node_modules/is-electron/index.js"(exports, module) {
-    function isElectron2() {
-      if (typeof window !== "undefined" && typeof window.process === "object" && window.process.type === "renderer") {
-        return true;
-      }
-      if (typeof process !== "undefined" && typeof process.versions === "object" && !!process.versions.electron) {
-        return true;
-      }
-      if (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.indexOf("Electron") >= 0) {
-        return true;
-      }
-      return false;
-    }
-    module.exports = isElectron2;
-  }
-});
-
 // (disabled):crypto
 var require_crypto = __commonJS({
   "(disabled):crypto"() {
@@ -594,6 +575,25 @@ var require_md5 = __commonJS({
   }
 });
 
+// node_modules/is-electron/index.js
+var require_is_electron = __commonJS({
+  "node_modules/is-electron/index.js"(exports, module) {
+    function isElectron2() {
+      if (typeof window !== "undefined" && typeof window.process === "object" && window.process.type === "renderer") {
+        return true;
+      }
+      if (typeof process !== "undefined" && typeof process.versions === "object" && !!process.versions.electron) {
+        return true;
+      }
+      if (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.indexOf("Electron") >= 0) {
+        return true;
+      }
+      return false;
+    }
+    module.exports = isElectron2;
+  }
+});
+
 // build/dev/javascript/prelude.mjs
 var CustomType = class {
   withFields(fields) {
@@ -640,8 +640,8 @@ var List = class {
     return length5 - 1;
   }
 };
-function prepend(element10, tail) {
-  return new NonEmpty(element10, tail);
+function prepend(element13, tail) {
+  return new NonEmpty(element13, tail);
 }
 function toList(elements, tail) {
   return List.fromArray(elements, tail);
@@ -870,8 +870,8 @@ function bitArrayPrintDeprecationWarning(name2, message2) {
 }
 var Result = class _Result extends CustomType {
   // @internal
-  static isResult(data) {
-    return data instanceof _Result;
+  static isResult(data2) {
+    return data2 instanceof _Result;
   }
 };
 var Ok = class extends Result {
@@ -2565,6 +2565,19 @@ function shuffle(list5) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function compare3(a2, b) {
+  let $ = a2 === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = less_than(a2, b);
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
+}
 function slice(string6, idx, len) {
   let $ = len < 0;
   if ($) {
@@ -2686,8 +2699,8 @@ var Decoder = class extends CustomType {
     this.function = function$;
   }
 };
-function run(data, decoder2) {
-  let $ = decoder2.function(data);
+function run(data2, decoder2) {
+  let $ = decoder2.function(data2);
   let maybe_invalid_data;
   let errors;
   maybe_invalid_data = $[0];
@@ -2698,20 +2711,20 @@ function run(data, decoder2) {
     return new Error2(errors);
   }
 }
-function success(data) {
+function success(data2) {
   return new Decoder((_) => {
-    return [data, toList([])];
+    return [data2, toList([])];
   });
 }
 function map2(decoder2, transformer) {
   return new Decoder(
     (d) => {
       let $ = decoder2.function(d);
-      let data;
+      let data2;
       let errors;
-      data = $[0];
+      data2 = $[0];
       errors = $[1];
-      return [transformer(data), errors];
+      return [transformer(data2), errors];
     }
   );
 }
@@ -2719,11 +2732,11 @@ function then$(decoder2, next2) {
   return new Decoder(
     (dynamic_data) => {
       let $ = decoder2.function(dynamic_data);
-      let data;
+      let data2;
       let errors;
-      data = $[0];
+      data2 = $[0];
       errors = $[1];
-      let decoder$1 = next2(data);
+      let decoder$1 = next2(data2);
       let $1 = decoder$1.function(dynamic_data);
       let layer;
       let data$1;
@@ -2739,7 +2752,7 @@ function then$(decoder2, next2) {
 }
 function run_decoders(loop$data, loop$failure, loop$decoders) {
   while (true) {
-    let data = loop$data;
+    let data2 = loop$data;
     let failure2 = loop$failure;
     let decoders = loop$decoders;
     if (decoders instanceof Empty) {
@@ -2747,7 +2760,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     } else {
       let decoder2 = decoders.head;
       let decoders$1 = decoders.tail;
-      let $ = decoder2.function(data);
+      let $ = decoder2.function(data2);
       let layer;
       let errors;
       layer = $;
@@ -2755,7 +2768,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       if (errors instanceof Empty) {
         return layer;
       } else {
-        loop$data = data;
+        loop$data = data2;
         loop$failure = failure2;
         loop$decoders = decoders$1;
       }
@@ -2783,8 +2796,8 @@ function decode_error(expected, found) {
     new DecodeError(expected, classify_dynamic(found), toList([]))
   ]);
 }
-function run_dynamic_function(data, name2, f) {
-  let $ = f(data);
+function run_dynamic_function(data2, name2, f) {
+  let $ = f(data2);
   if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
@@ -2792,28 +2805,28 @@ function run_dynamic_function(data, name2, f) {
     let zero = $[0];
     return [
       zero,
-      toList([new DecodeError(name2, classify_dynamic(data), toList([]))])
+      toList([new DecodeError(name2, classify_dynamic(data2), toList([]))])
     ];
   }
 }
-function decode_bool(data) {
-  let $ = isEqual(identity(true), data);
+function decode_bool(data2) {
+  let $ = isEqual(identity(true), data2);
   if ($) {
     return [true, toList([])];
   } else {
-    let $1 = isEqual(identity(false), data);
+    let $1 = isEqual(identity(false), data2);
     if ($1) {
       return [false, toList([])];
     } else {
-      return [false, decode_error("Bool", data)];
+      return [false, decode_error("Bool", data2)];
     }
   }
 }
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
+function decode_int(data2) {
+  return run_dynamic_function(data2, "Int", int);
 }
-function decode_float(data) {
-  return run_dynamic_function(data, "Float", float);
+function decode_float(data2) {
+  return run_dynamic_function(data2, "Float", float);
 }
 function new_primitive_decoder(name2, decoding_function) {
   return new Decoder(
@@ -2835,15 +2848,15 @@ function new_primitive_decoder(name2, decoding_function) {
 var bool = /* @__PURE__ */ new Decoder(decode_bool);
 var int2 = /* @__PURE__ */ new Decoder(decode_int);
 var float2 = /* @__PURE__ */ new Decoder(decode_float);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string2);
+function decode_string(data2) {
+  return run_dynamic_function(data2, "String", string2);
 }
 var string3 = /* @__PURE__ */ new Decoder(decode_string);
 function list2(inner) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       return list(
-        data,
+        data2,
         inner.function,
         (p2, k) => {
           return push_path(p2, toList([k]));
@@ -2894,15 +2907,15 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
     let path = loop$path;
     let position = loop$position;
     let inner = loop$inner;
-    let data = loop$data;
+    let data2 = loop$data;
     let handle_miss = loop$handle_miss;
     if (path instanceof Empty) {
-      let _pipe = inner(data);
+      let _pipe = inner(data2);
       return push_path(_pipe, reverse(position));
     } else {
       let key3 = path.head;
       let path$1 = path.tail;
-      let $ = index2(data, key3);
+      let $ = index2(data2, key3);
       if ($ instanceof Ok) {
         let $1 = $[0];
         if ($1 instanceof Some) {
@@ -2913,16 +2926,16 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
           loop$data = data$1;
           loop$handle_miss = handle_miss;
         } else {
-          return handle_miss(data, prepend(key3, position));
+          return handle_miss(data2, prepend(key3, position));
         }
       } else {
         let kind = $[0];
-        let $1 = inner(data);
+        let $1 = inner(data2);
         let default$;
         default$ = $1[0];
         let _pipe = [
           default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
         ];
         return push_path(_pipe, reverse(position));
       }
@@ -2931,14 +2944,14 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
 }
 function subfield(field_path, field_decoder, next2) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       let $ = index3(
         field_path,
         toList([]),
         field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
+        data2,
+        (data3, position) => {
+          let $12 = field_decoder.function(data3);
           let default$;
           default$ = $12[0];
           let _pipe = [
@@ -2952,7 +2965,7 @@ function subfield(field_path, field_decoder, next2) {
       let errors1;
       out = $[0];
       errors1 = $[1];
-      let $1 = next2(out).function(data);
+      let $1 = next2(out).function(data2);
       let out$1;
       let errors2;
       out$1 = $1[0];
@@ -2963,14 +2976,14 @@ function subfield(field_path, field_decoder, next2) {
 }
 function at(path, inner) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       return index3(
         path,
         toList([]),
         inner.function,
-        data,
-        (data2, position) => {
-          let $ = inner.function(data2);
+        data2,
+        (data3, position) => {
+          let $ = inner.function(data3);
           let default$;
           default$ = $[0];
           let _pipe = [
@@ -2988,10 +3001,10 @@ function field(field_name, field_decoder, next2) {
 }
 function optional_field(key3, default$, field_decoder, next2) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       let _block;
       let _block$1;
-      let $1 = index2(data, key3);
+      let $1 = index2(data2, key3);
       if ($1 instanceof Ok) {
         let $22 = $1[0];
         if ($22 instanceof Some) {
@@ -3004,7 +3017,7 @@ function optional_field(key3, default$, field_decoder, next2) {
         let kind = $1[0];
         _block$1 = [
           default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
         ];
       }
       let _pipe = _block$1;
@@ -3014,7 +3027,7 @@ function optional_field(key3, default$, field_decoder, next2) {
       let errors1;
       out = $[0];
       errors1 = $[1];
-      let $2 = next2(out).function(data);
+      let $2 = next2(out).function(data2);
       let out$1;
       let errors2;
       out$1 = $2[0];
@@ -3025,12 +3038,12 @@ function optional_field(key3, default$, field_decoder, next2) {
 }
 function optionally_at(path, default$, inner) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       return index3(
         path,
         toList([]),
         inner.function,
-        data,
+        data2,
         (_, _1) => {
           return [default$, toList([])];
         }
@@ -3098,6 +3111,9 @@ function pop_codeunit(str) {
 function lowercase(string6) {
   return string6.toLowerCase();
 }
+function less_than(a2, b) {
+  return a2 < b;
+}
 function split2(xs, pattern) {
   return List.fromArray(xs.split(pattern));
 }
@@ -3132,6 +3148,9 @@ function string_slice(string6, idx, len) {
 }
 function string_codeunit_slice(str, from2, length5) {
   return str.slice(from2, from2 + length5);
+}
+function contains_string(haystack, needle) {
+  return haystack.indexOf(needle) >= 0;
 }
 function starts_with(haystack, needle) {
   return haystack.startsWith(needle);
@@ -3179,6 +3198,9 @@ function new_map() {
 function map_to_list(map7) {
   return List.fromArray(map7.entries());
 }
+function map_remove(key3, map7) {
+  return map7.delete(key3);
+}
 function map_get(map7, key3) {
   const value3 = map7.get(key3, NOT_FOUND);
   if (value3 === NOT_FOUND) {
@@ -3202,31 +3224,31 @@ function percent_decode(string6) {
 function percent_encode(string6) {
   return encodeURIComponent(string6).replace("%2B", "+");
 }
-function classify_dynamic(data) {
-  if (typeof data === "string") {
+function classify_dynamic(data2) {
+  if (typeof data2 === "string") {
     return "String";
-  } else if (typeof data === "boolean") {
+  } else if (typeof data2 === "boolean") {
     return "Bool";
-  } else if (data instanceof Result) {
+  } else if (data2 instanceof Result) {
     return "Result";
-  } else if (data instanceof List) {
+  } else if (data2 instanceof List) {
     return "List";
-  } else if (data instanceof BitArray) {
+  } else if (data2 instanceof BitArray) {
     return "BitArray";
-  } else if (data instanceof Dict) {
+  } else if (data2 instanceof Dict) {
     return "Dict";
-  } else if (Number.isInteger(data)) {
+  } else if (Number.isInteger(data2)) {
     return "Int";
-  } else if (Array.isArray(data)) {
+  } else if (Array.isArray(data2)) {
     return `Array`;
-  } else if (typeof data === "number") {
+  } else if (typeof data2 === "number") {
     return "Float";
-  } else if (data === null) {
+  } else if (data2 === null) {
     return "Nil";
-  } else if (data === void 0) {
+  } else if (data2 === void 0) {
     return "Nil";
   } else {
-    const type = typeof data;
+    const type = typeof data2;
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
 }
@@ -3243,36 +3265,36 @@ function float_to_string(float4) {
     }
   }
 }
-function index2(data, key3) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+function index2(data2, key3) {
+  if (data2 instanceof Dict || data2 instanceof WeakMap || data2 instanceof Map) {
     const token = {};
-    const entry = data.get(key3, token);
+    const entry = data2.get(key3, token);
     if (entry === token) return new Ok(new None());
     return new Ok(new Some(entry));
   }
   const key_is_int = Number.isInteger(key3);
-  if (key_is_int && key3 >= 0 && key3 < 8 && data instanceof List) {
+  if (key_is_int && key3 >= 0 && key3 < 8 && data2 instanceof List) {
     let i2 = 0;
-    for (const value3 of data) {
+    for (const value3 of data2) {
       if (i2 === key3) return new Ok(new Some(value3));
       i2++;
     }
     return new Error2("Indexable");
   }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key3 in data) return new Ok(new Some(data[key3]));
+  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
+    if (key3 in data2) return new Ok(new Some(data2[key3]));
     return new Ok(new None());
   }
   return new Error2(key_is_int ? "Indexable" : "Dict");
 }
-function list(data, decode2, pushPath, index5, emptyList) {
-  if (!(data instanceof List || Array.isArray(data))) {
-    const error = new DecodeError("List", classify_dynamic(data), emptyList);
+function list(data2, decode2, pushPath, index5, emptyList) {
+  if (!(data2 instanceof List || Array.isArray(data2))) {
+    const error = new DecodeError("List", classify_dynamic(data2), emptyList);
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element10 of data) {
-    const layer = decode2(element10);
+  for (const element13 of data2) {
+    const layer = decode2(element13);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
       const [_, errors2] = pushPath(layer, index5.toString());
@@ -3283,16 +3305,16 @@ function list(data, decode2, pushPath, index5, emptyList) {
   }
   return [List.fromArray(decoded), emptyList];
 }
-function float(data) {
-  if (typeof data === "number") return new Ok(data);
+function float(data2) {
+  if (typeof data2 === "number") return new Ok(data2);
   return new Error2(0);
 }
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
+function int(data2) {
+  if (Number.isInteger(data2)) return new Ok(data2);
   return new Error2(0);
 }
-function string2(data) {
-  if (typeof data === "string") return new Ok(data);
+function string2(data2) {
+  if (typeof data2 === "string") return new Ok(data2);
   return new Error2("");
 }
 
@@ -3354,6 +3376,9 @@ function do_values_loop(loop$list, loop$acc) {
 function values(dict3) {
   let list_of_pairs = map_to_list(dict3);
   return do_values_loop(list_of_pairs, toList([]));
+}
+function delete$(dict3, key3) {
+  return map_remove(key3, dict3);
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/pair.mjs
@@ -4339,6 +4364,9 @@ function object(entries) {
 function identity3(x) {
   return x;
 }
+function array(list5) {
+  return list5.toArray();
+}
 function decode(string6) {
   try {
     const result = JSON.parse(string6);
@@ -4459,11 +4487,22 @@ function string4(input2) {
 function bool2(input2) {
   return identity3(input2);
 }
+function int3(input2) {
+  return identity3(input2);
+}
 function float3(input2) {
   return identity3(input2);
 }
 function object2(entries) {
   return object(entries);
+}
+function preprocessed_array(from2) {
+  return array(from2);
+}
+function array2(entries, inner_type) {
+  let _pipe = entries;
+  let _pipe$1 = map(_pipe, inner_type);
+  return preprocessed_array(_pipe$1);
 }
 
 // build/dev/javascript/lustre/lustre/internals/constants.ffi.mjs
@@ -4481,7 +4520,7 @@ var option_none = /* @__PURE__ */ new None();
 var GT = /* @__PURE__ */ new Gt();
 var LT = /* @__PURE__ */ new Lt();
 var EQ = /* @__PURE__ */ new Eq();
-function compare3(a2, b) {
+function compare4(a2, b) {
   if (a2.name === b.name) {
     return EQ;
   } else if (a2.name < b.name) {
@@ -4661,7 +4700,7 @@ function prepare(attributes) {
     } else {
       let _pipe = attributes;
       let _pipe$1 = sort(_pipe, (a2, b) => {
-        return compare3(b, a2);
+        return compare4(b, a2);
       });
       return merge2(_pipe$1, empty_list);
     }
@@ -4737,6 +4776,9 @@ function src(url) {
 }
 function autocomplete(value3) {
   return attribute2("autocomplete", value3);
+}
+function checked(is_checked) {
+  return boolean_attribute("checked", is_checked);
 }
 function max2(value3) {
   return attribute2("max", value3);
@@ -4824,9 +4866,9 @@ function from(effect) {
   };
   return new Effect(toList([task]), empty2.before_paint, empty2.after_paint);
 }
-function event2(name2, data) {
+function event2(name2, data2) {
   let task = (actions) => {
-    return actions.emit(name2, data);
+    return actions.emit(name2, data2);
   };
   return new Effect(toList([task]), empty2.before_paint, empty2.after_paint);
 }
@@ -5472,6 +5514,13 @@ function input(attrs) {
 function label(attrs, children) {
   return element2("label", attrs, children);
 }
+function textarea(attrs, content) {
+  return element2(
+    "textarea",
+    prepend(property2("value", string4(content)), attrs),
+    toList([text2(content)])
+  );
+}
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
 var Patch = class extends CustomType {
@@ -5673,7 +5722,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
       let remaining_new = new$11.tail;
       let prev = old.head;
       let remaining_old = old.tail;
-      let $ = compare3(prev, next2);
+      let $ = compare4(prev, next2);
       if ($ instanceof Lt) {
         if (prev instanceof Event2) {
           let name2 = prev.name;
@@ -6520,7 +6569,7 @@ function diff(events, old, new$11) {
 var setTimeout = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
 var createElementNS = (ns, name2) => document2().createElementNS(ns, name2);
-var createTextNode = (data) => document2().createTextNode(data);
+var createTextNode = (data2) => document2().createTextNode(data2);
 var createDocumentFragment = () => document2().createDocumentFragment();
 var insertBefore = (parent, node, reference) => parent.insertBefore(node, reference);
 var moveBefore = SUPPORTS_MOVE_BEFORE ? (parent, node, reference) => parent.moveBefore(node, reference) : insertBefore;
@@ -6531,7 +6580,7 @@ var removeAttribute = (node, name2) => node.removeAttribute(name2);
 var addEventListener = (node, name2, handler, options) => node.addEventListener(name2, handler, options);
 var removeEventListener = (node, name2, handler) => node.removeEventListener(name2, handler);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
-var setData = (node, data) => node.data = data;
+var setData = (node, data2) => node.data = data2;
 var meta = Symbol("lustre");
 var MetadataNode = class {
   constructor(kind, parent, node, key3) {
@@ -6854,7 +6903,7 @@ var Reconciler = class {
       event4.detail ??= {};
       event4.detail.formData = [...new FormData(event4.target).entries()];
     }
-    const data = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
+    const data2 = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
     const throttle = throttles.get(type);
     if (throttle) {
       const now2 = Date.now();
@@ -6862,7 +6911,7 @@ var Reconciler = class {
       if (now2 > last + throttle.delay) {
         throttle.last = now2;
         throttle.lastEvent = event4;
-        this.#dispatch(data, path, type, immediate2);
+        this.#dispatch(data2, path, type, immediate2);
       }
     }
     const debounce = debouncers.get(type);
@@ -6870,11 +6919,11 @@ var Reconciler = class {
       clearTimeout(debounce.timeout);
       debounce.timeout = setTimeout(() => {
         if (event4 === throttles.get(type)?.lastEvent) return;
-        this.#dispatch(data, path, type, immediate2);
+        this.#dispatch(data2, path, type, immediate2);
       }, debounce.delay);
     }
     if (!throttle && !debounce) {
-      this.#dispatch(data, path, type, immediate2);
+      this.#dispatch(data2, path, type, immediate2);
     }
   }
 };
@@ -6895,7 +6944,7 @@ var handleEvent = (event4) => {
   handler(event4);
 };
 var createServerEvent = (event4, include = []) => {
-  const data = {};
+  const data2 = {};
   if (event4.type === "input" || event4.type === "change") {
     include.push("target.value");
   }
@@ -6904,7 +6953,7 @@ var createServerEvent = (event4, include = []) => {
   }
   for (const property3 of include) {
     const path = property3.split(".");
-    for (let i2 = 0, input2 = event4, output = data; i2 < path.length; i2++) {
+    for (let i2 = 0, input2 = event4, output = data2; i2 < path.length; i2++) {
       if (i2 === path.length - 1) {
         output[path[i2]] = input2[path[i2]];
         break;
@@ -6913,7 +6962,7 @@ var createServerEvent = (event4, include = []) => {
       input2 = input2[path[i2]];
     }
   }
-  return data;
+  return data2;
 };
 var syncedBooleanAttribute = /* @__NO_SIDE_EFFECTS__ */ (name2) => {
   return {
@@ -7094,13 +7143,13 @@ var virtualiseNode = (meta2, node, key3, index5) => {
 var INPUT_ELEMENTS = ["input", "select", "textarea"];
 var virtualiseInputEvents = (tag2, node) => {
   const value3 = node.value;
-  const checked = node.checked;
-  if (tag2 === "input" && node.type === "checkbox" && !checked) return;
-  if (tag2 === "input" && node.type === "radio" && !checked) return;
+  const checked2 = node.checked;
+  if (tag2 === "input" && node.type === "checkbox" && !checked2) return;
+  if (tag2 === "input" && node.type === "radio" && !checked2) return;
   if (node.type !== "checkbox" && node.type !== "radio" && !value3) return;
   queueMicrotask(() => {
     node.value = value3;
-    node.checked = checked;
+    node.checked = checked2;
     node.dispatchEvent(new Event("input", { bubbles: true }));
     node.dispatchEvent(new Event("change", { bubbles: true }));
     if (document2().activeElement !== node) {
@@ -7158,11 +7207,11 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document2();
 var Runtime = class {
-  constructor(root3, [model, effects], view12, update9) {
+  constructor(root3, [model, effects], view15, update12) {
     this.root = root3;
     this.#model = model;
-    this.#view = view12;
-    this.#update = update9;
+    this.#view = view15;
+    this.#update = update12;
     this.root.addEventListener("context-request", (event4) => {
       if (!(event4.context && event4.callback)) return;
       if (!this.#contexts.has(event4.context)) return;
@@ -7208,11 +7257,11 @@ var Runtime = class {
       this.#tick(effects);
     }
   }
-  emit(event4, data) {
+  emit(event4, data2) {
     const target2 = this.root.host ?? this.root;
     target2.dispatchEvent(
       new CustomEvent(event4, {
-        detail: data,
+        detail: data2,
         bubbles: true,
         composed: true
       })
@@ -7255,7 +7304,7 @@ var Runtime = class {
   #shouldFlush = false;
   #actions = {
     dispatch: (msg, immediate2) => this.dispatch(msg, immediate2),
-    emit: (event4, data) => this.emit(event4, data),
+    emit: (event4, data2) => this.emit(event4, data2),
     select: () => {
     },
     root: () => this.root,
@@ -7387,17 +7436,17 @@ var EffectDispatchedMessage = class extends CustomType {
   }
 };
 var EffectEmitEvent = class extends CustomType {
-  constructor(name2, data) {
+  constructor(name2, data2) {
     super();
     this.name = name2;
-    this.data = data;
+    this.data = data2;
   }
 };
 var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init9, update: update9, view: view12, config }, name2) => {
+var make_component = ({ init: init12, update: update12, view: view15, config }, name2) => {
   if (!is_browser()) return new Error2(new NotABrowser());
   if (!name2.includes("-")) return new Error2(new BadComponentName(name2));
   if (customElements.get(name2)) {
@@ -7411,7 +7460,7 @@ var make_component = ({ init: init9, update: update9, view: view12, config }, na
     attributes.set(name3, decoder2);
     observedAttributes.push(name3);
   }
-  const [model, effects] = init9(void 0);
+  const [model, effects] = init12(void 0);
   const component2 = class Component extends HTMLElement {
     static get observedAttributes() {
       return observedAttributes;
@@ -7438,8 +7487,8 @@ var make_component = ({ init: init9, update: update9, view: view12, config }, na
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view12,
-        update9
+        view15,
+        update12
       );
     }
     // CUSTOM ELEMENT LIFECYCLE METHODS ----------------------------------------
@@ -7523,8 +7572,8 @@ var make_component = ({ init: init9, update: update9, view: view12, config }, na
     dispatch(msg, immediate2 = false) {
       this.#runtime.dispatch(msg, immediate2);
     }
-    emit(event4, data) {
-      this.#runtime.emit(event4, data);
+    emit(event4, data2) {
+      this.#runtime.emit(event4, data2);
     }
     provide(key3, value3) {
       this.#runtime.provide(key3, value3);
@@ -7582,7 +7631,7 @@ var Option = class extends CustomType {
   }
 };
 function new$7(options) {
-  let init9 = new Config2(
+  let init12 = new Config2(
     true,
     true,
     false,
@@ -7596,7 +7645,7 @@ function new$7(options) {
   );
   return fold(
     options,
-    init9,
+    init12,
     (config, option) => {
       return option.apply(config);
     }
@@ -7662,8 +7711,8 @@ function open_shadow_root(open2) {
 // build/dev/javascript/lustre/lustre/runtime/client/spa.ffi.mjs
 var Spa = class {
   #runtime;
-  constructor(root3, [init9, effects], update9, view12) {
-    this.#runtime = new Runtime(root3, [init9, effects], view12, update9);
+  constructor(root3, [init12, effects], update12, view15) {
+    this.#runtime = new Runtime(root3, [init12, effects], view15, update12);
   }
   send(message2) {
     switch (message2.constructor) {
@@ -7682,24 +7731,24 @@ var Spa = class {
   dispatch(msg, immediate2) {
     this.#runtime.dispatch(msg, immediate2);
   }
-  emit(event4, data) {
-    this.#runtime.emit(event4, data);
+  emit(event4, data2) {
+    this.#runtime.emit(event4, data2);
   }
 };
-var start = ({ init: init9, update: update9, view: view12 }, selector, flags) => {
+var start = ({ init: init12, update: update12, view: view15 }, selector, flags) => {
   if (!is_browser()) return new Error2(new NotABrowser());
   const root3 = selector instanceof HTMLElement ? selector : document2().querySelector(selector);
   if (!root3) return new Error2(new ElementNotFound(selector));
-  return new Ok(new Spa(root3, init9(flags), update9, view12));
+  return new Ok(new Spa(root3, init12(flags), update12, view15));
 };
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init9, update9, view12, config) {
+  constructor(init12, update12, view15, config) {
     super();
-    this.init = init9;
-    this.update = update9;
-    this.view = view12;
+    this.init = init12;
+    this.update = update12;
+    this.view = view15;
     this.config = config;
   }
 };
@@ -7723,11 +7772,11 @@ var ElementNotFound = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init9, update9, view12, options) {
-  return new App(init9, update9, view12, new$7(options));
+function component(init12, update12, view15, options) {
+  return new App(init12, update12, view15, new$7(options));
 }
-function application(init9, update9, view12) {
-  return new App(init9, update9, view12, new$7(empty_list));
+function application(init12, update12, view15) {
+  return new App(init12, update12, view15, new$7(empty_list));
 }
 function start3(app, selector, start_args) {
   return guard(
@@ -8376,6 +8425,21 @@ var AlbumRelease = class extends CustomType {
 };
 var Other = class extends CustomType {
 };
+var Playlist = class extends CustomType {
+  constructor(id3, name2, owner, public$, cover_art_id, created, updated, duration, songs, song_count) {
+    super();
+    this.id = id3;
+    this.name = name2;
+    this.owner = owner;
+    this.public = public$;
+    this.cover_art_id = cover_art_id;
+    this.created = created;
+    this.updated = updated;
+    this.duration = duration;
+    this.songs = songs;
+    this.song_count = song_count;
+  }
+};
 var Child = class extends CustomType {
   constructor(id3, album_name, album_id, cover_art_id, artists, duration, title2, track, year2, starred, plays) {
     super();
@@ -8408,6 +8472,15 @@ var Lyric = class extends CustomType {
     this.text = text3;
   }
 };
+function artist_encode(small_artist) {
+  let id3;
+  let name2;
+  id3 = small_artist.id;
+  name2 = small_artist.name;
+  return object2(
+    toList([["id", string4(id3)], ["name", string4(name2)]])
+  );
+}
 function artist_small_decoder() {
   return field(
     "id",
@@ -8422,6 +8495,9 @@ function artist_small_decoder() {
       );
     }
   );
+}
+function new_playlist() {
+  return new Playlist("", "", "", false, "", "", "", 0, toList([]), 0);
 }
 function new_song() {
   return new Child("", "", "", "", toList([]), 0, "", 0, 0, false, 0);
@@ -8664,6 +8740,163 @@ function artist_decoder() {
     }
   );
 }
+function playlist_decoder() {
+  return field(
+    "id",
+    string3,
+    (id3) => {
+      return field(
+        "name",
+        string3,
+        (name2) => {
+          return optional_field(
+            "owner",
+            "",
+            string3,
+            (owner) => {
+              return optional_field(
+                "public",
+                false,
+                bool,
+                (public$) => {
+                  return optional_field(
+                    "coverArt",
+                    "",
+                    string3,
+                    (cover_art_id) => {
+                      return field(
+                        "created",
+                        string3,
+                        (created) => {
+                          return field(
+                            "changed",
+                            string3,
+                            (updated) => {
+                              return field(
+                                "duration",
+                                int2,
+                                (duration) => {
+                                  return optional_field(
+                                    "entry",
+                                    toList([]),
+                                    list2(song_decoder()),
+                                    (songs) => {
+                                      return optional_field(
+                                        "songCount",
+                                        0,
+                                        int2,
+                                        (song_count) => {
+                                          return success(
+                                            new Playlist(
+                                              id3,
+                                              name2,
+                                              owner,
+                                              public$,
+                                              cover_art_id,
+                                              created,
+                                              updated,
+                                              duration,
+                                              songs,
+                                              song_count
+                                            )
+                                          );
+                                        }
+                                      );
+                                    }
+                                  );
+                                }
+                              );
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function song_encode(child) {
+  let id3;
+  let album_name;
+  let album_id;
+  let cover_art_id;
+  let artists;
+  let duration;
+  let title2;
+  let track;
+  let year2;
+  let starred;
+  let plays;
+  id3 = child.id;
+  album_name = child.album_name;
+  album_id = child.album_id;
+  cover_art_id = child.cover_art_id;
+  artists = child.artists;
+  duration = child.duration;
+  title2 = child.title;
+  track = child.track;
+  year2 = child.year;
+  starred = child.starred;
+  plays = child.plays;
+  return object2(
+    toList([
+      ["id", string4(id3)],
+      ["album", string4(album_name)],
+      ["albumID", string4(album_id)],
+      ["coverArt", string4(cover_art_id)],
+      ["artists", array2(artists, artist_encode)],
+      ["duration", int3(duration)],
+      ["title", string4(title2)],
+      ["track", int3(track)],
+      ["year", int3(year2)],
+      ["starred", bool2(starred)],
+      ["playCount", int3(plays)]
+    ])
+  );
+}
+function playlist_encode(playlist3) {
+  let id3;
+  let name2;
+  let owner;
+  let public$;
+  let cover_art_id;
+  let created;
+  let updated;
+  let duration;
+  let songs;
+  let song_count;
+  id3 = playlist3.id;
+  name2 = playlist3.name;
+  owner = playlist3.owner;
+  public$ = playlist3.public;
+  cover_art_id = playlist3.cover_art_id;
+  created = playlist3.created;
+  updated = playlist3.updated;
+  duration = playlist3.duration;
+  songs = playlist3.songs;
+  song_count = playlist3.song_count;
+  return object2(
+    toList([
+      ["id", string4(id3)],
+      ["name", string4(name2)],
+      ["owner", string4(owner)],
+      ["public", bool2(public$)],
+      ["coverArt", string4(cover_art_id)],
+      ["created", string4(created)],
+      ["changed", string4(created)],
+      ["updated", string4(updated)],
+      ["duration", int3(duration)],
+      ["entry", array2(songs, song_encode)],
+      ["songCount", int3(song_count)]
+    ])
+  );
+}
 function lyric_decoder() {
   return optional_field(
     "start",
@@ -8717,6 +8950,76 @@ function lyric_set_decoder() {
       );
     }
   );
+}
+
+// build/dev/javascript/somachord/somachord/models/auth.ffi.mjs
+var import_js_md5 = __toESM(require_md5(), 1);
+function hash(text3) {
+  return (0, import_js_md5.default)(text3);
+}
+function generate_salt() {
+  return Math.random().toString(36).substring(2, 10);
+}
+
+// build/dev/javascript/somachord/somachord/models/auth.mjs
+var Auth = class extends CustomType {
+  constructor(username, credentials, server_url) {
+    super();
+    this.username = username;
+    this.credentials = credentials;
+    this.server_url = server_url;
+  }
+};
+var Credentials = class extends CustomType {
+  constructor(salt, token) {
+    super();
+    this.salt = salt;
+    this.token = token;
+  }
+};
+function decoder() {
+  return field(
+    "username",
+    string3,
+    (username) => {
+      return field(
+        "salt",
+        string3,
+        (salt) => {
+          return field(
+            "token",
+            string3,
+            (token) => {
+              return field(
+                "serverURL",
+                string3,
+                (server_url) => {
+                  return success(
+                    new Auth(username, new Credentials(salt, token), server_url)
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+function encoder(auth) {
+  return object2(
+    toList([
+      ["username", string4(auth.username)],
+      ["salt", string4(auth.credentials.salt)],
+      ["token", string4(auth.credentials.token)],
+      ["serverURL", string4(auth.server_url)]
+    ])
+  );
+}
+function hash_password(password) {
+  let salt = generate_salt();
+  let token = hash(password + salt);
+  return new Credentials(salt, token);
 }
 
 // build/dev/javascript/somachord/somachord/queue.mjs
@@ -9092,15 +9395,15 @@ var Echo$Inspector = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -9176,76 +9479,6 @@ function am_i_electron() {
   return (0, import_is_electron.default)();
 }
 
-// build/dev/javascript/somachord/somachord/models/auth.ffi.mjs
-var import_js_md5 = __toESM(require_md5(), 1);
-function hash(text3) {
-  return (0, import_js_md5.default)(text3);
-}
-function generate_salt() {
-  return Math.random().toString(36).substring(2, 10);
-}
-
-// build/dev/javascript/somachord/somachord/models/auth.mjs
-var Auth = class extends CustomType {
-  constructor(username, credentials, server_url) {
-    super();
-    this.username = username;
-    this.credentials = credentials;
-    this.server_url = server_url;
-  }
-};
-var Credentials = class extends CustomType {
-  constructor(salt, token) {
-    super();
-    this.salt = salt;
-    this.token = token;
-  }
-};
-function decoder() {
-  return field(
-    "username",
-    string3,
-    (username) => {
-      return field(
-        "salt",
-        string3,
-        (salt) => {
-          return field(
-            "token",
-            string3,
-            (token) => {
-              return field(
-                "serverURL",
-                string3,
-                (server_url) => {
-                  return success(
-                    new Auth(username, new Credentials(salt, token), server_url)
-                  );
-                }
-              );
-            }
-          );
-        }
-      );
-    }
-  );
-}
-function encoder(auth) {
-  return object2(
-    toList([
-      ["username", string4(auth.username)],
-      ["salt", string4(auth.credentials.salt)],
-      ["token", string4(auth.credentials.token)],
-      ["serverURL", string4(auth.server_url)]
-    ])
-  );
-}
-function hash_password(password) {
-  let salt = generate_salt();
-  let token = hash(password + salt);
-  return new Credentials(salt, token);
-}
-
 // build/dev/javascript/somachord/somachord/storage.mjs
 var FILEPATH2 = "src/somachord/storage.gleam";
 var Storage = class extends CustomType {
@@ -9309,15 +9542,11 @@ var Artist2 = class extends CustomType {
     this.id = id3;
   }
 };
-var Artists = class extends CustomType {
-};
 var Album2 = class extends CustomType {
   constructor(id3) {
     super();
     this.id = id3;
   }
-};
-var Albums = class extends CustomType {
 };
 var Song = class extends CustomType {
   constructor(id3) {
@@ -9325,11 +9554,27 @@ var Song = class extends CustomType {
     this.id = id3;
   }
 };
+var Playlist2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Likes = class extends CustomType {
+};
+var Library = class extends CustomType {
+};
+var Playlists = class extends CustomType {
+};
+var Artists = class extends CustomType {
+};
+var Albums = class extends CustomType {
+};
 var Unknown = class extends CustomType {
 };
 function uri_to_route(uri) {
   let router = (path) => {
-    echo2(path, void 0, "src/somachord/router.gleam", 27);
+    echo2(path, void 0, "src/somachord/router.gleam", 32);
     if (path === "/") {
       return new Home();
     } else if (path === "") {
@@ -9349,15 +9594,15 @@ function uri_to_route(uri) {
           "let_assert",
           FILEPATH3,
           "somachord/router",
-          33,
+          38,
           "uri_to_route",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 536,
-            end: 592,
-            pattern_start: 547,
-            pattern_end: 564
+            start: 590,
+            end: 646,
+            pattern_start: 601,
+            pattern_end: 618
           }
         );
       }
@@ -9375,6 +9620,15 @@ function uri_to_route(uri) {
     } else if (path.startsWith("/song/")) {
       let id3 = path.slice(6);
       return new Song(id3);
+    } else if (path.startsWith("/playlist/")) {
+      let id3 = path.slice(10);
+      return new Playlist2(id3);
+    } else if (path === "/playlists/") {
+      return new Playlists();
+    } else if (path === "/library") {
+      return new Library();
+    } else if (path === "/likes") {
+      return new Likes();
     } else {
       return new Unknown();
     }
@@ -9402,15 +9656,15 @@ function direct(root3, rel) {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      80,
+      89,
       "direct",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1558,
-        end: 1597,
-        pattern_start: 1569,
-        pattern_end: 1580
+        start: 1738,
+        end: 1777,
+        pattern_start: 1749,
+        pattern_end: 1760
       }
     );
   }
@@ -9423,15 +9677,15 @@ function direct(root3, rel) {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      81,
+      90,
       "direct",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $1,
-        start: 1600,
-        end: 1651,
-        pattern_start: 1611,
-        pattern_end: 1624
+        start: 1780,
+        end: 1831,
+        pattern_start: 1791,
+        pattern_end: 1804
       }
     );
   }
@@ -9447,15 +9701,15 @@ function get_route() {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      86,
+      95,
       "get_route",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1716,
-        end: 1767,
-        pattern_start: 1727,
-        pattern_end: 1736
+        start: 1896,
+        end: 1947,
+        pattern_start: 1907,
+        pattern_end: 1916
       }
     );
   }
@@ -9587,15 +9841,15 @@ var Echo$Inspector2 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -9667,11 +9921,12 @@ var Echo$Inspector2 = class {
 
 // build/dev/javascript/somachord/somachord/model.mjs
 var Model = class extends CustomType {
-  constructor(route, layout2, storage, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, fullscreen_player_open, fullscreen_player_display) {
+  constructor(route, layout2, storage, auth, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, playlists2, fullscreen_player_open, fullscreen_player_display) {
     super();
     this.route = route;
     this.layout = layout2;
     this.storage = storage;
+    this.auth = auth;
     this.confirmed = confirmed;
     this.albums = albums;
     this.player = player;
@@ -9682,15 +9937,24 @@ var Model = class extends CustomType {
     this.played_seconds = played_seconds;
     this.shuffled = shuffled;
     this.looping = looping;
+    this.playlists = playlists2;
     this.fullscreen_player_open = fullscreen_player_open;
     this.fullscreen_player_display = fullscreen_player_display;
   }
 };
 var PlayRequest = class extends CustomType {
-  constructor(type_2, id3) {
+  constructor(type_2, id3, index5) {
     super();
     this.type_ = type_2;
     this.id = id3;
+    this.index = index5;
+  }
+};
+var PlaylistPlayRequest = class extends CustomType {
+  constructor(playlist3, index5) {
+    super();
+    this.playlist = playlist3;
+    this.index = index5;
   }
 };
 var Desktop = class extends CustomType {
@@ -9797,14 +10061,14 @@ var Request = class extends CustomType {
     this.query = query2;
   }
 };
-function to_uri(request) {
+function to_uri(request2) {
   return new Uri(
-    new Some(scheme_to_string(request.scheme)),
+    new Some(scheme_to_string(request2.scheme)),
     new None(),
-    new Some(request.host),
-    request.port,
-    request.path,
-    request.query,
+    new Some(request2.host),
+    request2.port,
+    request2.path,
+    request2.query,
     new None()
   );
 }
@@ -9845,7 +10109,7 @@ function to(url) {
 }
 
 // build/dev/javascript/gleam_http/gleam/http/response.mjs
-var Response = class extends CustomType {
+var Response2 = class extends CustomType {
   constructor(status, headers, body2) {
     super();
     this.status = status;
@@ -9858,32 +10122,32 @@ function get_header(response, key3) {
 }
 
 // build/dev/javascript/gleam_fetch/gleam_fetch_ffi.mjs
-async function raw_send(request) {
+async function raw_send(request2) {
   try {
-    return new Ok(await fetch(request));
+    return new Ok(await fetch(request2));
   } catch (error) {
     return new Error2(new NetworkError(error.toString()));
   }
 }
 function from_fetch_response(response) {
-  return new Response(
+  return new Response2(
     response.status,
     List.fromArray([...response.headers]),
     response
   );
 }
-function request_common(request) {
-  let url = to_string3(to_uri(request));
-  let method = method_to_string(request.method).toUpperCase();
+function request_common(request2) {
+  let url = to_string3(to_uri(request2));
+  let method = method_to_string(request2.method).toUpperCase();
   let options = {
-    headers: make_headers(request.headers),
+    headers: make_headers(request2.headers),
     method
   };
   return [url, options];
 }
-function to_fetch_request(request) {
-  let [url, options] = request_common(request);
-  if (options.method !== "GET" && options.method !== "HEAD") options.body = request.body;
+function to_fetch_request(request2) {
+  let [url, options] = request_common(request2);
+  if (options.method !== "GET" && options.method !== "HEAD") options.body = request2.body;
   return new globalThis.Request(url, options);
 }
 function make_headers(headersList) {
@@ -9910,8 +10174,8 @@ var NetworkError = class extends CustomType {
 };
 var UnableToReadBody = class extends CustomType {
 };
-function send2(request) {
-  let _pipe = request;
+function send2(request2) {
+  let _pipe = request2;
   let _pipe$1 = to_fetch_request(_pipe);
   let _pipe$2 = raw_send(_pipe$1);
   return try_await(
@@ -10002,10 +10266,10 @@ function expect_json_response(handler) {
     }
   );
 }
-function do_send(request, handler) {
+function do_send(request2, handler) {
   return from(
     (dispatch) => {
-      let _pipe = send2(request);
+      let _pipe = send2(request2);
       let _pipe$1 = try_await(_pipe, read_text_body);
       let _pipe$2 = map_promise(
         _pipe$1,
@@ -10030,8 +10294,8 @@ function do_send(request, handler) {
     }
   );
 }
-function send3(request, handler) {
-  return do_send(request, handler);
+function send3(request2, handler) {
+  return do_send(request2, handler);
 }
 function decode_json_body(response, decoder2) {
   let _pipe = response.body;
@@ -10313,6 +10577,27 @@ function like(auth_details, id3, msg) {
     )
   );
 }
+function likes(auth_details, msg) {
+  let req = get_request(auth_details, "/rest/getStarred2.view", toList([]));
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(
+        then$(
+          optionally_at(
+            toList(["subsonic-response", "starred2", "song"]),
+            toList([]),
+            list2(song_decoder())
+          ),
+          (songs) => {
+            return success(songs);
+          }
+        )
+      ),
+      msg
+    )
+  );
+}
 function unlike(auth_details, id3, msg) {
   let req = get_request(auth_details, "/rest/unstar.view", toList([["id", id3]]));
   return send3(
@@ -10357,6 +10642,49 @@ function ping(auth_details, msg) {
     req,
     expect_json(
       subsonic_response_decoder(success(void 0)),
+      msg
+    )
+  );
+}
+function playlists(auth_details, msg) {
+  let req = get_request(auth_details, "/rest/getPlaylists.view", toList([]));
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(
+        then$(
+          optionally_at(
+            toList(["subsonic-response", "playlists", "playlist"]),
+            toList([]),
+            list2(playlist_decoder())
+          ),
+          (playlists2) => {
+            return success(playlists2);
+          }
+        )
+      ),
+      msg
+    )
+  );
+}
+function playlist(auth_details, id3, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/getPlaylist.view",
+    toList([["id", id3]])
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(
+        subfield(
+          toList(["subsonic-response", "playlist"]),
+          playlist_decoder(),
+          (playlist3) => {
+            return success(playlist3);
+          }
+        )
+      ),
       msg
     )
   );
@@ -10424,15 +10752,15 @@ function queue(auth_details, msg) {
                         "let_assert",
                         FILEPATH4,
                         "somachord/api/api",
-                        261,
+                        335,
                         "queue",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 6423,
-                          end: 6526,
-                          pattern_start: 6434,
-                          pattern_end: 6450
+                          start: 8006,
+                          end: 8109,
+                          pattern_start: 8017,
+                          pattern_end: 8033
                         }
                       );
                     }
@@ -10487,15 +10815,15 @@ function save_queue(auth_details, queue2, msg) {
             "let_assert",
             FILEPATH4,
             "somachord/api/api",
-            304,
+            378,
             "save_queue",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 7467,
-              end: 7536,
-              pattern_start: 7478,
-              pattern_end: 7494
+              start: 9050,
+              end: 9119,
+              pattern_start: 9061,
+              pattern_end: 9077
             }
           );
         }
@@ -10676,6 +11004,86 @@ function top_songs(auth_details, artist_name, msg) {
     )
   );
 }
+function add_to_playlist(auth_details, playlist_id, song_id2, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/updatePlaylist.view",
+    toList([["playlistId", playlist_id], ["songIdToAdd", song_id2]])
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(success(void 0)),
+      msg
+    )
+  );
+}
+function remove_from_playlist(auth_details, playlist_id, song_id2, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/updatePlaylist.view",
+    toList([["playlistId", playlist_id], ["songIndexToRemove", song_id2]])
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(success(void 0)),
+      msg
+    )
+  );
+}
+function create_playlist(auth_details, name2, songs, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/createPlaylist.view",
+    prepend(
+      ["name", name2],
+      map(songs, (song_id2) => {
+        return ["songId", song_id2];
+      })
+    )
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(
+        subfield(
+          toList(["subsonic-response", "playlist"]),
+          playlist_decoder(),
+          (playlist3) => {
+            return success(playlist3);
+          }
+        )
+      ),
+      msg
+    )
+  );
+}
+function update_playlist(auth_details, id3, name2, description, public$, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/updatePlaylist.view",
+    toList([
+      ["playlistId", id3],
+      ["name", name2],
+      ["comment", description],
+      [
+        "public",
+        (() => {
+          let _pipe = to_string(public$);
+          return lowercase(_pipe);
+        })()
+      ]
+    ])
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(success(void 0)),
+      msg
+    )
+  );
+}
 function echo3(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
@@ -10802,15 +11210,15 @@ var Echo$Inspector3 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -10947,8 +11355,8 @@ function create_uri(path, auth_details, query2) {
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
-function emit(event4, data) {
-  return event2(event4, data);
+function emit(event4, data2) {
+  return event2(event4, data2);
 }
 function is_immediate_event(name2) {
   if (name2 === "input") {
@@ -11071,8 +11479,8 @@ function emit_click(event4) {
     }
   }));
 }
-function scroll_into_view(element10) {
-  element10.scrollIntoView({ behavior: "smooth", block: "end" });
+function scroll_into_view(element13) {
+  element13.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 function elems_to_array(nl) {
   return [...nl];
@@ -11108,17 +11516,17 @@ function mobile_space() {
 }
 
 // build/dev/javascript/plinth/shadow_ffi.mjs
-function shadowRoot(element10) {
-  let shadowRoot2 = element10.shadowRoot;
+function shadowRoot(element13) {
+  let shadowRoot2 = element13.shadowRoot;
   if (shadowRoot2) {
     return new Ok(shadowRoot2);
   }
   return new Error2();
 }
 function querySelector2(shadowRoot2, selector) {
-  let element10 = shadowRoot2.querySelector(selector);
-  if (element10) {
-    return new Ok(element10);
+  let element13 = shadowRoot2.querySelector(selector);
+  if (element13) {
+    return new Ok(element13);
   }
   return new Error2();
 }
@@ -11958,15 +12366,15 @@ var Echo$Inspector4 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -12080,6 +12488,12 @@ var SimilarSongsArtist = class extends CustomType {
     this[0] = $0;
   }
 };
+var PlaylistWithSongs = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var ToggleFullscreenPlayer = class extends CustomType {
 };
 var ChangeFullscreenPlayerView = class extends CustomType {
@@ -12101,6 +12515,13 @@ var Search3 = class extends CustomType {
   }
 };
 var StreamAlbum = class extends CustomType {
+  constructor($0, $1) {
+    super();
+    this[0] = $0;
+    this[1] = $1;
+  }
+};
+var StreamPlaylist = class extends CustomType {
   constructor($0, $1) {
     super();
     this[0] = $0;
@@ -12192,15 +12613,15 @@ function on_url_change(url) {
             "let_assert",
             FILEPATH7,
             "somachord/msg",
-            72,
+            76,
             "on_url_change",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 1812,
-              end: 1860,
-              pattern_start: 1823,
-              pattern_end: 1830
+              start: 1952,
+              end: 2e3,
+              pattern_start: 1963,
+              pattern_end: 1970
             }
           );
         }
@@ -12224,7 +12645,34 @@ function on_play(handler) {
           toList(["detail", "id"]),
           string3,
           (id3) => {
-            let _pipe = success(new PlayRequest(type_2, id3));
+            return then$(
+              optionally_at(toList(["detail", "index"]), 0, int2),
+              (index5) => {
+                let _pipe = success(
+                  new PlayRequest(type_2, id3, index5)
+                );
+                return map2(_pipe, handler);
+              }
+            );
+          }
+        );
+      }
+    )
+  );
+}
+function on_playlist(handler) {
+  return on(
+    "playPlaylist",
+    subfield(
+      toList(["detail", "playlist"]),
+      playlist_decoder(),
+      (playlist3) => {
+        return then$(
+          optionally_at(toList(["detail", "index"]), 0, int2),
+          (index5) => {
+            let _pipe = success(
+              new PlaylistPlayRequest(playlist3, index5)
+            );
             return map2(_pipe, handler);
           }
         );
@@ -12595,6 +13043,167 @@ function album2(album3, handler) {
     ])
   );
 }
+function playlist2(playlist3, handler) {
+  let _block;
+  {
+    let _block$1;
+    let _pipe = create();
+    _block$1 = get2(_pipe, "auth");
+    let $ = _block$1;
+    let stg;
+    if ($ instanceof Ok) {
+      stg = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH8,
+        "somachord/elements",
+        303,
+        "playlist",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 9706,
+          end: 9766,
+          pattern_start: 9717,
+          pattern_end: 9724
+        }
+      );
+    }
+    _block = stg.auth;
+  }
+  let auth_details = _block;
+  return div(
+    toList([
+      class$(
+        "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75"
+      ),
+      on("dblclick", success(handler(playlist3.id)))
+    ]),
+    toList([
+      div(
+        toList([
+          class$("relative mt-4 h-42"),
+          style("clip-path", "inset(0 0 0 0);")
+        ]),
+        toList([
+          div(
+            toList([
+              class$(
+                "w-34 h-28 -mt-2 mx-2 bg-zinc-700 rounded-md absolute"
+              )
+            ]),
+            toList([])
+          ),
+          a(
+            toList([href("/playlist/" + playlist3.id)]),
+            toList([
+              (() => {
+                let $ = playlist3.cover_art_id;
+                let $1 = class$(
+                  "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute"
+                );
+                if ($ === "") {
+                  let classes = $1;
+                  return div(
+                    toList([
+                      classes,
+                      class$(
+                        "bg-zinc-900 justify-center items-center flex w-full h-fit aspect-square"
+                      )
+                    ]),
+                    toList([
+                      i(
+                        toList([
+                          class$(
+                            "text-zinc-500 text-3xl ph ph-music-notes-simple"
+                          )
+                        ]),
+                        toList([])
+                      )
+                    ])
+                  );
+                } else {
+                  let cover_art_id = $;
+                  let classes = $1;
+                  return img(
+                    toList([
+                      src(
+                        (() => {
+                          let _pipe = create_uri(
+                            "/rest/getCoverArt.view",
+                            auth_details,
+                            toList([["id", cover_art_id], ["size", "500"]])
+                          );
+                          return to_string3(_pipe);
+                        })()
+                      ),
+                      classes
+                    ])
+                  );
+                }
+              })()
+            ])
+          ),
+          div(
+            toList([
+              on_click(handler(playlist3.id)),
+              class$(
+                "absolute top-26 left-26 relative transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+              )
+            ]),
+            toList([
+              div(
+                toList([class$("rounded-full bg-black w-8 h-8")]),
+                toList([])
+              ),
+              i(
+                toList([
+                  class$(
+                    "absolute -top-2 -left-2 ph-fill ph-play-circle text-5xl text-violet-500"
+                  )
+                ]),
+                toList([])
+              )
+            ])
+          )
+        ])
+      ),
+      span(
+        toList([class$("inline-flex flex-col")]),
+        toList([
+          a(
+            toList([
+              href("/playlist/" + playlist3.id),
+              class$("space-x-1")
+            ]),
+            toList([
+              span(
+                toList([class$("text-zinc-100 hover:underline")]),
+                toList([text2(playlist3.name)])
+              )
+            ])
+          ),
+          span(
+            toList([class$("text-zinc-500 font-light text-sm")]),
+            toList([
+              text2(
+                to_string2(playlist3.song_count) + " song" + (() => {
+                  let $ = playlist3.song_count === 1;
+                  if ($) {
+                    return "";
+                  } else {
+                    return "s";
+                  }
+                })()
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
 function tag(name2) {
   return div(
     toList([class$("rounded-full border border-zinc-400 py-2 px-6")]),
@@ -12637,7 +13246,7 @@ function button2(icon, name2, attrs) {
     ])
   );
 }
-function nav_button(inactive, active, name2, is_active, attrs) {
+function nav_button(inactive, active2, name2, is_active, attrs) {
   return div(
     prepend(
       class$(
@@ -12660,7 +13269,7 @@ function nav_button(inactive, active, name2, is_active, attrs) {
         toList([
           (() => {
             if (is_active) {
-              return active;
+              return active2;
             } else {
               return inactive;
             }
@@ -12732,15 +13341,15 @@ function music_slider(m, attrs) {
                     "let_assert",
                     FILEPATH8,
                     "somachord/elements",
-                    398,
+                    520,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 12298,
-                      end: 12345,
-                      pattern_start: 12309,
-                      pattern_end: 12324
+                      start: 15901,
+                      end: 15948,
+                      pattern_start: 15912,
+                      pattern_end: 15927
                     }
                   );
                 }
@@ -13727,6 +14336,11 @@ var Check = class extends CustomType {
 };
 var DontCheck = class extends CustomType {
 };
+function field_value(form2, name2) {
+  let _pipe = form2.values;
+  let _pipe$1 = key_find(_pipe, name2);
+  return unwrap2(_pipe$1, "");
+}
 function run2(form2) {
   let $ = form2.run(form2.values, toList([]));
   let value3;
@@ -13771,6 +14385,16 @@ function add_values(form2, values3) {
     form2.errors,
     form2.run
   );
+}
+function set_values(form2, values3) {
+  return new Form(form2.translator, values3, form2.errors, form2.run);
+}
+function checkbox_parser(inputs, status) {
+  if (inputs instanceof Empty) {
+    return [false, status, toList([])];
+  } else {
+    return [true, status, toList([])];
+  }
 }
 function string_parser(inputs, status) {
   if (inputs instanceof Empty) {
@@ -13915,6 +14539,7 @@ function add_error(form2, name2, error) {
     form2.run
   );
 }
+var parse_checkbox = /* @__PURE__ */ new Parser(checkbox_parser);
 var parse_string = /* @__PURE__ */ new Parser(string_parser);
 var parse_url = /* @__PURE__ */ new Parser(url_parser);
 
@@ -14460,15 +15085,15 @@ var Echo$Inspector5 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -14538,8 +15163,814 @@ var Echo$Inspector5 = class {
   }
 };
 
+// build/dev/javascript/somachord/somachord/components/playlist_menu.mjs
+var FILEPATH11 = "src/somachord/components/playlist_menu.gleam";
+var Model4 = class extends CustomType {
+  constructor(playlists2, added_songs, song_id2, open2) {
+    super();
+    this.playlists = playlists2;
+    this.added_songs = added_songs;
+    this.song_id = song_id2;
+    this.open = open2;
+  }
+};
+var SongID2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var NewPlaylist = class extends CustomType {
+};
+var AddToPlaylist = class extends CustomType {
+  constructor(playlist_id) {
+    super();
+    this.playlist_id = playlist_id;
+  }
+};
+var RemoveFromPlaylist = class extends CustomType {
+  constructor(playlist_id) {
+    super();
+    this.playlist_id = playlist_id;
+  }
+};
+var Playlists2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlaylistWithSongs2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var CreatePlaylist = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var DisgardedResponse2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function element6(button_attrs, menu_attrs) {
+  return div(
+    toList([class$("relative inline-block group")]),
+    toList([
+      button(
+        button_attrs,
+        toList([
+          i(
+            toList([class$("text-3xl ph ph-plus-circle")]),
+            toList([])
+          )
+        ])
+      ),
+      element2(
+        "playlist-menu",
+        prepend(
+          class$("not-group-focus-within:hidden"),
+          menu_attrs
+        ),
+        toList([])
+      )
+    ])
+  );
+}
+function song_id(id3) {
+  return attribute2("song-id", id3);
+}
+function init4(_) {
+  return [
+    new Model4(new_map(), new_map(), "", true),
+    (() => {
+      let $ = (() => {
+        let _pipe = create();
+        return get2(_pipe, "auth");
+      })();
+      if ($ instanceof Ok) {
+        let stg = $[0];
+        return playlists(
+          stg.auth,
+          (var0) => {
+            return new Playlists2(var0);
+          }
+        );
+      } else {
+        return none2();
+      }
+    })()
+  ];
+}
+function update4(m, msg) {
+  if (msg instanceof SongID2) {
+    let id3 = msg.id;
+    return [new Model4(m.playlists, m.added_songs, id3, m.open), none2()];
+  } else if (msg instanceof NewPlaylist) {
+    let _block;
+    {
+      let _block$1;
+      let _pipe = create();
+      _block$1 = get2(_pipe, "auth");
+      let $ = _block$1;
+      let stg;
+      if ($ instanceof Ok) {
+        stg = $[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH11,
+          "somachord/components/playlist_menu",
+          106,
+          "update",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $,
+            start: 2495,
+            end: 2555,
+            pattern_start: 2506,
+            pattern_end: 2513
+          }
+        );
+      }
+      _block = stg.auth;
+    }
+    let auth_details = _block;
+    return [
+      m,
+      create_playlist(
+        auth_details,
+        "New Playlist",
+        toList([m.song_id]),
+        (var0) => {
+          return new CreatePlaylist(var0);
+        }
+      )
+    ];
+  } else if (msg instanceof AddToPlaylist) {
+    let playlist_id = msg.playlist_id;
+    let _block;
+    {
+      let _block$12;
+      let _pipe = create();
+      _block$12 = get2(_pipe, "auth");
+      let $2 = _block$12;
+      let stg;
+      if ($2 instanceof Ok) {
+        stg = $2[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH11,
+          "somachord/components/playlist_menu",
+          131,
+          "update",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $2,
+            start: 3086,
+            end: 3146,
+            pattern_start: 3097,
+            pattern_end: 3104
+          }
+        );
+      }
+      _block = stg.auth;
+    }
+    let auth_details = _block;
+    let _block$1;
+    let $ = map_get(m.added_songs, playlist_id);
+    if ($ instanceof Ok) {
+      let songs = $[0];
+      let _pipe = m.added_songs;
+      _block$1 = insert(
+        _pipe,
+        playlist_id,
+        (() => {
+          let _pipe$1 = songs;
+          return append(_pipe$1, toList([m.song_id]));
+        })()
+      );
+    } else {
+      let _pipe = m.added_songs;
+      _block$1 = insert(_pipe, playlist_id, toList([m.song_id]));
+    }
+    let added_songs = _block$1;
+    return [
+      new Model4(m.playlists, added_songs, m.song_id, m.open),
+      add_to_playlist(
+        auth_details,
+        playlist_id,
+        m.song_id,
+        (var0) => {
+          return new DisgardedResponse2(var0);
+        }
+      )
+    ];
+  } else if (msg instanceof RemoveFromPlaylist) {
+    let playlist_id = msg.playlist_id;
+    let _block;
+    {
+      let _block$12;
+      let _pipe = create();
+      _block$12 = get2(_pipe, "auth");
+      let $2 = _block$12;
+      let stg;
+      if ($2 instanceof Ok) {
+        stg = $2[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH11,
+          "somachord/components/playlist_menu",
+          154,
+          "update",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $2,
+            start: 3729,
+            end: 3789,
+            pattern_start: 3740,
+            pattern_end: 3747
+          }
+        );
+      }
+      _block = stg.auth;
+    }
+    let auth_details = _block;
+    let _block$1;
+    let $ = map_get(m.added_songs, playlist_id);
+    if ($ instanceof Ok) {
+      let songs = $[0];
+      let _pipe = m.added_songs;
+      _block$1 = insert(
+        _pipe,
+        playlist_id,
+        (() => {
+          let _pipe$1 = songs;
+          return append(_pipe$1, toList([m.song_id]));
+        })()
+      );
+    } else {
+      let _pipe = m.added_songs;
+      _block$1 = insert(_pipe, playlist_id, toList([m.song_id]));
+    }
+    let added_songs = _block$1;
+    return [
+      new Model4(m.playlists, added_songs, m.song_id, m.open),
+      remove_from_playlist(
+        auth_details,
+        playlist_id,
+        m.song_id,
+        (var0) => {
+          return new DisgardedResponse2(var0);
+        }
+      )
+    ];
+  } else if (msg instanceof Playlists2) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlists2 = $1[0];
+        return [
+          new Model4(
+            (() => {
+              let _pipe = playlists2;
+              let _pipe$1 = fold(
+                _pipe,
+                [new_map(), ""],
+                (acc, song3) => {
+                  let d;
+                  let idx;
+                  d = acc[0];
+                  idx = acc[1];
+                  return [
+                    (() => {
+                      let _pipe$12 = d;
+                      return insert(_pipe$12, idx, song3);
+                    })(),
+                    idx
+                  ];
+                }
+              );
+              let _pipe$2 = first2(_pipe$1);
+              return delete$(_pipe$2, "");
+            })(),
+            m.added_songs,
+            m.song_id,
+            m.open
+          ),
+          (() => {
+            let _pipe = map(
+              playlists2,
+              (playlist3) => {
+                return playlist(
+                  (() => {
+                    let _block;
+                    let _pipe2 = create();
+                    _block = get2(_pipe2, "auth");
+                    let $2 = _block;
+                    let stg;
+                    if ($2 instanceof Ok) {
+                      stg = $2[0];
+                    } else {
+                      throw makeError(
+                        "let_assert",
+                        FILEPATH11,
+                        "somachord/components/playlist_menu",
+                        189,
+                        "update",
+                        "Pattern match failed, no pattern matched the value.",
+                        {
+                          value: $2,
+                          start: 4717,
+                          end: 4777,
+                          pattern_start: 4728,
+                          pattern_end: 4735
+                        }
+                      );
+                    }
+                    return stg.auth;
+                  })(),
+                  playlist3.id,
+                  (var0) => {
+                    return new PlaylistWithSongs2(var0);
+                  }
+                );
+              }
+            );
+            return batch(_pipe);
+          })()
+        ];
+      } else {
+        let e = $;
+        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+      return [m, none2()];
+    }
+  } else if (msg instanceof PlaylistWithSongs2) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlist3 = $1[0];
+        return [
+          new Model4(
+            (() => {
+              let _pipe = m.playlists;
+              return insert(_pipe, playlist3.id, playlist3);
+            })(),
+            m.added_songs,
+            m.song_id,
+            m.open
+          ),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+      return [m, none2()];
+    }
+  } else if (msg instanceof CreatePlaylist) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlist3 = $1[0];
+        return [
+          new Model4(
+            (() => {
+              let _pipe = m.playlists;
+              return insert(_pipe, playlist3.id, playlist3);
+            })(),
+            m.added_songs,
+            m.song_id,
+            m.open
+          ),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+      return [m, none2()];
+    }
+  } else {
+    return [m, none2()];
+  }
+}
+function view5(m) {
+  return div(
+    toList([
+      class$(
+        "z-100 absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 p-4"
+      )
+    ]),
+    toList([
+      div(
+        toList([class$("inline-flex justify-between")]),
+        toList([
+          h1(
+            toList([class$("font-semibold text-lg")]),
+            toList([text2("Add to playlist")])
+          ),
+          button(
+            toList([
+              on_click(new NewPlaylist()),
+              class$(
+                "p-1 bg-white hover:bg-white/80 active:scale-[95%] transition-scale duration-200 cursor-pointer text-black font-medium rounded-md w-fit"
+              )
+            ]),
+            toList([text2("New Playlist")])
+          )
+        ])
+      ),
+      div(
+        toList([
+          class$(
+            "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
+          )
+        ]),
+        map(
+          (() => {
+            let _pipe = m.playlists;
+            let _pipe$1 = map_to_list(_pipe);
+            return sort(
+              _pipe$1,
+              (pl1, pl2) => {
+                return compare3(pl1[1].name, pl2[1].name);
+              }
+            );
+          })(),
+          (playlist3) => {
+            let _block;
+            let $ = map_get(m.added_songs, playlist3[0]);
+            if ($ instanceof Ok) {
+              let songs = $[0];
+              let _pipe = songs;
+              _block = contains(_pipe, m.song_id);
+            } else {
+              let _pipe = map(
+                playlist3[1].songs,
+                (song3) => {
+                  return song3.id;
+                }
+              );
+              _block = contains(_pipe, m.song_id);
+            }
+            let song_in_playlist = _block;
+            return div(
+              toList([
+                class$(
+                  "hover:bg-zinc-800 px-2 py-1 rounded cursor-pointer inline-flex items-center gap-2"
+                )
+              ]),
+              toList([
+                img(
+                  toList([
+                    src(
+                      (() => {
+                        let _pipe = create_uri(
+                          "/rest/getCoverArt.view",
+                          (() => {
+                            let _block$1;
+                            let _pipe2 = create();
+                            _block$1 = get2(_pipe2, "auth");
+                            let $1 = _block$1;
+                            let stg;
+                            if ($1 instanceof Ok) {
+                              stg = $1[0];
+                            } else {
+                              throw makeError(
+                                "let_assert",
+                                FILEPATH11,
+                                "somachord/components/playlist_menu",
+                                272,
+                                "view",
+                                "Pattern match failed, no pattern matched the value.",
+                                {
+                                  value: $1,
+                                  start: 7279,
+                                  end: 7365,
+                                  pattern_start: 7290,
+                                  pattern_end: 7297
+                                }
+                              );
+                            }
+                            return stg.auth;
+                          })(),
+                          toList([["id", playlist3[0]], ["size", "500"]])
+                        );
+                        return to_string3(_pipe);
+                      })()
+                    ),
+                    class$(
+                      "w-12 h-12 rounded object-cover inline-block"
+                    )
+                  ])
+                ),
+                span(
+                  toList([
+                    class$(
+                      "font-normal inline-flex w-full items-center justify-between"
+                    )
+                  ]),
+                  toList([
+                    a(
+                      toList([
+                        href("/playlist/" + playlist3[1].id),
+                        class$("hover:underline")
+                      ]),
+                      toList([text2(playlist3[1].name)])
+                    ),
+                    button(
+                      toList([]),
+                      toList([
+                        i(
+                          toList([
+                            class$("text-2xl"),
+                            on_click(
+                              (() => {
+                                if (song_in_playlist) {
+                                  return new RemoveFromPlaylist(playlist3[0]);
+                                } else {
+                                  return new AddToPlaylist(playlist3[0]);
+                                }
+                              })()
+                            ),
+                            (() => {
+                              if (song_in_playlist) {
+                                return class$(
+                                  "text-violet-500 ph-fill ph-check-circle"
+                                );
+                              } else {
+                                return class$("ph ph-plus-circle");
+                              }
+                            })()
+                          ]),
+                          toList([])
+                        )
+                      ])
+                    )
+                  ])
+                )
+              ])
+            );
+          }
+        )
+      )
+    ])
+  );
+}
+function register3() {
+  let component2 = component(
+    init4,
+    update4,
+    view5,
+    toList([
+      on_attribute_change(
+        "song-id",
+        (id3) => {
+          return new Ok(
+            (() => {
+              let _pipe = id3;
+              return new SongID2(_pipe);
+            })()
+          );
+        }
+      )
+    ])
+  );
+  return make_component(component2, "playlist-menu");
+}
+function echo6(value3, message2, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector6();
+  const string_value = inspector.inspect(value3);
+  const string_message = message2 === void 0 ? "" : " " + message2;
+  if (globalThis.process?.stderr?.write) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string6);
+  } else if (globalThis.Deno) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
+  } else {
+    const string6 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string6);
+  }
+  return value3;
+}
+var Echo$Inspector6 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value3) {
+    try {
+      return value3 instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float4) {
+    const string6 = float4.toString().replace("+", "");
+    if (string6.indexOf(".") >= 0) {
+      return string6;
+    } else {
+      const index5 = string6.indexOf("e");
+      if (index5 >= 0) {
+        return string6.slice(0, index5) + ".0" + string6.slice(index5);
+      } else {
+        return string6 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i2 of Array(v.length).keys())
+        args.push(String.fromCharCode(i2 + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body2 = props.length ? " " + props.join(", ") + " " : "";
+    const head = name2 === "Object" ? "" : name2 + " ";
+    return `//js(${head}{${body2}})`;
+  }
+  #dict(map7) {
+    let body2 = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map7.forEach((value3, key3) => {
+      key_value_pairs.push([key3, value3]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key3, value3]) => {
+      if (!first3) body2 = body2 + ", ";
+      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
+      first3 = false;
+    });
+    return body2 + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label2) => {
+      const value3 = this.inspect(record[label2]);
+      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list5) {
+    if (list5 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current2 = list5;
+    while (current2 instanceof NonEmpty) {
+      let element13 = current2.head;
+      current2 = current2.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element13);
+      if (char_out) {
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i2 = 0; i2 < str.length; i2++) {
+      const char = str[i2];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
+      acc += bits.byteAt(i2).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+
+// build/dev/javascript/somachord/somachord/constants.mjs
+var somachord_likes_playlist_id = "somachord://likes";
+
 // build/dev/javascript/somachord/somachord/pages/album.mjs
-var FILEPATH11 = "src/somachord/pages/album.gleam";
+var FILEPATH12 = "src/somachord/pages/album.gleam";
 function buttons(m, album3) {
   let $ = m.layout;
   if ($ instanceof Desktop) {
@@ -14557,20 +15988,6 @@ function buttons(m, album3) {
           toList([
             class$("text-3xl ph ph-shuffle-simple"),
             on_click(new StreamAlbumShuffled(album3, 0))
-          ]),
-          toList([])
-        ),
-        i(
-          toList([
-            class$("text-3xl ph ph-plus-circle cursor-not-allowed")
-          ]),
-          toList([])
-        ),
-        i(
-          toList([
-            class$(
-              "text-3xl ph ph-download-simple cursor-not-allowed"
-            )
           ]),
           toList([])
         ),
@@ -14693,7 +16110,7 @@ function desktop_page(m, id3) {
         } else {
           throw makeError(
             "let_assert",
-            FILEPATH11,
+            FILEPATH12,
             "somachord/pages/album",
             68,
             "desktop_page",
@@ -14951,8 +16368,8 @@ function page(m, id3) {
 }
 
 // build/dev/javascript/somachord/somachord/pages/artist.mjs
-var FILEPATH12 = "src/somachord/pages/artist.gleam";
-var Model4 = class extends CustomType {
+var FILEPATH13 = "src/somachord/pages/artist.gleam";
+var Model5 = class extends CustomType {
   constructor(current_tab, artist2, artist_id, top_songs2, auth_details, layout2) {
     super();
     this.current_tab = current_tab;
@@ -15020,7 +16437,7 @@ function tab_as_string2(tab) {
     return "About";
   }
 }
-function element6(attrs) {
+function element7(attrs) {
   return element2(
     "artist-page",
     prepend(
@@ -15032,9 +16449,9 @@ function element6(attrs) {
     toList([])
   );
 }
-function init4(_) {
+function init5(_) {
   return [
-    new Model4(
+    new Model5(
       new Home2(),
       new None(),
       "",
@@ -15061,11 +16478,11 @@ function play_json(id3, type_2) {
     toList([["id", string4(id3)], ["type", string4(type_2)]])
   );
 }
-function update4(m, msg) {
+function update5(m, msg) {
   if (msg instanceof ChangeTab) {
     let tab = msg[0];
     return [
-      new Model4(
+      new Model5(
         tab,
         m.artist,
         m.artist_id,
@@ -15078,7 +16495,7 @@ function update4(m, msg) {
   } else if (msg instanceof ArtistID) {
     let id3 = msg[0];
     return [
-      new Model4(
+      new Model5(
         m.current_tab,
         m.artist,
         id3,
@@ -15115,7 +16532,7 @@ function update4(m, msg) {
         } else {
           throw makeError(
             "let_assert",
-            FILEPATH12,
+            FILEPATH13,
             "somachord/pages/artist",
             116,
             "update",
@@ -15130,7 +16547,7 @@ function update4(m, msg) {
           );
         }
         return [
-          new Model4(
+          new Model5(
             m.current_tab,
             new Some(new Ok(artist2)),
             m.artist_id,
@@ -15149,7 +16566,7 @@ function update4(m, msg) {
       } else {
         throw makeError(
           "panic",
-          FILEPATH12,
+          FILEPATH13,
           "somachord/pages/artist",
           122,
           "update",
@@ -15167,7 +16584,7 @@ function update4(m, msg) {
       if ($1 instanceof Ok) {
         let songs = $1[0];
         return [
-          new Model4(
+          new Model5(
             m.current_tab,
             m.artist,
             m.artist_id,
@@ -15411,7 +16828,7 @@ function view_about(_) {
     )
   ]);
 }
-function view5(m) {
+function view6(m) {
   let _pipe = try$(
     (() => {
       let _pipe2 = m.auth_details;
@@ -15577,11 +16994,11 @@ function view5(m) {
   );
   return unwrap_both(_pipe);
 }
-function register3() {
+function register4() {
   let app = component(
-    init4,
-    update4,
-    view5,
+    init5,
+    update5,
+    view6,
     toList([
       on_attribute_change(
         "artist-id",
@@ -15607,7 +17024,7 @@ var AlbumList2 = class extends CustomType {
     this.albums = albums;
   }
 };
-var Model5 = class extends CustomType {
+var Model6 = class extends CustomType {
   constructor(albumlists) {
     super();
     this.albumlists = albumlists;
@@ -15627,7 +17044,7 @@ var Play2 = class extends CustomType {
 };
 var ComponentClick2 = class extends CustomType {
 };
-function element7(attrs) {
+function element8(attrs) {
   return element2(
     "home-page",
     prepend(
@@ -15649,10 +17066,10 @@ function element7(attrs) {
     toList([])
   );
 }
-function init5(_) {
+function init6(_) {
   let storage = create();
   return [
-    new Model5(toList([])),
+    new Model6(toList([])),
     (() => {
       let $ = (() => {
         let _pipe = storage;
@@ -15697,7 +17114,7 @@ function init5(_) {
     })()
   ];
 }
-function update5(m, msg) {
+function update6(m, msg) {
   if (msg instanceof AlbumListRetrieved) {
     let $ = msg[0];
     if ($ instanceof Ok) {
@@ -15706,7 +17123,7 @@ function update5(m, msg) {
         let type_2 = $1[0].type_;
         let list5 = $1[0].albums;
         return [
-          new Model5(
+          new Model6(
             (() => {
               let _pipe = prepend(new AlbumList2(type_2, list5), m.albumlists);
               return sort(
@@ -15735,14 +17152,14 @@ function update5(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo6("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
-        echo6(e, void 0, "src/somachord/pages/home.gleam", 99);
+        echo7("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
+        echo7(e, void 0, "src/somachord/pages/home.gleam", 99);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo6("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
-      echo6(e, void 0, "src/somachord/pages/home.gleam", 104);
+      echo7("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
+      echo7(e, void 0, "src/somachord/pages/home.gleam", 104);
       return [m, none2()];
     }
   } else if (msg instanceof Play2) {
@@ -15763,7 +17180,7 @@ function update5(m, msg) {
     return [m, none2()];
   }
 }
-function view6(m) {
+function view7(m) {
   return div(
     toList([
       redirect_click(new ComponentClick2()),
@@ -15771,7 +17188,14 @@ function view6(m) {
     ]),
     (() => {
       let _pipe = prepend(
-        mobile_space(),
+        (() => {
+          let $ = layout();
+          if ($ instanceof Desktop) {
+            return none3();
+          } else {
+            return mobile_space();
+          }
+        })(),
         map(
           m.albumlists,
           (album_list2) => {
@@ -15815,7 +17239,7 @@ function view6(m) {
                             album3,
                             (id3) => {
                               return new Play2(
-                                new PlayRequest("album", id3)
+                                new PlayRequest("album", id3, 0)
                               );
                             }
                           );
@@ -15833,463 +17257,14 @@ function view6(m) {
     })()
   );
 }
-function register4() {
-  let app = component(
-    init5,
-    update5,
-    view6,
-    toList([open_shadow_root(true)])
-  );
-  return make_component(app, "home-page");
-}
-function echo6(value3, message2, file, line) {
-  const grey = "\x1B[90m";
-  const reset_color = "\x1B[39m";
-  const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector6();
-  const string_value = inspector.inspect(value3);
-  const string_message = message2 === void 0 ? "" : " " + message2;
-  if (globalThis.process?.stderr?.write) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.process.stderr.write(string6);
-  } else if (globalThis.Deno) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
-  } else {
-    const string6 = `${file_line}
-${string_value}`;
-    globalThis.console.log(string6);
-  }
-  return value3;
-}
-var Echo$Inspector6 = class {
-  #references = /* @__PURE__ */ new Set();
-  #isDict(value3) {
-    try {
-      return value3 instanceof Dict;
-    } catch {
-      return false;
-    }
-  }
-  #float(float4) {
-    const string6 = float4.toString().replace("+", "");
-    if (string6.indexOf(".") >= 0) {
-      return string6;
-    } else {
-      const index5 = string6.indexOf("e");
-      if (index5 >= 0) {
-        return string6.slice(0, index5) + ".0" + string6.slice(index5);
-      } else {
-        return string6 + ".0";
-      }
-    }
-  }
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return this.#float(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i2 of Array(v.length).keys())
-        args.push(String.fromCharCode(i2 + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (v instanceof List) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (this.#isDict(v)) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body2 = props.length ? " " + props.join(", ") + " " : "";
-    const head = name2 === "Object" ? "" : name2 + " ";
-    return `//js(${head}{${body2}})`;
-  }
-  #dict(map7) {
-    let body2 = "dict.from_list([";
-    let first3 = true;
-    let key_value_pairs = [];
-    map7.forEach((value3, key3) => {
-      key_value_pairs.push([key3, value3]);
-    });
-    key_value_pairs.sort();
-    key_value_pairs.forEach(([key3, value3]) => {
-      if (!first3) body2 = body2 + ", ";
-      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
-      first3 = false;
-    });
-    return body2 + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label2) => {
-      const value3 = this.inspect(record[label2]);
-      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list5) {
-    if (list5 instanceof Empty) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current2 = list5;
-    while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
-      current2 = current2.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element10);
-      if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i2 = 0; i2 < str.length; i2++) {
-      const char = str[i2];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits) {
-    if (bits.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
-      acc += bits.byteAt(i2).toString();
-      acc += ", ";
-    }
-    if (bits.byteSize * 8 === bits.bitSize) {
-      acc += bits.byteAt(bits.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits.bitSize % 8;
-      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
-
-// build/dev/javascript/somachord/somachord/pages/not_found.mjs
-function page2() {
-  return div(
-    toList([
-      class$(
-        "flex-1 flex flex-col items-center justify-center gap-4"
-      )
-    ]),
-    toList([
-      div(
-        toList([
-          class$(
-            "text-center font-[Poppins] font-extrabold text-3xl"
-          )
-        ]),
-        toList([
-          h1(toList([]), toList([text2("(O_O;)")])),
-          h1(toList([]), toList([text2("Not Found")]))
-        ])
-      ),
-      p(toList([]), toList([text2("there's nothing here....")])),
-      a(
-        toList([href("/")]),
-        toList([
-          button(
-            toList([
-              class$(
-                "rounded-full px-4 py-2 bg-white hover:bg-white/80 text-black"
-              )
-            ]),
-            toList([text2("Go Home")])
-          )
-        ])
-      )
-    ])
-  );
-}
-
-// build/dev/javascript/somachord/somachord/pages/search.mjs
-var FILEPATH13 = "src/somachord/pages/search.gleam";
-var Model6 = class extends CustomType {
-  constructor(search_query, artists, albums, layout2) {
-    super();
-    this.search_query = search_query;
-    this.artists = artists;
-    this.albums = albums;
-    this.layout = layout2;
-  }
-};
-var Search4 = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var SearchResults = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var PlayAlbum2 = class extends CustomType {
-  constructor(id3) {
-    super();
-    this.id = id3;
-  }
-};
-var Nothing2 = class extends CustomType {
-};
-function query(search2) {
-  return attribute2("search-query", search2);
-}
-function element8(attrs) {
-  return element2(
-    "search-page",
-    prepend(
-      class$(
-        "flex-1 p-4 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500"
-      ),
-      attrs
-    ),
-    toList([])
-  );
-}
-function init6(_) {
-  return [
-    new Model6("", toList([]), toList([]), layout()),
-    none2()
-  ];
-}
-function update6(m, msg) {
-  let _block;
-  {
-    let _block$1;
-    let _pipe = create();
-    _block$1 = get2(_pipe, "auth");
-    let $ = _block$1;
-    let stg;
-    if ($ instanceof Ok) {
-      stg = $[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH13,
-        "somachord/pages/search",
-        77,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 1685,
-          end: 1745,
-          pattern_start: 1696,
-          pattern_end: 1703
-        }
-      );
-    }
-    _block = stg.auth;
-  }
-  let auth_details = _block;
-  if (msg instanceof Search4) {
-    let query$1 = msg[0];
-    return [
-      m,
-      search(
-        auth_details,
-        query$1,
-        (var0) => {
-          return new SearchResults(var0);
-        }
-      )
-    ];
-  } else if (msg instanceof SearchResults) {
-    let $ = msg[0];
-    if ($ instanceof Ok) {
-      let $1 = $[0];
-      if ($1 instanceof Ok) {
-        let albums = $1[0][1];
-        return [
-          new Model6(m.search_query, m.artists, albums, m.layout),
-          none2()
-        ];
-      } else {
-        let e = $1[0];
-        echo7(e, void 0, "src/somachord/pages/search.gleam", 87);
-        throw makeError(
-          "panic",
-          FILEPATH13,
-          "somachord/pages/search",
-          88,
-          "update",
-          "search results subsonic error",
-          {}
-        );
-      }
-    } else {
-      let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/search.gleam", 91);
-      throw makeError(
-        "panic",
-        FILEPATH13,
-        "somachord/pages/search",
-        92,
-        "update",
-        "search results rsvp error",
-        {}
-      );
-    }
-  } else if (msg instanceof PlayAlbum2) {
-    let id3 = msg.id;
-    return [
-      m,
-      emit(
-        "play",
-        object2(
-          toList([["id", string4(id3)], ["type", string4("album")]])
-        )
-      )
-    ];
-  } else {
-    return [m, none2()];
-  }
-}
-function view7(m) {
-  return div(
-    toList([class$("flex flex-col")]),
-    toList([
-      (() => {
-        let $ = m.layout;
-        if ($ instanceof Desktop) {
-          return none3();
-        } else {
-          return input(
-            toList([
-              class$(
-                "text-zinc-500 bg-zinc-900 p-2 rounded-sm w-full focus:outline-none outline-none ring-0"
-              ),
-              placeholder("Search"),
-              autofocus(true),
-              on_input((var0) => {
-                return new Search4(var0);
-              })
-            ])
-          );
-        }
-      })(),
-      div(
-        toList([
-          redirect_click(new Nothing2()),
-          class$("flex flex-wrap gap-4")
-        ]),
-        map(
-          m.albums,
-          (album3) => {
-            return album2(album3, (id3) => {
-              return new PlayAlbum2(id3);
-            });
-          }
-        )
-      )
-    ])
-  );
-}
 function register5() {
   let app = component(
     init6,
     update6,
     view7,
-    toList([
-      open_shadow_root(true),
-      on_attribute_change(
-        "search-query",
-        (value3) => {
-          return new Ok(
-            (() => {
-              let _pipe = value3;
-              return new Search4(_pipe);
-            })()
-          );
-        }
-      )
-    ])
+    toList([open_shadow_root(true)])
   );
-  return make_component(app, "search-page");
+  return make_component(app, "home-page");
 }
 function echo7(value3, message2, file, line) {
   const grey = "\x1B[90m";
@@ -16417,15 +17392,1931 @@ var Echo$Inspector7 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i2 = 0; i2 < str.length; i2++) {
+      const char = str[i2];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
+      acc += bits.byteAt(i2).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+
+// build/dev/javascript/somachord/somachord/pages/library.mjs
+var FILEPATH14 = "src/somachord/pages/library.gleam";
+var Grid = class extends CustomType {
+};
+var List2 = class extends CustomType {
+};
+var Model7 = class extends CustomType {
+  constructor(playlists2, display, search_query) {
+    super();
+    this.playlists = playlists2;
+    this.display = display;
+    this.search_query = search_query;
+  }
+};
+var ChangeDisplay = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var Playlists3 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlayPlaylist = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Nothing2 = class extends CustomType {
+};
+function element9(attrs) {
+  return element2(
+    "library-page",
+    prepend(
+      class$(
+        "flex-1 rounded-md border border-zinc-800 overflow-x-hidden overflow-y-auto"
+      ),
+      prepend(class$(scrollbar_class), attrs)
+    ),
+    toList([])
+  );
+}
+function init7(_) {
+  let storage = create();
+  return [
+    new Model7(
+      toList([]),
+      (() => {
+        let $ = layout();
+        if ($ instanceof Desktop) {
+          return new Grid();
+        } else {
+          return new List2();
+        }
+      })(),
+      ""
+    ),
+    (() => {
+      let $ = (() => {
+        let _pipe = storage;
+        return get2(_pipe, "auth");
+      })();
+      if ($ instanceof Ok) {
+        let stg = $[0];
+        return playlists(
+          stg.auth,
+          (var0) => {
+            return new Playlists3(var0);
+          }
+        );
+      } else {
+        return none2();
+      }
+    })()
+  ];
+}
+function play_json2(id3, index5) {
+  return object2(
+    toList([
+      ["id", string4(id3)],
+      ["type", string4("playlist")],
+      ["index", int3(index5)]
+    ])
+  );
+}
+function update7(m, msg) {
+  if (msg instanceof ChangeDisplay) {
+    let display = msg[0];
+    return [new Model7(m.playlists, display, m.search_query), none2()];
+  } else if (msg instanceof Playlists3) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlists2 = $1[0];
+        return [new Model7(playlists2, m.display, m.search_query), none2()];
+      } else {
+        return [m, none2()];
+      }
+    } else {
+      return [m, none2()];
+    }
+  } else if (msg instanceof PlayPlaylist) {
+    let id3 = msg.id;
+    return [m, emit("play", play_json2(id3, 0))];
+  } else {
+    return [m, none2()];
+  }
+}
+function active_button(m, target2) {
+  let $ = isEqual(m.display, target2);
+  if ($) {
+    return class$("bg-zinc-800 text-zinc-300 rounded-md");
+  } else {
+    return none();
+  }
+}
+function search_filter(playlists2, query2) {
+  let $ = query2 === "";
+  if ($) {
+    return playlists2;
+  } else {
+    return filter(
+      playlists2,
+      (playlist3) => {
+        let _pipe = lowercase(playlist3.name);
+        return contains_string(_pipe, lowercase(query2));
+      }
+    );
+  }
+}
+function view8(m) {
+  let _block;
+  {
+    let _block$1;
+    let _pipe = create();
+    _block$1 = get2(_pipe, "auth");
+    let $ = _block$1;
+    let stg;
+    if ($ instanceof Ok) {
+      stg = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH14,
+        "somachord/pages/library",
+        105,
+        "view",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 2111,
+          end: 2171,
+          pattern_start: 2122,
+          pattern_end: 2129
+        }
+      );
+    }
+    _block = stg.auth;
+  }
+  let auth_details = _block;
+  return div(
+    toList([
+      class$("flex flex-col"),
+      redirect_click(new Nothing2())
+    ]),
+    toList([
+      div(
+        toList([
+          class$(
+            "px-6 py-4 sticky top-0 z-50 bg-zinc-950 text-zinc-400 space-x-12 inline-flex"
+          )
+        ]),
+        toList([
+          div(
+            toList([class$("space-x-4")]),
+            toList([
+              i(
+                toList([
+                  active_button(m, new Grid()),
+                  on_click(new ChangeDisplay(new Grid())),
+                  class$("p-2 text-3xl ph ph-squares-four")
+                ]),
+                toList([])
+              ),
+              i(
+                toList([
+                  active_button(m, new List2()),
+                  on_click(new ChangeDisplay(new List2())),
+                  class$("p-2 text-3xl ph ph-list-bullets")
+                ]),
+                toList([])
+              )
+            ])
+          )
+        ])
+      ),
+      (() => {
+        let $ = m.display;
+        if ($ instanceof Grid) {
+          return div(
+            toList([
+              class$(
+                "px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+              )
+            ]),
+            map(
+              (() => {
+                let _pipe = m.playlists;
+                return search_filter(_pipe, m.search_query);
+              })(),
+              (playlist3) => {
+                return playlist2(
+                  playlist3,
+                  (var0) => {
+                    return new PlayPlaylist(var0);
+                  }
+                );
+              }
+            )
+          );
+        } else {
+          return div(
+            toList([class$("flex flex-col")]),
+            map(
+              (() => {
+                let _pipe = m.playlists;
+                return search_filter(_pipe, m.search_query);
+              })(),
+              (playlist3) => {
+                return div(
+                  toList([
+                    class$(
+                      "flex items-center px-4 py-3 border-b border-zinc-800 hover:bg-zinc-900 gap-4"
+                    )
+                  ]),
+                  toList([
+                    div(
+                      toList([
+                        class$(
+                          "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center"
+                        )
+                      ]),
+                      toList([
+                        (() => {
+                          let $1 = playlist3.cover_art_id === "";
+                          if ($1) {
+                            return i(
+                              toList([
+                                class$(
+                                  "text-zinc-500 text-xl ph ph-music-notes-simple"
+                                )
+                              ]),
+                              toList([])
+                            );
+                          } else {
+                            return a(
+                              toList([href("/album/" + playlist3.id)]),
+                              toList([
+                                img(
+                                  toList([
+                                    src(
+                                      (() => {
+                                        let _pipe = create_uri(
+                                          "/rest/getCoverArt.view",
+                                          auth_details,
+                                          toList([
+                                            ["id", playlist3.cover_art_id],
+                                            ["size", "500"]
+                                          ])
+                                        );
+                                        return to_string3(_pipe);
+                                      })()
+                                    ),
+                                    class$(
+                                      "hover:opacity-50 transition-all duration-200 rounded-md object-cover"
+                                    )
+                                  ])
+                                )
+                              ])
+                            );
+                          }
+                        })()
+                      ])
+                    ),
+                    div(
+                      toList([class$("flex flex-col")]),
+                      toList([
+                        a(
+                          toList([href("/playlist/" + playlist3.id)]),
+                          toList([
+                            span(
+                              toList([
+                                class$(
+                                  "hover:underline font-medium text-zinc-200"
+                                )
+                              ]),
+                              toList([text2(playlist3.name)])
+                            )
+                          ])
+                        ),
+                        span(
+                          toList([
+                            class$(
+                              "text-xs font-light text-zinc-500"
+                            )
+                          ]),
+                          toList([
+                            text2(
+                              to_string2(playlist3.song_count) + " song" + (() => {
+                                let $1 = playlist3.song_count === 1;
+                                if ($1) {
+                                  return "";
+                                } else {
+                                  return "s";
+                                }
+                              })()
+                            )
+                          ])
+                        )
+                      ])
+                    ),
+                    div(
+                      toList([class$("flex flex-1 justify-end")]),
+                      toList([
+                        i(
+                          toList([
+                            on_click(new PlayPlaylist(playlist3.id)),
+                            class$("text-lg ph-fill ph-play")
+                          ]),
+                          toList([])
+                        )
+                      ])
+                    )
+                  ])
+                );
+              }
+            )
+          );
+        }
+      })()
+    ])
+  );
+}
+function register7() {
+  let app = component(init7, update7, view8, toList([]));
+  return make_component(app, "library-page");
+}
+
+// build/dev/javascript/somachord/somachord/pages/not_found.mjs
+function page2() {
+  return div(
+    toList([
+      class$(
+        "flex-1 flex flex-col items-center justify-center gap-4"
+      )
+    ]),
+    toList([
+      div(
+        toList([
+          class$(
+            "text-center font-[Poppins] font-extrabold text-3xl"
+          )
+        ]),
+        toList([
+          h1(toList([]), toList([text2("(O_O;)")])),
+          h1(toList([]), toList([text2("Not Found")]))
+        ])
+      ),
+      p(toList([]), toList([text2("there's nothing here....")])),
+      a(
+        toList([href("/")]),
+        toList([
+          button(
+            toList([
+              class$(
+                "rounded-full px-4 py-2 bg-white hover:bg-white/80 text-black"
+              )
+            ]),
+            toList([text2("Go Home")])
+          )
+        ])
+      )
+    ])
+  );
+}
+
+// build/dev/javascript/somachord/somachord/pages/playlist.mjs
+var FILEPATH15 = "src/somachord/pages/playlist.gleam";
+var PlaylistID = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlaylistResponse = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var LikedSongsResponse = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlayPlaylist2 = class extends CustomType {
+  constructor(index5) {
+    super();
+    this.index = index5;
+  }
+};
+var ShowEditor = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlaylistUpdate = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlaylistUpdateResponse = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var ComponentClick3 = class extends CustomType {
+};
+var Model8 = class extends CustomType {
+  constructor(playlist3, layout2, show_editor, playlist_form) {
+    super();
+    this.playlist = playlist3;
+    this.layout = layout2;
+    this.show_editor = show_editor;
+    this.playlist_form = playlist_form;
+  }
+};
+var PlaylistForm = class extends CustomType {
+  constructor(name2, description, public$) {
+    super();
+    this.name = name2;
+    this.description = description;
+    this.public = public$;
+  }
+};
+function element10(attrs) {
+  return element2(
+    "playlist-page",
+    prepend(
+      class$(
+        "flex-1 p-8 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
+      ),
+      attrs
+    ),
+    toList([])
+  );
+}
+function init8(_) {
+  return [
+    new Model8(
+      new_playlist(),
+      layout(),
+      false,
+      new$10(
+        field2(
+          "playlistName",
+          (() => {
+            let _pipe = parse_string;
+            return check_not_empty(_pipe);
+          })(),
+          (playlist_name) => {
+            return field2(
+              "playlistDescription",
+              parse_string,
+              (playlist_description) => {
+                return field2(
+                  "playlistPublic",
+                  parse_checkbox,
+                  (playlist_public) => {
+                    return success2(
+                      new PlaylistForm(
+                        playlist_name,
+                        playlist_description,
+                        playlist_public
+                      )
+                    );
+                  }
+                );
+              }
+            );
+          }
+        )
+      )
+    ),
+    none2()
+  ];
+}
+function playlist_json(playlist3, index5) {
+  return object2(
+    toList([
+      ["playlist", playlist_encode(playlist3)],
+      ["index", int3(index5)]
+    ])
+  );
+}
+function update8(m, msg) {
+  if (msg instanceof PlaylistID) {
+    let id3 = msg[0];
+    return [
+      m,
+      (() => {
+        let $ = id3 === somachord_likes_playlist_id;
+        if ($) {
+          return likes(
+            (() => {
+              let _block;
+              let _pipe = create();
+              _block = get2(_pipe, "auth");
+              let $1 = _block;
+              let stg;
+              if ($1 instanceof Ok) {
+                stg = $1[0];
+              } else {
+                throw makeError(
+                  "let_assert",
+                  FILEPATH15,
+                  "somachord/pages/playlist",
+                  115,
+                  "update",
+                  "Pattern match failed, no pattern matched the value.",
+                  {
+                    value: $1,
+                    start: 2796,
+                    end: 2856,
+                    pattern_start: 2807,
+                    pattern_end: 2814
+                  }
+                );
+              }
+              return stg.auth;
+            })(),
+            (var0) => {
+              return new LikedSongsResponse(var0);
+            }
+          );
+        } else {
+          return playlist(
+            (() => {
+              let _block;
+              let _pipe = create();
+              _block = get2(_pipe, "auth");
+              let $1 = _block;
+              let stg;
+              if ($1 instanceof Ok) {
+                stg = $1[0];
+              } else {
+                throw makeError(
+                  "let_assert",
+                  FILEPATH15,
+                  "somachord/pages/playlist",
+                  123,
+                  "update",
+                  "Pattern match failed, no pattern matched the value.",
+                  {
+                    value: $1,
+                    start: 3027,
+                    end: 3087,
+                    pattern_start: 3038,
+                    pattern_end: 3045
+                  }
+                );
+              }
+              return stg.auth;
+            })(),
+            id3,
+            (var0) => {
+              return new PlaylistResponse(var0);
+            }
+          );
+        }
+      })()
+    ];
+  } else if (msg instanceof PlaylistResponse) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlist3 = $1[0];
+        return [
+          new Model8(playlist3, m.layout, m.show_editor, m.playlist_form),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 155);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 155);
+      return [m, none2()];
+    }
+  } else if (msg instanceof LikedSongsResponse) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let songs = $1[0];
+        let _block;
+        let _record = new_playlist();
+        _block = new Playlist(
+          somachord_likes_playlist_id,
+          "Liked Songs",
+          "You",
+          false,
+          "",
+          _record.created,
+          _record.updated,
+          fold(songs, 0, (acc, song3) => {
+            return acc + song3.duration;
+          }),
+          songs,
+          length(songs)
+        );
+        let playlist3 = _block;
+        return [
+          new Model8(playlist3, m.layout, m.show_editor, m.playlist_form),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 147);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 147);
+      return [m, none2()];
+    }
+  } else if (msg instanceof PlayPlaylist2) {
+    let index5 = msg.index;
+    echo8(
+      "playing playlist",
+      void 0,
+      "src/somachord/pages/playlist.gleam",
+      159
+    );
+    return [m, emit("playPlaylist", playlist_json(m.playlist, index5))];
+  } else if (msg instanceof ShowEditor) {
+    let show = msg[0];
+    return [
+      new Model8(m.playlist, m.layout, show, m.playlist_form),
+      none2()
+    ];
+  } else if (msg instanceof PlaylistUpdate) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let playlist_update_info = $[0];
+      return [
+        new Model8(
+          m.playlist,
+          m.layout,
+          m.show_editor,
+          (() => {
+            let _pipe = m.playlist_form;
+            return set_values(
+              _pipe,
+              toList([
+                ["playlistName", playlist_update_info.name],
+                ["playlistDescription", playlist_update_info.description],
+                [
+                  "playlistPublic",
+                  (() => {
+                    let $1 = playlist_update_info.public;
+                    if ($1) {
+                      return "true";
+                    } else {
+                      return "false";
+                    }
+                  })()
+                ]
+              ])
+            );
+          })()
+        ),
+        update_playlist(
+          (() => {
+            let _block;
+            let _pipe = create();
+            _block = get2(_pipe, "auth");
+            let $1 = _block;
+            let stg;
+            if ($1 instanceof Ok) {
+              stg = $1[0];
+            } else {
+              throw makeError(
+                "let_assert",
+                FILEPATH15,
+                "somachord/pages/playlist",
+                179,
+                "update",
+                "Pattern match failed, no pattern matched the value.",
+                {
+                  value: $1,
+                  start: 4709,
+                  end: 4769,
+                  pattern_start: 4720,
+                  pattern_end: 4727
+                }
+              );
+            }
+            return stg.auth;
+          })(),
+          m.playlist.id,
+          playlist_update_info.name,
+          playlist_update_info.description,
+          playlist_update_info.public,
+          (var0) => {
+            return new PlaylistUpdateResponse(var0);
+          }
+        )
+      ];
+    } else {
+      echo8("form error!", void 0, "src/somachord/pages/playlist.gleam", 191);
+      return [m, none2()];
+    }
+  } else if (msg instanceof PlaylistUpdateResponse) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        return [
+          new Model8(
+            (() => {
+              let _record = m.playlist;
+              return new Playlist(
+                _record.id,
+                (() => {
+                  let _pipe = m.playlist_form;
+                  return field_value(_pipe, "playlistName");
+                })(),
+                _record.owner,
+                (() => {
+                  let $2 = (() => {
+                    let _pipe = m.playlist_form;
+                    return field_value(_pipe, "playlistPublic");
+                  })();
+                  if ($2 === "true") {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })(),
+                _record.cover_art_id,
+                _record.created,
+                _record.updated,
+                _record.duration,
+                _record.songs,
+                _record.song_count
+              );
+            })(),
+            m.layout,
+            false,
+            m.playlist_form
+          ),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 213);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 213);
+      return [m, none2()];
+    }
+  } else {
+    return [m, none2()];
+  }
+}
+function editor(m) {
+  let editor_submit = (fields) => {
+    let _pipe = m.playlist_form;
+    let _pipe$1 = add_values(_pipe, fields);
+    let _pipe$2 = run2(_pipe$1);
+    return new PlaylistUpdate(_pipe$2);
+  };
+  return div(
+    toList([
+      (() => {
+        let $ = m.show_editor;
+        if ($) {
+          return none();
+        } else {
+          return class$("hidden");
+        }
+      })(),
+      class$(
+        "bg-zinc-950/75 z-100 absolute inset-0 flex justify-center items-center"
+      )
+    ]),
+    toList([
+      form(
+        toList([
+          on_submit(editor_submit),
+          class$("bg-zinc-900 rounded-md p-4 flex flex-col gap-2")
+        ]),
+        toList([
+          div(
+            toList([class$("flex justify-between items-center")]),
+            toList([
+              h1(
+                toList([class$("text-xl font-black text-white")]),
+                toList([text2("Edit Playlist")])
+              ),
+              i(
+                toList([
+                  on_click(new ShowEditor(false)),
+                  class$(
+                    "text-2xl p-2 ph ph-x cursor-pointer text-white hover:bg-zinc-700 rounded-full"
+                  )
+                ]),
+                toList([])
+              )
+            ])
+          ),
+          div(
+            toList([class$("flex flex-col gap-1")]),
+            toList([
+              label(
+                toList([class$("text-sm text-zinc-400")]),
+                toList([text2("Playlist Name")])
+              ),
+              input(
+                toList([
+                  class$(
+                    "bg-zinc-800 text-white rounded-md p-2 w-64 focus:outline-none"
+                  ),
+                  value(m.playlist.name),
+                  name("playlistName")
+                ])
+              )
+            ])
+          ),
+          div(
+            toList([class$("flex flex-col gap-1")]),
+            toList([
+              label(
+                toList([class$("text-sm text-zinc-400")]),
+                toList([text2("Playlist Description")])
+              ),
+              textarea(
+                toList([
+                  class$(
+                    "bg-zinc-800 text-white rounded-md p-2 w-64 h-32 focus:outline-none resize-none"
+                  ),
+                  name("playlistDescription")
+                ]),
+                ""
+              )
+            ])
+          ),
+          div(
+            toList([class$("flex flex-col gap-1")]),
+            toList([
+              div(
+                toList([class$("flex justify-between items-center")]),
+                toList([
+                  label(
+                    toList([class$("text-sm text-zinc-400")]),
+                    toList([text2("Public Playlist")])
+                  ),
+                  label(
+                    toList([
+                      class$("relative inline-flex cursor-pointer")
+                    ]),
+                    toList([
+                      input(
+                        toList([
+                          type_("checkbox"),
+                          class$("sr-only peer"),
+                          checked(m.playlist.public),
+                          name("playlistPublic")
+                        ])
+                      ),
+                      div(
+                        toList([
+                          class$(
+                            "w-11 h-6 bg-zinc-800 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-400"
+                          )
+                        ]),
+                        toList([])
+                      )
+                    ])
+                  )
+                ])
+              )
+            ])
+          ),
+          button(
+            toList([
+              class$(
+                "bg-violet-600 text-white rounded-md px-4 py-2 mt-4 hover:bg-violet-700"
+              )
+            ]),
+            toList([text2("Save Changes")])
+          )
+        ])
+      )
+    ])
+  );
+}
+function buttons2(m) {
+  let $ = m.layout;
+  if ($ instanceof Desktop) {
+    return div(
+      toList([class$("text-zinc-400 flex gap-4 items-center")]),
+      toList([
+        i(
+          toList([
+            class$("text-5xl text-violet-500 ph-fill ph-play-circle"),
+            on_click(new PlayPlaylist2(0))
+          ]),
+          toList([])
+        ),
+        i(
+          toList([
+            class$(
+              "text-3xl ph ph-shuffle-simple cursor-not-allowed"
+            )
+          ]),
+          toList([])
+        ),
+        (() => {
+          let $1 = m.playlist.id === somachord_likes_playlist_id;
+          if ($1) {
+            return none3();
+          } else {
+            return i(
+              toList([
+                class$("text-3xl ph ph-pencil-simple"),
+                on_click(new ShowEditor(true))
+              ]),
+              toList([])
+            );
+          }
+        })(),
+        i(
+          toList([
+            class$("text-3xl ph ph-dots-three cursor-not-allowed")
+          ]),
+          toList([])
+        )
+      ])
+    );
+  } else {
+    return div(
+      toList([
+        class$(
+          "text-zinc-400 flex gap-4 items-center justify-between"
+        )
+      ]),
+      (() => {
+        let _pipe = toList([
+          div(
+            toList([class$("flex gap-4 items-center")]),
+            toList([
+              i(
+                toList([
+                  class$(
+                    "text-3xl ph ph-plus-circle cursor-not-allowed"
+                  )
+                ]),
+                toList([])
+              ),
+              i(
+                toList([
+                  class$(
+                    "text-3xl ph ph-shuffle-simple cursor-not-allowed"
+                  )
+                ]),
+                toList([])
+              ),
+              i(
+                toList([
+                  class$(
+                    "text-5xl text-violet-500 ph-fill ph-play-circle"
+                  ),
+                  on_click(new PlayPlaylist2(0))
+                ]),
+                toList([])
+              )
+            ])
+          ),
+          i(
+            toList([
+              class$("text-3xl ph ph-dots-three cursor-not-allowed")
+            ]),
+            toList([])
+          )
+        ]);
+        return reverse(_pipe);
+      })()
+    );
+  }
+}
+function page3(m) {
+  let _block;
+  {
+    let _block$1;
+    let _pipe = create();
+    _block$1 = get2(_pipe, "auth");
+    let $ = _block$1;
+    let stg;
+    if ($ instanceof Ok) {
+      stg = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH15,
+        "somachord/pages/playlist",
+        355,
+        "page",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 10104,
+          end: 10164,
+          pattern_start: 10115,
+          pattern_end: 10122
+        }
+      );
+    }
+    _block = stg.auth;
+  }
+  let auth_details = _block;
+  return toList([
+    div(
+      toList([
+        class$("flex-1 flex flex-col gap-6"),
+        (() => {
+          let $ = m.layout;
+          if ($ instanceof Desktop) {
+            return class$("overflow-y-auto pr-4");
+          } else {
+            return none();
+          }
+        })(),
+        class$(scrollbar_class),
+        redirect_click(new ComponentClick3())
+      ]),
+      toList([
+        h1(
+          toList([class$("text-3xl text-zinc-300 font-semibold")]),
+          toList([text2(m.playlist.name)])
+        ),
+        div(
+          toList([
+            class$(
+              "flex-wrap flex gap-3 text-xs text-zinc-400 items-center"
+            )
+          ]),
+          prepend(
+            span(
+              toList([]),
+              toList([
+                text2("by "),
+                span(
+                  toList([class$("text-white")]),
+                  toList([text2(m.playlist.owner)])
+                )
+              ])
+            ),
+            prepend(
+              span(toList([]), toList([text2("\u2022")])),
+              prepend(
+                span(
+                  toList([class$("text-nowrap")]),
+                  toList([
+                    text2(
+                      to_string2(m.playlist.song_count) + " song" + (() => {
+                        let $ = m.playlist.song_count === 1;
+                        if ($) {
+                          return "";
+                        } else {
+                          return "s";
+                        }
+                      })()
+                    )
+                  ])
+                ),
+                prepend(
+                  span(toList([]), toList([text2("\u2022")])),
+                  prepend(
+                    span(
+                      toList([class$("text-nowrap")]),
+                      toList([
+                        text2(
+                          (() => {
+                            let minutes2 = globalThis.Math.trunc(
+                              m.playlist.duration / 60
+                            );
+                            let seconds3 = m.playlist.duration % 60;
+                            return to_string2(minutes2) + " min, " + to_string2(
+                              seconds3
+                            ) + " sec";
+                          })()
+                        )
+                      ])
+                    ),
+                    (() => {
+                      let $ = m.playlist.public;
+                      if ($) {
+                        return toList([none3()]);
+                      } else {
+                        return toList([
+                          span(toList([]), toList([text2("\u2022")])),
+                          i(
+                            toList([
+                              class$("text-xl ph ph-lock-simple")
+                            ]),
+                            toList([])
+                          )
+                        ]);
+                      }
+                    })()
+                  )
+                )
+              )
+            )
+          )
+        ),
+        buttons2(m),
+        div(
+          toList([class$("flex flex-col gap-4")]),
+          prepend(
+            (() => {
+              let $ = m.layout;
+              if ($ instanceof Desktop) {
+                return none3();
+              } else {
+                return mobile_space();
+              }
+            })(),
+            index_map(
+              m.playlist.songs,
+              (song3, index5) => {
+                return song2(
+                  song3,
+                  index5,
+                  (() => {
+                    let $ = m.layout;
+                    if ($ instanceof Desktop) {
+                      return toList([none()]);
+                    } else {
+                      return toList([
+                        on_click(new PlayPlaylist2(index5)),
+                        class$(
+                          "transition-all active:scale-[98%] active:bg-zinc-900"
+                        )
+                      ]);
+                    }
+                  })(),
+                  true,
+                  false,
+                  new PlayPlaylist2(index5)
+                );
+              }
+            )
+          )
+        )
+      ])
+    ),
+    div(
+      toList([class$("flex flex-col gap-8")]),
+      toList([
+        div(
+          toList([
+            (() => {
+              let $ = m.playlist.id === somachord_likes_playlist_id;
+              if ($) {
+                return class$(
+                  "bg-linear-to-tl from-violet-500 from-20% to-violet-200"
+                );
+              } else {
+                return class$("bg-zinc-900");
+              }
+            })(),
+            class$(
+              "flex justify-center items-center w-52 h-52 md:w-80 md:h-80 rounded-md"
+            )
+          ]),
+          toList([
+            (() => {
+              let $ = m.playlist.id === somachord_likes_playlist_id;
+              if ($) {
+                return i(
+                  toList([
+                    class$(
+                      "text-[12rem] ph-fill ph-heart-straight text-zinc-900"
+                    )
+                  ]),
+                  toList([])
+                );
+              } else {
+                let $1 = m.playlist.cover_art_id;
+                if ($1 === "") {
+                  return span(
+                    toList([
+                      class$("text-4xl p-2 font-black text-zinc-700")
+                    ]),
+                    toList([text2("No Cover Art!")])
+                  );
+                } else {
+                  return img(
+                    toList([
+                      src(
+                        (() => {
+                          let _pipe = create_uri(
+                            "/rest/getCoverArt.view",
+                            auth_details,
+                            toList([
+                              ["id", m.playlist.cover_art_id],
+                              ["size", "500"]
+                            ])
+                          );
+                          return to_string3(_pipe);
+                        })()
+                      ),
+                      class$("object-scale")
+                    ])
+                  );
+                }
+              }
+            })()
+          ])
+        )
+      ])
+    )
+  ]);
+}
+function view9(m) {
+  return div(
+    toList([
+      class$("flex-1 flex gap-4"),
+      (() => {
+        let $ = m.layout;
+        if ($ instanceof Desktop) {
+          return class$("overflow-hidden");
+        } else {
+          return class$("flex-col overflow-y-auto");
+        }
+      })()
+    ]),
+    prepend(
+      editor(m),
+      (() => {
+        let $ = m.layout;
+        let $1 = page3(m);
+        if ($ instanceof Desktop) {
+          return $1;
+        } else {
+          let elems = $1;
+          let _pipe = elems;
+          return reverse(_pipe);
+        }
+      })()
+    )
+  );
+}
+function register8() {
+  let app = component(
+    init8,
+    update8,
+    view9,
+    toList([
+      on_attribute_change(
+        "playlist-id",
+        (value3) => {
+          return new Ok(
+            (() => {
+              let _pipe = value3;
+              return new PlaylistID(_pipe);
+            })()
+          );
+        }
+      )
+    ])
+  );
+  return make_component(app, "playlist-page");
+}
+function echo8(value3, message2, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector8();
+  const string_value = inspector.inspect(value3);
+  const string_message = message2 === void 0 ? "" : " " + message2;
+  if (globalThis.process?.stderr?.write) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string6);
+  } else if (globalThis.Deno) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
+  } else {
+    const string6 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string6);
+  }
+  return value3;
+}
+var Echo$Inspector8 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value3) {
+    try {
+      return value3 instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float4) {
+    const string6 = float4.toString().replace("+", "");
+    if (string6.indexOf(".") >= 0) {
+      return string6;
+    } else {
+      const index5 = string6.indexOf("e");
+      if (index5 >= 0) {
+        return string6.slice(0, index5) + ".0" + string6.slice(index5);
+      } else {
+        return string6 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i2 of Array(v.length).keys())
+        args.push(String.fromCharCode(i2 + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body2 = props.length ? " " + props.join(", ") + " " : "";
+    const head = name2 === "Object" ? "" : name2 + " ";
+    return `//js(${head}{${body2}})`;
+  }
+  #dict(map7) {
+    let body2 = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map7.forEach((value3, key3) => {
+      key_value_pairs.push([key3, value3]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key3, value3]) => {
+      if (!first3) body2 = body2 + ", ";
+      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
+      first3 = false;
+    });
+    return body2 + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label2) => {
+      const value3 = this.inspect(record[label2]);
+      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list5) {
+    if (list5 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current2 = list5;
+    while (current2 instanceof NonEmpty) {
+      let element13 = current2.head;
+      current2 = current2.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element13);
+      if (char_out) {
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i2 = 0; i2 < str.length; i2++) {
+      const char = str[i2];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
+      acc += bits.byteAt(i2).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+
+// build/dev/javascript/somachord/somachord/pages/search.mjs
+var FILEPATH16 = "src/somachord/pages/search.gleam";
+var Model9 = class extends CustomType {
+  constructor(search_query, artists, albums, layout2) {
+    super();
+    this.search_query = search_query;
+    this.artists = artists;
+    this.albums = albums;
+    this.layout = layout2;
+  }
+};
+var Search4 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var SearchResults = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PlayAlbum2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Nothing3 = class extends CustomType {
+};
+function query(search2) {
+  return attribute2("search-query", search2);
+}
+function element11(attrs) {
+  return element2(
+    "search-page",
+    prepend(
+      class$(
+        "flex-1 p-4 rounded-md border border-zinc-800 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-500"
+      ),
+      attrs
+    ),
+    toList([])
+  );
+}
+function init9(_) {
+  return [
+    new Model9("", toList([]), toList([]), layout()),
+    none2()
+  ];
+}
+function update9(m, msg) {
+  let _block;
+  {
+    let _block$1;
+    let _pipe = create();
+    _block$1 = get2(_pipe, "auth");
+    let $ = _block$1;
+    let stg;
+    if ($ instanceof Ok) {
+      stg = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH16,
+        "somachord/pages/search",
+        77,
+        "update",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 1685,
+          end: 1745,
+          pattern_start: 1696,
+          pattern_end: 1703
+        }
+      );
+    }
+    _block = stg.auth;
+  }
+  let auth_details = _block;
+  if (msg instanceof Search4) {
+    let query$1 = msg[0];
+    return [
+      m,
+      search(
+        auth_details,
+        query$1,
+        (var0) => {
+          return new SearchResults(var0);
+        }
+      )
+    ];
+  } else if (msg instanceof SearchResults) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let albums = $1[0][1];
+        return [
+          new Model9(m.search_query, m.artists, albums, m.layout),
+          none2()
+        ];
+      } else {
+        let e = $1[0];
+        echo9(e, void 0, "src/somachord/pages/search.gleam", 87);
+        throw makeError(
+          "panic",
+          FILEPATH16,
+          "somachord/pages/search",
+          88,
+          "update",
+          "search results subsonic error",
+          {}
+        );
+      }
+    } else {
+      let e = $[0];
+      echo9(e, void 0, "src/somachord/pages/search.gleam", 91);
+      throw makeError(
+        "panic",
+        FILEPATH16,
+        "somachord/pages/search",
+        92,
+        "update",
+        "search results rsvp error",
+        {}
+      );
+    }
+  } else if (msg instanceof PlayAlbum2) {
+    let id3 = msg.id;
+    return [
+      m,
+      emit(
+        "play",
+        object2(
+          toList([["id", string4(id3)], ["type", string4("album")]])
+        )
+      )
+    ];
+  } else {
+    return [m, none2()];
+  }
+}
+function view10(m) {
+  return div(
+    toList([class$("flex flex-col")]),
+    toList([
+      (() => {
+        let $ = m.layout;
+        if ($ instanceof Desktop) {
+          return none3();
+        } else {
+          return input(
+            toList([
+              class$(
+                "text-zinc-500 bg-zinc-900 p-2 rounded-sm w-full focus:outline-none outline-none ring-0"
+              ),
+              placeholder("Search"),
+              autofocus(true),
+              on_input((var0) => {
+                return new Search4(var0);
+              })
+            ])
+          );
+        }
+      })(),
+      div(
+        toList([
+          redirect_click(new Nothing3()),
+          class$("flex flex-wrap gap-4")
+        ]),
+        map(
+          m.albums,
+          (album3) => {
+            return album2(album3, (id3) => {
+              return new PlayAlbum2(id3);
+            });
+          }
+        )
+      )
+    ])
+  );
+}
+function register9() {
+  let app = component(
+    init9,
+    update9,
+    view10,
+    toList([
+      open_shadow_root(true),
+      on_attribute_change(
+        "search-query",
+        (value3) => {
+          return new Ok(
+            (() => {
+              let _pipe = value3;
+              return new Search4(_pipe);
+            })()
+          );
+        }
+      )
+    ])
+  );
+  return make_component(app, "search-page");
+}
+function echo9(value3, message2, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector9();
+  const string_value = inspector.inspect(value3);
+  const string_message = message2 === void 0 ? "" : " " + message2;
+  if (globalThis.process?.stderr?.write) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string6);
+  } else if (globalThis.Deno) {
+    const string6 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
+  } else {
+    const string6 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string6);
+  }
+  return value3;
+}
+var Echo$Inspector9 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value3) {
+    try {
+      return value3 instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float4) {
+    const string6 = float4.toString().replace("+", "");
+    if (string6.indexOf(".") >= 0) {
+      return string6;
+    } else {
+      const index5 = string6.indexOf("e");
+      if (index5 >= 0) {
+        return string6.slice(0, index5) + ".0" + string6.slice(index5);
+      } else {
+        return string6 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i2 of Array(v.length).keys())
+        args.push(String.fromCharCode(i2 + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body2 = props.length ? " " + props.join(", ") + " " : "";
+    const head = name2 === "Object" ? "" : name2 + " ";
+    return `//js(${head}{${body2}})`;
+  }
+  #dict(map7) {
+    let body2 = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map7.forEach((value3, key3) => {
+      key_value_pairs.push([key3, value3]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key3, value3]) => {
+      if (!first3) body2 = body2 + ", ";
+      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
+      first3 = false;
+    });
+    return body2 + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label2) => {
+      const value3 = this.inspect(record[label2]);
+      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list5) {
+    if (list5 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current2 = list5;
+    while (current2 instanceof NonEmpty) {
+      let element13 = current2.head;
+      current2 = current2.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element13);
+      if (char_out) {
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
@@ -16496,10 +19387,10 @@ var Echo$Inspector7 = class {
 };
 
 // build/dev/javascript/somachord/somachord/pages/song.mjs
-var FILEPATH14 = "src/somachord/pages/song.gleam";
+var FILEPATH17 = "src/somachord/pages/song.gleam";
 var Lyrics2 = class extends CustomType {
 };
-var Model7 = class extends CustomType {
+var Model10 = class extends CustomType {
   constructor(song3, playtime, current_tab, font_size2, auto_scroll3, size_changer) {
     super();
     this.song = song3;
@@ -16510,7 +19401,7 @@ var Model7 = class extends CustomType {
     this.size_changer = size_changer;
   }
 };
-var SongID2 = class extends CustomType {
+var SongID3 = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -16546,7 +19437,7 @@ var SizeChange2 = class extends CustomType {
     this[0] = $0;
   }
 };
-var Nothing3 = class extends CustomType {
+var Nothing4 = class extends CustomType {
 };
 function tab_as_string3(tab) {
   if (tab instanceof Lyrics2) {
@@ -16555,7 +19446,7 @@ function tab_as_string3(tab) {
     return "More";
   }
 }
-function element9(attrs) {
+function element12(attrs) {
   return element2(
     "song-page",
     prepend(
@@ -16604,9 +19495,9 @@ function tab_element3(m, tab) {
 function song_time2(time3) {
   return property2("time", float3(time3));
 }
-function init7(_) {
+function init10(_) {
   return [
-    new Model7(
+    new Model10(
       new_song(),
       new None(),
       new Lyrics2(),
@@ -16617,8 +19508,8 @@ function init7(_) {
     none2()
   ];
 }
-function update7(m, msg) {
-  if (msg instanceof SongID2) {
+function update10(m, msg) {
+  if (msg instanceof SongID3) {
     let id3 = msg[0];
     return [
       m,
@@ -16634,17 +19525,17 @@ function update7(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH14,
+              FILEPATH17,
               "somachord/pages/song",
-              139,
+              140,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 2926,
-                end: 2986,
-                pattern_start: 2937,
-                pattern_end: 2944
+                start: 2968,
+                end: 3028,
+                pattern_start: 2979,
+                pattern_end: 2986
               }
             );
           }
@@ -16663,7 +19554,7 @@ function update7(m, msg) {
       if ($1 instanceof Ok) {
         let song3 = $1[0];
         return [
-          new Model7(
+          new Model10(
             song3,
             m.playtime,
             m.current_tab,
@@ -16682,7 +19573,7 @@ function update7(m, msg) {
   } else if (msg instanceof ChangeTab2) {
     let tab = msg[0];
     return [
-      new Model7(
+      new Model10(
         m.song,
         m.playtime,
         tab,
@@ -16708,7 +19599,7 @@ function update7(m, msg) {
   } else if (msg instanceof Playtime2) {
     let time3 = msg[0];
     return [
-      new Model7(
+      new Model10(
         m.song,
         new Some(time3),
         m.current_tab,
@@ -16720,7 +19611,7 @@ function update7(m, msg) {
     ];
   } else if (msg instanceof ToggleSizeChanger2) {
     return [
-      new Model7(
+      new Model10(
         m.song,
         m.playtime,
         m.current_tab,
@@ -16732,7 +19623,7 @@ function update7(m, msg) {
     ];
   } else if (msg instanceof ToggleAutoscroll2) {
     return [
-      new Model7(
+      new Model10(
         m.song,
         m.playtime,
         m.current_tab,
@@ -16745,7 +19636,7 @@ function update7(m, msg) {
   } else if (msg instanceof SizeChange2) {
     let size3 = msg[0];
     return [
-      new Model7(
+      new Model10(
         m.song,
         m.playtime,
         m.current_tab,
@@ -16842,17 +19733,17 @@ function font_size(m) {
                     } else {
                       throw makeError(
                         "let_assert",
-                        FILEPATH14,
+                        FILEPATH17,
                         "somachord/pages/song",
-                        383,
+                        384,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 11015,
-                          end: 11052,
-                          pattern_start: 11026,
-                          pattern_end: 11033
+                          start: 11027,
+                          end: 11064,
+                          pattern_start: 11038,
+                          pattern_end: 11045
                         }
                       );
                     }
@@ -16878,7 +19769,7 @@ function font_size(m) {
     ])
   );
 }
-function view8(m) {
+function view11(m) {
   let song3 = m.song;
   let _block;
   {
@@ -16892,17 +19783,17 @@ function view8(m) {
     } else {
       throw makeError(
         "let_assert",
-        FILEPATH14,
+        FILEPATH17,
         "somachord/pages/song",
-        175,
+        176,
         "view",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3889,
-          end: 3949,
-          pattern_start: 3900,
-          pattern_end: 3907
+          start: 3931,
+          end: 3991,
+          pattern_start: 3942,
+          pattern_end: 3949
         }
       );
     }
@@ -16910,7 +19801,7 @@ function view8(m) {
   }
   let auth_details = _block;
   return div(
-    toList([redirect_click(new Nothing3())]),
+    toList([redirect_click(new Nothing4())]),
     toList([
       div(
         toList([class$("flex flex-wrap gap-8 p-8")]),
@@ -17089,10 +19980,7 @@ function view8(m) {
                     ]),
                     toList([])
                   ),
-                  i(
-                    toList([class$("text-3xl ph ph-plus-circle")]),
-                    toList([])
-                  ),
+                  element6(toList([]), toList([])),
                   i(
                     toList([class$("text-3xl ph ph-download-simple")]),
                     toList([])
@@ -17174,11 +20062,11 @@ function view8(m) {
     ])
   );
 }
-function register6() {
+function register10() {
   let app = component(
-    init7,
-    update7,
-    view8,
+    init10,
+    update10,
+    view11,
     toList([
       on_attribute_change(
         "song-id",
@@ -17186,7 +20074,7 @@ function register6() {
           return new Ok(
             (() => {
               let _pipe = value3;
-              return new SongID2(_pipe);
+              return new SongID3(_pipe);
             })()
           );
         }
@@ -17206,11 +20094,24 @@ function register6() {
 }
 
 // build/dev/javascript/somachord/somachord/pages/views/desktop.mjs
-var FILEPATH15 = "src/somachord/pages/views/desktop.gleam";
+var FILEPATH18 = "src/somachord/pages/views/desktop.gleam";
 function top_bar(m) {
   return div(
-    toList([class$("flex gap-4 justify-center")]),
+    toList([class$("flex gap-4")]),
     toList([
+      a(
+        toList([href("/library")]),
+        toList([
+          button2(
+            i(
+              toList([class$("text-3xl ph ph-cards-three")]),
+              toList([])
+            ),
+            "Library",
+            toList([class$("w-42")])
+          )
+        ])
+      ),
       a(
         toList([href("/")]),
         toList([
@@ -17276,6 +20177,43 @@ function top_bar(m) {
     ])
   );
 }
+function side_bar(_) {
+  return div(
+    toList([
+      class$(
+        "flex flex-col gap-2 border border-zinc-800 rounded-lg py-4 px-1"
+      )
+    ]),
+    toList([
+      a(
+        toList([href("/library?filter=0")]),
+        toList([
+          button2(
+            i(
+              toList([class$("text-3xl ph ph-playlist")]),
+              toList([])
+            ),
+            "Playlists",
+            toList([])
+          )
+        ])
+      ),
+      a(
+        toList([href("/likes")]),
+        toList([
+          button2(
+            i(
+              toList([class$("text-3xl ph ph-heart-straight")]),
+              toList([])
+            ),
+            "Liked Songs",
+            toList([])
+          )
+        ])
+      )
+    ])
+  );
+}
 function playing_bar(m) {
   let _block;
   {
@@ -17289,17 +20227,17 @@ function playing_bar(m) {
     } else {
       throw makeError(
         "let_assert",
-        FILEPATH15,
+        FILEPATH18,
         "somachord/pages/views/desktop",
-        148,
+        154,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3705,
-          end: 3758,
-          pattern_start: 3716,
-          pattern_end: 3723
+          start: 3963,
+          end: 4016,
+          pattern_start: 3974,
+          pattern_end: 3981
         }
       );
     }
@@ -17619,16 +20557,19 @@ function playing_bar(m) {
             ]),
             toList([])
           ),
-          i(
-            toList([class$("text-3xl ph ph-plus-circle")]),
-            toList([])
+          element6(
+            toList([]),
+            toList([
+              class$("absolute bottom-92 right-96"),
+              song_id(m.current_song.id)
+            ])
           )
         ])
       )
     ])
   );
 }
-function view9(m, page3) {
+function view12(m, page4) {
   return div(
     toList([
       class$(
@@ -17640,13 +20581,14 @@ function view9(m, page3) {
       div(
         toList([class$("flex gap-2 min-w-0 min-h-0 w-full h-full")]),
         toList([
+          side_bar(m),
           div(
             toList([
               class$(
                 "flex flex-col gap-2 min-w-0 min-h-0 w-full h-full"
               )
             ]),
-            toList([page3, playing_bar(m)])
+            toList([page4, playing_bar(m)])
           )
         ])
       ),
@@ -17656,7 +20598,7 @@ function view9(m, page3) {
 }
 
 // build/dev/javascript/somachord/somachord/pages/views/mobile.mjs
-var FILEPATH16 = "src/somachord/pages/views/mobile.gleam";
+var FILEPATH19 = "src/somachord/pages/views/mobile.gleam";
 function playing_bar2(m) {
   let _block;
   {
@@ -17670,17 +20612,17 @@ function playing_bar2(m) {
     } else {
       throw makeError(
         "let_assert",
-        FILEPATH16,
+        FILEPATH19,
         "somachord/pages/views/mobile",
-        75,
+        77,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2134,
-          end: 2187,
-          pattern_start: 2145,
-          pattern_end: 2152
+          start: 2230,
+          end: 2283,
+          pattern_start: 2241,
+          pattern_end: 2248
         }
       );
     }
@@ -17845,7 +20787,7 @@ function playing_bar2(m) {
     ])
   );
 }
-function mobile_nav_button(inactive, active, name2, is_active, attrs) {
+function mobile_nav_button(inactive, active2, name2, is_active, attrs) {
   return div(
     prepend(
       class$(
@@ -17865,7 +20807,7 @@ function mobile_nav_button(inactive, active, name2, is_active, attrs) {
     toList([
       (() => {
         if (is_active) {
-          return active;
+          return active2;
         } else {
           return inactive;
         }
@@ -17877,7 +20819,7 @@ function mobile_nav_button(inactive, active, name2, is_active, attrs) {
     ])
   );
 }
-function view10(m, page3) {
+function view13(m, page4) {
   return div(
     toList([
       class$(
@@ -17885,7 +20827,7 @@ function view10(m, page3) {
       )
     ]),
     toList([
-      page3,
+      page4,
       (() => {
         let $ = m.current_song.id === "";
         if ($) {
@@ -17942,6 +20884,27 @@ function view10(m, page3) {
                 toList([])
               )
             ])
+          ),
+          a(
+            toList([
+              href("/library"),
+              class$("h-fit w-fit")
+            ]),
+            toList([
+              mobile_nav_button(
+                i(
+                  toList([class$("text-2xl ph ph-cards-three")]),
+                  toList([])
+                ),
+                i(
+                  toList([class$("text-2xl ph ph-cards-three")]),
+                  toList([])
+                ),
+                "Library",
+                false,
+                toList([])
+              )
+            ])
           )
         ])
       ),
@@ -17951,7 +20914,7 @@ function view10(m, page3) {
 }
 
 // build/dev/javascript/somachord/somachord.mjs
-var FILEPATH17 = "src/somachord.gleam";
+var FILEPATH20 = "src/somachord.gleam";
 function route_effect(m, route) {
   if (route instanceof Album2) {
     let id3 = route.id;
@@ -17967,17 +20930,17 @@ function route_effect(m, route) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          115,
+          126,
           "route_effect",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2778,
-            end: 2831,
-            pattern_start: 2789,
-            pattern_end: 2796
+            start: 3169,
+            end: 3222,
+            pattern_start: 3180,
+            pattern_end: 3187
           }
         );
       }
@@ -18023,17 +20986,17 @@ function check_scrobble(m) {
         } else {
           throw makeError(
             "let_assert",
-            FILEPATH17,
+            FILEPATH20,
             "somachord",
-            554,
+            625,
             "check_scrobble",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 15437,
-              end: 15490,
-              pattern_start: 15448,
-              pattern_end: 15455
+              start: 17670,
+              end: 17723,
+              pattern_start: 17681,
+              pattern_end: 17688
             }
           );
         }
@@ -18057,7 +21020,7 @@ function play() {
     }
   );
 }
-function update8(m, msg) {
+function update11(m, msg) {
   if (msg instanceof Router) {
     let route = msg[0][0];
     return [
@@ -18065,6 +21028,7 @@ function update8(m, msg) {
         route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18075,6 +21039,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -18098,17 +21063,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              247,
+              299,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 6692,
-                end: 6745,
-                pattern_start: 6703,
-                pattern_end: 6710
+                start: 8488,
+                end: 8541,
+                pattern_start: 8499,
+                pattern_end: 8506
               }
             );
           }
@@ -18130,6 +21095,7 @@ function update8(m, msg) {
             m.route,
             m.layout,
             m.storage,
+            m.auth,
             m.confirmed,
             m.albums,
             m.player,
@@ -18140,6 +21106,7 @@ function update8(m, msg) {
             m.played_seconds,
             m.shuffled,
             m.looping,
+            m.playlists,
             m.fullscreen_player_open,
             m.fullscreen_player_display
           ),
@@ -18148,9 +21115,9 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "todo",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          265,
+          317,
           "update",
           "handle stream error",
           {}
@@ -18159,9 +21126,9 @@ function update8(m, msg) {
     } else {
       throw makeError(
         "todo",
-        FILEPATH17,
+        FILEPATH20,
         "somachord",
-        265,
+        317,
         "update",
         "handle stream error",
         {}
@@ -18179,6 +21146,7 @@ function update8(m, msg) {
             m.route,
             m.layout,
             m.storage,
+            m.auth,
             m.confirmed,
             m.albums,
             m.player,
@@ -18189,6 +21157,7 @@ function update8(m, msg) {
             m.played_seconds,
             m.shuffled,
             m.looping,
+            m.playlists,
             m.fullscreen_player_open,
             m.fullscreen_player_display
           ),
@@ -18210,17 +21179,17 @@ function update8(m, msg) {
                   } else {
                     throw makeError(
                       "let_assert",
-                      FILEPATH17,
+                      FILEPATH20,
                       "somachord",
-                      156,
+                      167,
                       "update",
                       "Pattern match failed, no pattern matched the value.",
                       {
                         value: $3,
-                        start: 3971,
-                        end: 4024,
-                        pattern_start: 3982,
-                        pattern_end: 3989
+                        start: 4362,
+                        end: 4415,
+                        pattern_start: 4373,
+                        pattern_end: 4380
                       }
                     );
                   }
@@ -18255,6 +21224,7 @@ function update8(m, msg) {
             m.route,
             m.layout,
             m.storage,
+            m.auth,
             m.confirmed,
             (() => {
               let _pipe = m.albums;
@@ -18268,6 +21238,7 @@ function update8(m, msg) {
             m.played_seconds,
             m.shuffled,
             m.looping,
+            m.playlists,
             m.fullscreen_player_open,
             m.fullscreen_player_display
           ),
@@ -18276,9 +21247,9 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "todo",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          145,
+          156,
           "update",
           "album not found",
           {}
@@ -18287,9 +21258,9 @@ function update8(m, msg) {
     } else {
       throw makeError(
         "todo",
-        FILEPATH17,
+        FILEPATH20,
         "somachord",
-        146,
+        157,
         "update",
         "album not found: rsvp",
         {}
@@ -18315,17 +21286,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              351,
+              403,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9523,
-                end: 9576,
-                pattern_start: 9534,
-                pattern_end: 9541
+                start: 11319,
+                end: 11372,
+                pattern_start: 11330,
+                pattern_end: 11337
               }
             );
           }
@@ -18351,6 +21322,7 @@ function update8(m, msg) {
             m.route,
             m.layout,
             m.storage,
+            m.auth,
             m.confirmed,
             m.albums,
             m.player,
@@ -18361,6 +21333,7 @@ function update8(m, msg) {
             m.played_seconds,
             m.shuffled,
             m.looping,
+            m.playlists,
             m.fullscreen_player_open,
             m.fullscreen_player_display
           ),
@@ -18380,17 +21353,17 @@ function update8(m, msg) {
               } else {
                 throw makeError(
                   "let_assert",
-                  FILEPATH17,
+                  FILEPATH20,
                   "somachord",
-                  369,
+                  421,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 10128,
-                    end: 10194,
-                    pattern_start: 10139,
-                    pattern_end: 10155
+                    start: 11924,
+                    end: 11990,
+                    pattern_start: 11935,
+                    pattern_end: 11951
                   }
                 );
               }
@@ -18419,17 +21392,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              381,
+              433,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $22,
-                start: 10455,
-                end: 10508,
-                pattern_start: 10466,
-                pattern_end: 10473
+                start: 12251,
+                end: 12304,
+                pattern_start: 12262,
+                pattern_end: 12269
               }
             );
           }
@@ -18446,17 +21419,17 @@ function update8(m, msg) {
         } else {
           throw makeError(
             "let_assert",
-            FILEPATH17,
+            FILEPATH20,
             "somachord",
-            384,
+            436,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 10540,
-              end: 10606,
-              pattern_start: 10551,
-              pattern_end: 10567
+              start: 12336,
+              end: 12402,
+              pattern_start: 12347,
+              pattern_end: 12363
             }
           );
         }
@@ -18492,17 +21465,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              351,
+              403,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9523,
-                end: 9576,
-                pattern_start: 9534,
-                pattern_end: 9541
+                start: 11319,
+                end: 11372,
+                pattern_start: 11330,
+                pattern_end: 11337
               }
             );
           }
@@ -18528,6 +21501,7 @@ function update8(m, msg) {
             m.route,
             m.layout,
             m.storage,
+            m.auth,
             m.confirmed,
             m.albums,
             m.player,
@@ -18538,6 +21512,7 @@ function update8(m, msg) {
             m.played_seconds,
             m.shuffled,
             m.looping,
+            m.playlists,
             m.fullscreen_player_open,
             m.fullscreen_player_display
           ),
@@ -18557,17 +21532,17 @@ function update8(m, msg) {
               } else {
                 throw makeError(
                   "let_assert",
-                  FILEPATH17,
+                  FILEPATH20,
                   "somachord",
-                  369,
+                  421,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 10128,
-                    end: 10194,
-                    pattern_start: 10139,
-                    pattern_end: 10155
+                    start: 11924,
+                    end: 11990,
+                    pattern_start: 11935,
+                    pattern_end: 11951
                   }
                 );
               }
@@ -18589,12 +21564,57 @@ function update8(m, msg) {
     } else {
       return [m, none2()];
     }
+  } else if (msg instanceof PlaylistWithSongs) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        let playlist3 = $1[0];
+        echo10(playlist3.name, void 0, "src/somachord.gleam", 586);
+        echo10(playlist3.songs, void 0, "src/somachord.gleam", 587);
+        echo10(m.current_song, void 0, "src/somachord.gleam", 588);
+        return [
+          new Model(
+            m.route,
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            m.current_song,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            (() => {
+              let _pipe = m.playlists;
+              return insert(_pipe, playlist3.id, playlist3);
+            })(),
+            m.fullscreen_player_open,
+            m.fullscreen_player_display
+          ),
+          none2()
+        ];
+      } else {
+        let e = $;
+        echo10(e, void 0, "src/somachord.gleam", 598);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo10(e, void 0, "src/somachord.gleam", 598);
+      return [m, none2()];
+    }
   } else if (msg instanceof ToggleFullscreenPlayer) {
     return [
       new Model(
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18605,6 +21625,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         negate(m.fullscreen_player_open),
         m.fullscreen_player_display
       ),
@@ -18617,6 +21638,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18627,6 +21649,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         view$1
       ),
@@ -18634,17 +21657,17 @@ function update8(m, msg) {
     ];
   } else if (msg instanceof Play) {
     let req = msg[0];
-    echo8(
+    echo10(
       "!!! play request id: " + req.id,
       void 0,
       "src/somachord.gleam",
-      185
+      196
     );
-    echo8(
+    echo10(
       "play request type: " + req.type_,
       void 0,
       "src/somachord.gleam",
-      186
+      197
     );
     let _block;
     {
@@ -18658,17 +21681,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          188,
+          199,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 4788,
-            end: 4841,
-            pattern_start: 4799,
-            pattern_end: 4806
+            start: 5179,
+            end: 5232,
+            pattern_start: 5190,
+            pattern_end: 5197
           }
         );
       }
@@ -18696,17 +21719,17 @@ function update8(m, msg) {
               } else {
                 throw makeError(
                   "let_assert",
-                  FILEPATH17,
+                  FILEPATH20,
                   "somachord",
-                  196,
+                  207,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 5044,
-                    end: 5095,
-                    pattern_start: 5055,
-                    pattern_end: 5064
+                    start: 5435,
+                    end: 5486,
+                    pattern_start: 5446,
+                    pattern_end: 5455
                   }
                 );
               }
@@ -18738,12 +21761,12 @@ function update8(m, msg) {
                         return new StreamAlbum(album3, 0);
                       } else {
                         let e = $2[0];
-                        echo8(e, void 0, "src/somachord.gleam", 207);
+                        echo10(e, void 0, "src/somachord.gleam", 218);
                         throw makeError(
                           "panic",
-                          FILEPATH17,
+                          FILEPATH20,
                           "somachord",
-                          208,
+                          219,
                           "update",
                           "album subsonic err",
                           {}
@@ -18751,12 +21774,12 @@ function update8(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo8(e, void 0, "src/somachord.gleam", 211);
+                      echo10(e, void 0, "src/somachord.gleam", 222);
                       throw makeError(
                         "panic",
-                        FILEPATH17,
+                        FILEPATH20,
                         "somachord",
-                        212,
+                        223,
                         "update",
                         "album req fetch failed",
                         {}
@@ -18765,9 +21788,112 @@ function update8(m, msg) {
                   } else {
                     throw makeError(
                       "panic",
-                      FILEPATH17,
+                      FILEPATH20,
                       "somachord",
-                      214,
+                      225,
+                      "update",
+                      "unreachable",
+                      {}
+                    );
+                  }
+                }
+              );
+            })()
+          ];
+        }
+      );
+    } else if ($ === "playlist") {
+      return guard(
+        (() => {
+          let _pipe = m.playlists;
+          return has_key(_pipe, req.id);
+        })(),
+        [
+          m,
+          from(
+            (dispatch) => {
+              let _block$1;
+              let _pipe = m.playlists;
+              _block$1 = map_get(_pipe, req.id);
+              let $1 = _block$1;
+              let playlist3;
+              if ($1 instanceof Ok) {
+                playlist3 = $1[0];
+              } else {
+                throw makeError(
+                  "let_assert",
+                  FILEPATH20,
+                  "somachord",
+                  234,
+                  "update",
+                  "Pattern match failed, no pattern matched the value.",
+                  {
+                    value: $1,
+                    start: 6386,
+                    end: 6443,
+                    pattern_start: 6397,
+                    pattern_end: 6409
+                  }
+                );
+              }
+              let _pipe$1 = new StreamPlaylist(playlist3, req.index);
+              return dispatch(_pipe$1);
+            }
+          )
+        ],
+        () => {
+          return [
+            m,
+            (() => {
+              let _pipe = playlist(
+                auth_details,
+                req.id,
+                (var0) => {
+                  return new PlaylistWithSongs(var0);
+                }
+              );
+              return map4(
+                _pipe,
+                (msg2) => {
+                  if (msg2 instanceof PlaylistWithSongs) {
+                    let $1 = msg2[0];
+                    if ($1 instanceof Ok) {
+                      let $2 = $1[0];
+                      if ($2 instanceof Ok) {
+                        let playlist3 = $2[0];
+                        return new StreamPlaylist(playlist3, req.index);
+                      } else {
+                        let e = $2[0];
+                        echo10(e, void 0, "src/somachord.gleam", 246);
+                        throw makeError(
+                          "panic",
+                          FILEPATH20,
+                          "somachord",
+                          247,
+                          "update",
+                          "playlist subsonic err",
+                          {}
+                        );
+                      }
+                    } else {
+                      let e = $1[0];
+                      echo10(e, void 0, "src/somachord.gleam", 250);
+                      throw makeError(
+                        "panic",
+                        FILEPATH20,
+                        "somachord",
+                        251,
+                        "update",
+                        "playlist req fetch failed",
+                        {}
+                      );
+                    }
+                  } else {
+                    throw makeError(
+                      "panic",
+                      FILEPATH20,
+                      "somachord",
+                      253,
                       "update",
                       "unreachable",
                       {}
@@ -18821,6 +21947,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18831,6 +21958,47 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
+        m.fullscreen_player_open,
+        m.fullscreen_player_display
+      ),
+      play()
+    ];
+  } else if (msg instanceof StreamPlaylist) {
+    let playlist3 = msg[0];
+    let index5 = msg[1];
+    echo10(playlist3.name, void 0, "src/somachord.gleam", 278);
+    let _block;
+    let _block$1;
+    let $ = m.shuffled;
+    let $1 = new$9(0, playlist3.songs, 0);
+    if ($) {
+      let queue3 = $1;
+      let _pipe2 = queue3;
+      _block$1 = shuffle2(_pipe2);
+    } else {
+      _block$1 = $1;
+    }
+    let _pipe = _block$1;
+    _block = jump(_pipe, index5);
+    let queue2 = _block;
+    return [
+      new Model(
+        m.route,
+        m.layout,
+        m.storage,
+        m.auth,
+        m.confirmed,
+        m.albums,
+        m.player,
+        queue2,
+        m.current_song,
+        m.seeking,
+        m.seek_amount,
+        m.played_seconds,
+        m.shuffled,
+        m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -18849,6 +22017,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18859,6 +22028,7 @@ function update8(m, msg) {
         m.played_seconds,
         true,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -18878,17 +22048,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          247,
+          299,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 6692,
-            end: 6745,
-            pattern_start: 6703,
-            pattern_end: 6710
+            start: 8488,
+            end: 8541,
+            pattern_start: 8499,
+            pattern_end: 8506
           }
         );
       }
@@ -18910,6 +22080,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -18920,6 +22091,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -18939,17 +22111,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          446,
+          501,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 12410,
-            end: 12463,
-            pattern_start: 12421,
-            pattern_end: 12428
+            start: 14273,
+            end: 14326,
+            pattern_start: 14284,
+            pattern_end: 14291
           }
         );
       }
@@ -18967,17 +22139,17 @@ function update8(m, msg) {
     } else {
       throw makeError(
         "let_assert",
-        FILEPATH17,
+        FILEPATH20,
         "somachord",
-        450,
+        505,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 12545,
-          end: 12601,
-          pattern_start: 12556,
-          pattern_end: 12573
+          start: 14408,
+          end: 14464,
+          pattern_start: 14419,
+          pattern_end: 14436
         }
       );
     }
@@ -18996,6 +22168,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19006,6 +22179,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19018,73 +22192,38 @@ function update8(m, msg) {
       )
     ];
   } else if (msg instanceof StreamCurrent) {
-    let _block;
-    {
-      let _block$12;
-      let _pipe2 = m.storage;
-      _block$12 = get2(_pipe2, "auth");
-      let $2 = _block$12;
-      let stg;
-      if ($2 instanceof Ok) {
-        stg = $2[0];
-      } else {
-        throw makeError(
-          "let_assert",
-          FILEPATH17,
-          "somachord",
-          428,
-          "update",
-          "Pattern match failed, no pattern matched the value.",
-          {
-            value: $2,
-            start: 11833,
-            end: 11886,
-            pattern_start: 11844,
-            pattern_end: 11851
-          }
-        );
-      }
-      _block = stg.auth;
-    }
-    let auth_details = _block;
     let $ = current_song(m.queue);
-    let song3;
     if ($ instanceof Some) {
-      song3 = $[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH17,
-        "somachord",
-        431,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 11918,
-          end: 11976,
-          pattern_start: 11929,
-          pattern_end: 11946
-        }
+      let song3 = $[0];
+      let _block;
+      let _pipe = create_uri(
+        "/rest/stream.view",
+        m.auth,
+        toList([["id", song3.id]])
       );
+      _block = to_string3(_pipe);
+      let stream_uri = _block;
+      let _pipe$1 = m.player;
+      load_song(_pipe$1, stream_uri, song3);
+      return [
+        m,
+        save_queue(
+          m.auth,
+          new Some(m.queue),
+          (var0) => {
+            return new DisgardedResponse(var0);
+          }
+        )
+      ];
+    } else {
+      return [m, none2()];
     }
-    let _block$1;
-    let _pipe = create_uri(
-      "/rest/stream.view",
-      auth_details,
-      toList([["id", song3.id]])
-    );
-    _block$1 = to_string3(_pipe);
-    let stream_uri = _block$1;
-    let _pipe$1 = m.player;
-    load_song(_pipe$1, stream_uri, song3);
-    return [m, none2()];
   } else if (msg instanceof StreamError) {
     throw makeError(
       "todo",
-      FILEPATH17,
+      FILEPATH20,
       "somachord",
-      265,
+      317,
       "update",
       "handle stream error",
       {}
@@ -19096,6 +22235,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19106,6 +22246,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19120,6 +22261,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19130,6 +22272,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19142,6 +22285,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19152,6 +22296,7 @@ function update8(m, msg) {
         0,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19167,17 +22312,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              287,
+              339,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 7823,
-                end: 7876,
-                pattern_start: 7834,
-                pattern_end: 7841
+                start: 9619,
+                end: 9672,
+                pattern_start: 9630,
+                pattern_end: 9637
               }
             );
           }
@@ -19210,6 +22355,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19220,6 +22366,7 @@ function update8(m, msg) {
         playtime,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19244,17 +22391,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          323,
+          375,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 8760,
-            end: 8813,
-            pattern_start: 8771,
-            pattern_end: 8778
+            start: 10556,
+            end: 10609,
+            pattern_start: 10567,
+            pattern_end: 10574
           }
         );
       }
@@ -19266,6 +22413,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19276,6 +22424,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19314,6 +22463,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19331,6 +22481,7 @@ function update8(m, msg) {
         m.played_seconds,
         negate(m.shuffled),
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19352,6 +22503,7 @@ function update8(m, msg) {
           m.route,
           m.layout,
           m.storage,
+          m.auth,
           m.confirmed,
           m.albums,
           m.player,
@@ -19362,6 +22514,7 @@ function update8(m, msg) {
           m.played_seconds,
           m.shuffled,
           m.looping,
+          m.playlists,
           m.fullscreen_player_open,
           m.fullscreen_player_display
         ),
@@ -19387,17 +22540,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              468,
+              523,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 13083,
-                end: 13136,
-                pattern_start: 13094,
-                pattern_end: 13101
+                start: 14946,
+                end: 14999,
+                pattern_start: 14957,
+                pattern_end: 14964
               }
             );
           }
@@ -19436,17 +22589,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          323,
+          375,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 8760,
-            end: 8813,
-            pattern_start: 8771,
-            pattern_end: 8778
+            start: 10556,
+            end: 10609,
+            pattern_start: 10567,
+            pattern_end: 10574
           }
         );
       }
@@ -19458,6 +22611,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19468,6 +22622,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19508,6 +22663,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19518,6 +22674,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         negate(m.looping),
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19536,17 +22693,17 @@ function update8(m, msg) {
       } else {
         throw makeError(
           "let_assert",
-          FILEPATH17,
+          FILEPATH20,
           "somachord",
-          492,
+          547,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 13807,
-            end: 13860,
-            pattern_start: 13818,
-            pattern_end: 13825
+            start: 15670,
+            end: 15723,
+            pattern_start: 15681,
+            pattern_end: 15688
           }
         );
       }
@@ -19558,6 +22715,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19614,6 +22772,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19645,6 +22804,7 @@ function update8(m, msg) {
         m.route,
         m.layout,
         m.storage,
+        m.auth,
         m.confirmed,
         m.albums,
         m.player,
@@ -19658,6 +22818,7 @@ function update8(m, msg) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19678,17 +22839,17 @@ function update8(m, msg) {
           } else {
             throw makeError(
               "let_assert",
-              FILEPATH17,
+              FILEPATH20,
               "somachord",
-              175,
+              186,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 4403,
-                end: 4456,
-                pattern_start: 4414,
-                pattern_end: 4421
+                start: 4794,
+                end: 4847,
+                pattern_start: 4805,
+                pattern_end: 4812
               }
             );
           }
@@ -19740,19 +22901,19 @@ function player_event_handler(event4, player) {
   } else if (event4 === "ended") {
     return new MusicEnded();
   } else {
-    echo8(event4, void 0, "src/somachord.gleam", 581);
+    echo10(event4, void 0, "src/somachord.gleam", 652);
     throw makeError(
       "panic",
-      FILEPATH17,
+      FILEPATH20,
       "somachord",
-      582,
+      653,
       "player_event_handler",
       "shouldnt happen",
       {}
     );
   }
 }
-function init8(_) {
+function init11(_) {
   let _block;
   let _pipe = do_initial_uri();
   _block = ((uri) => {
@@ -19769,6 +22930,7 @@ function init8(_) {
     route,
     layout2,
     create(),
+    new Auth("", new Credentials("", ""), ""),
     false,
     new_map(),
     new_2(),
@@ -19779,6 +22941,7 @@ function init8(_) {
     0,
     false,
     false,
+    new_map(),
     false,
     new Default()
   );
@@ -19793,6 +22956,7 @@ function init8(_) {
         m.route,
         m.layout,
         m.storage,
+        stg.auth,
         true,
         m.albums,
         m.player,
@@ -19803,6 +22967,7 @@ function init8(_) {
         m.played_seconds,
         m.shuffled,
         m.looping,
+        m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display
       ),
@@ -19819,14 +22984,14 @@ function init8(_) {
       )
     ];
   } else {
-    let $1 = echo8(
+    let $1 = echo10(
       (() => {
         let _pipe$1 = get_route();
         return uri_to_route(_pipe$1);
       })(),
       void 0,
       "src/somachord.gleam",
-      96
+      107
     );
     if ($1 instanceof Login) {
       return [
@@ -19834,6 +22999,7 @@ function init8(_) {
           m.route,
           m.layout,
           m.storage,
+          m.auth,
           true,
           m.albums,
           m.player,
@@ -19844,6 +23010,7 @@ function init8(_) {
           m.played_seconds,
           m.shuffled,
           m.looping,
+          m.playlists,
           m.fullscreen_player_open,
           m.fullscreen_player_display
         ),
@@ -19855,6 +23022,7 @@ function init8(_) {
           new Login(),
           m.layout,
           m.storage,
+          m.auth,
           true,
           m.albums,
           m.player,
@@ -19865,6 +23033,7 @@ function init8(_) {
           m.played_seconds,
           m.shuffled,
           m.looping,
+          m.playlists,
           m.fullscreen_player_open,
           m.fullscreen_player_display
         ),
@@ -19873,20 +23042,20 @@ function init8(_) {
     }
   }
 }
-function view11(m) {
+function view14(m) {
   let $ = m.confirmed;
   if ($) {
     let _block;
     let $1 = m.route;
     if ($1 instanceof Home) {
-      _block = element7(
+      _block = element8(
         toList([on_play((var0) => {
           return new Play(var0);
         })])
       );
     } else if ($1 instanceof Search) {
       let query2 = $1.query;
-      _block = element8(
+      _block = element11(
         toList([
           on_play((var0) => {
             return new Play(var0);
@@ -19896,7 +23065,7 @@ function view11(m) {
       );
     } else if ($1 instanceof Artist2) {
       let id3 = $1.id;
-      _block = element6(
+      _block = element7(
         toList([
           on_play((var0) => {
             return new Play(var0);
@@ -19917,7 +23086,7 @@ function view11(m) {
       _block = page(m, id3);
     } else if ($1 instanceof Song) {
       let id3 = $1.id;
-      _block = element9(
+      _block = element12(
         toList([
           on_play((var0) => {
             return new Play(var0);
@@ -19941,19 +23110,57 @@ function view11(m) {
           })()
         ])
       );
+    } else if ($1 instanceof Playlist2) {
+      let id3 = $1.id;
+      _block = element10(
+        toList([
+          on_playlist(
+            (req) => {
+              return new StreamPlaylist(req.playlist, req.index);
+            }
+          ),
+          on_play((var0) => {
+            return new Play(var0);
+          }),
+          attribute2("playlist-id", id3)
+        ])
+      );
+    } else if ($1 instanceof Likes) {
+      _block = element10(
+        toList([
+          on_playlist(
+            (req) => {
+              return new StreamPlaylist(req.playlist, req.index);
+            }
+          ),
+          on_play((var0) => {
+            return new Play(var0);
+          }),
+          attribute2(
+            "playlist-id",
+            somachord_likes_playlist_id
+          )
+        ])
+      );
+    } else if ($1 instanceof Library) {
+      _block = element9(
+        toList([on_play((var0) => {
+          return new Play(var0);
+        })])
+      );
     } else {
       _block = page2();
     }
-    let page3 = _block;
+    let page4 = _block;
     let $2 = m.route;
     if ($2 instanceof Login) {
       return element5();
     } else {
       let $3 = m.layout;
       if ($3 instanceof Desktop) {
-        return view9(m, page3);
+        return view12(m, page4);
       } else {
-        return view10(m, page3);
+        return view13(m, page4);
       }
     }
   } else {
@@ -19961,140 +23168,194 @@ function view11(m) {
   }
 }
 function main() {
-  let app = application(init8, update8, view11);
-  let $ = register();
+  let app = application(init11, update11, view14);
+  let $ = register3();
   if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH17,
-      "somachord",
-      45,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 1029,
-        end: 1065,
-        pattern_start: 1040,
-        pattern_end: 1045
-      }
-    );
-  }
-  let $1 = register2();
-  if (!($1 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH17,
-      "somachord",
-      46,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $1,
-        start: 1068,
-        end: 1103,
-        pattern_start: 1079,
-        pattern_end: 1084
-      }
-    );
-  }
-  let $2 = register4();
-  if (!($2 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH17,
-      "somachord",
-      47,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $2,
-        start: 1106,
-        end: 1140,
-        pattern_start: 1117,
-        pattern_end: 1122
-      }
-    );
-  }
-  let $3 = register3();
-  if (!($3 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH17,
-      "somachord",
-      48,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $3,
-        start: 1143,
-        end: 1179,
-        pattern_start: 1154,
-        pattern_end: 1159
-      }
-    );
-  }
-  let $4 = register6();
-  if (!($4 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH17,
-      "somachord",
-      49,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $4,
-        start: 1182,
-        end: 1216,
-        pattern_start: 1193,
-        pattern_end: 1198
-      }
-    );
-  }
-  let $5 = register5();
-  if (!($5 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH17,
+      FILEPATH20,
       "somachord",
       50,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
-        value: $5,
-        start: 1219,
-        end: 1255,
-        pattern_start: 1230,
-        pattern_end: 1235
+        value: $,
+        start: 1190,
+        end: 1233,
+        pattern_start: 1201,
+        pattern_end: 1206
       }
     );
   }
-  let $6 = start3(app, "#app", 0);
-  if (!($6 instanceof Ok)) {
+  let $1 = register();
+  if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH17,
+      FILEPATH20,
       "somachord",
       51,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
-        value: $6,
-        start: 1258,
-        end: 1305,
-        pattern_start: 1269,
-        pattern_end: 1274
+        value: $1,
+        start: 1236,
+        end: 1272,
+        pattern_start: 1247,
+        pattern_end: 1252
       }
     );
   }
-  return $6;
+  let $2 = register2();
+  if (!($2 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      53,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $2,
+        start: 1276,
+        end: 1311,
+        pattern_start: 1287,
+        pattern_end: 1292
+      }
+    );
+  }
+  let $3 = register5();
+  if (!($3 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      54,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $3,
+        start: 1314,
+        end: 1348,
+        pattern_start: 1325,
+        pattern_end: 1330
+      }
+    );
+  }
+  let $4 = register4();
+  if (!($4 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      55,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $4,
+        start: 1351,
+        end: 1387,
+        pattern_start: 1362,
+        pattern_end: 1367
+      }
+    );
+  }
+  let $5 = register10();
+  if (!($5 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      56,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $5,
+        start: 1390,
+        end: 1424,
+        pattern_start: 1401,
+        pattern_end: 1406
+      }
+    );
+  }
+  let $6 = register9();
+  if (!($6 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      57,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $6,
+        start: 1427,
+        end: 1463,
+        pattern_start: 1438,
+        pattern_end: 1443
+      }
+    );
+  }
+  let $7 = register8();
+  if (!($7 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      58,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $7,
+        start: 1466,
+        end: 1504,
+        pattern_start: 1477,
+        pattern_end: 1482
+      }
+    );
+  }
+  let $8 = register7();
+  if (!($8 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      59,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $8,
+        start: 1507,
+        end: 1544,
+        pattern_start: 1518,
+        pattern_end: 1523
+      }
+    );
+  }
+  let $9 = start3(app, "#app", 0);
+  if (!($9 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH20,
+      "somachord",
+      60,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $9,
+        start: 1547,
+        end: 1594,
+        pattern_start: 1558,
+        pattern_end: 1563
+      }
+    );
+  }
+  return $9;
 }
-function echo8(value3, message2, file, line) {
+function echo10(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector8();
+  const inspector = new Echo$Inspector10();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -20114,7 +23375,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector8 = class {
+var Echo$Inspector10 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -20216,15 +23477,15 @@ var Echo$Inspector8 = class {
     let list_out = "[";
     let current2 = list5;
     while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
+      let element13 = current2.head;
       current2 = current2.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element10);
+      list_out += this.inspect(element13);
       if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
+        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
+          char_out += String.fromCharCode(element13);
         } else {
           char_out = null;
         }
