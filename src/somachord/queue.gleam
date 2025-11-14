@@ -142,6 +142,7 @@ pub fn current_song(queue: Queue) -> option.Option(api_models.Child) {
 }
 
 pub fn list(queue: Queue) -> List(#(Int, api_models.Child)) {
+  echo queue.song_order
   list.map(
     [list.reverse(queue.song_order.played), queue.song_order.unplayed]
       |> list.flatten,

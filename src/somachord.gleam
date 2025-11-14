@@ -10,6 +10,8 @@ import gleam/result
 import gleam/uri
 import plinth/javascript/date
 import somachord/components
+import somachord/components/fullscreen_player
+import somachord/components/lyrics
 import somachord/pages/not_found
 import somachord/pages/search
 import somachord/queue
@@ -27,7 +29,6 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components/login
-import somachord/components/song_detail
 import somachord/model
 import somachord/msg
 import somachord/pages/album
@@ -41,11 +42,11 @@ import somachord/storage
 
 pub fn main() {
   let app = lustre.application(init, update, view)
+  let assert Ok(_) = lyrics.register()
   let assert Ok(_) = login.register()
   let assert Ok(_) = home.register()
   let assert Ok(_) = artist.register()
   let assert Ok(_) = song.register()
-  let assert Ok(_) = song_detail.register()
   let assert Ok(_) = search.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
 }
@@ -77,6 +78,8 @@ fn init(_) {
       played_seconds: 0,
       shuffled: False,
       looping: False,
+      fullscreen_player_open: False,
+      fullscreen_player_display: model.Default,
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -432,14 +435,7 @@ fn update(
         ])
         |> uri.to_string
       m.player |> player.load_song(stream_uri, song)
-      #(
-        m,
-        api.save_queue(
-          auth_details,
-          option.Some(m.queue),
-          msg.DisgardedResponse,
-        ),
-      )
+      #(m, effect.none())
     }
     msg.QueueJumpTo(position) -> #(
       model.Model(..m, queue: m.queue |> queue.jump(position)),
@@ -534,6 +530,17 @@ fn update(
     msg.Search(query) -> #(
       m,
       modem.push("/search/" <> query, option.None, option.None),
+    )
+    msg.ToggleFullscreenPlayer -> #(
+      model.Model(
+        ..m,
+        fullscreen_player_open: bool.negate(m.fullscreen_player_open),
+      ),
+      effect.none(),
+    )
+    msg.ChangeFullscreenPlayerView(view) -> #(
+      model.Model(..m, fullscreen_player_display: view),
+      effect.none(),
     )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
   }

@@ -9,6 +9,7 @@ import lustre/event
 import player
 import somachord/api_helper
 import somachord/api_models
+import somachord/components/fullscreen_player
 import somachord/model
 import somachord/msg
 import somachord/router
@@ -64,6 +65,7 @@ pub fn view(m: model.Model, page) {
       //   [],
       // ),
       ]),
+      fullscreen_player.view(m),
     ],
   )
 }
@@ -85,6 +87,7 @@ fn playing_bar(m: model.Model) {
         html.div(
           [
             attribute.class("flex gap-2 items-center flex-1 min-w-0"),
+            event.on_click(msg.ToggleFullscreenPlayer),
           ],
           [
             html.div(
