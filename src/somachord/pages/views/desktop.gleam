@@ -1,21 +1,16 @@
-import gleam/bool
-import gleam/dict
-import gleam/dynamic/decode
 import gleam/float
 import gleam/int
 import gleam/list
-import gleam/option
-import gleam/result
 import gleam/string
 import gleam/uri
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
-import modem
 import player
 import somachord/api_helper
 import somachord/api_models
+import somachord/components/fullscreen_player
 import somachord/components/playlist_menu
 import somachord/elements
 import somachord/model
@@ -43,6 +38,7 @@ pub fn view(m: model.Model, page) {
           ],
         ),
       ]),
+      fullscreen_player.view(m),
     ],
   )
 }
@@ -303,72 +299,7 @@ fn playing_bar(m: model.Model) {
                 <> int.to_string(seconds) |> string.pad_start(2, "0")
               }),
             ]),
-            html.div([attribute.class("grid grid-cols-1 grid-rows-1 w-96")], [
-              html.div(
-                [
-                  attribute.class(
-                    "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5",
-                  ),
-                ],
-                [
-                  html.div(
-                    [
-                      attribute.class("bg-zinc-100 rounded-full h-1.5"),
-                      attribute.style(
-                        "width",
-                        float.to_string(
-                          case m.seeking {
-                            True -> int.to_float(m.seek_amount)
-                            False -> m.player |> player.time()
-                          }
-                          /. int.to_float(m.current_song.duration)
-                          *. 100.0,
-                        )
-                          <> "%",
-                      ),
-                    ],
-                    [],
-                  ),
-                ],
-              ),
-              html.input([
-                attribute.class(
-                  "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full",
-                ),
-                attribute.value("0"),
-                attribute.step("any"),
-                attribute.max(int.to_string(m.current_song.duration)),
-                event.on("input", {
-                  use value <- decode.subfield(
-                    ["target", "value"],
-                    decode.string,
-                  )
-                  let assert Ok(seek_amount) = float.parse(value)
-                  decode.success(msg.PlayerSeek(seek_amount))
-                }),
-                event.on("mousedown", {
-                  use btn <- decode.field("button", decode.int)
-                  use <- bool.guard(
-                    btn != 0,
-                    decode.success(msg.ComponentClick),
-                  )
-                  m.player |> player.toggle_play()
-
-                  decode.success(msg.ComponentClick)
-                }),
-                event.on("mouseup", {
-                  use btn <- decode.field("button", decode.int)
-                  use <- bool.guard(
-                    btn != 0,
-                    decode.success(msg.ComponentClick),
-                  )
-                  m.player |> player.toggle_play()
-
-                  decode.success(msg.ComponentClick)
-                }),
-                attribute.type_("range"),
-              ]),
-            ]),
+            elements.music_slider(m, [attribute.class("w-96")]),
             html.span([], [
               element.text({
                 let minutes = m.current_song.duration / 60
@@ -383,6 +314,13 @@ fn playing_bar(m: model.Model) {
         ),
       ]),
       html.div([attribute.class("flex justify-end gap-2 w-1/3")], [
+        html.i(
+          [
+            attribute.class("text-3xl ph ph-monitor"),
+            event.on_click(msg.ToggleFullscreenPlayer),
+          ],
+          [],
+        ),
         html.div([attribute.class("inline-flex relative")], [
           html.label([attribute.class("peer")], [
             html.input([
@@ -392,7 +330,35 @@ fn playing_bar(m: model.Model) {
             ]),
             html.i([attribute.class("text-3xl ph ph-queue")], []),
           ]),
-          queue_menu(m),
+          html.div(
+            [
+              attribute.class(
+                "not-peer-has-checked:hidden absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 -top-83 -left-69 p-4",
+              ),
+            ],
+            [
+              html.h1([attribute.class("font-semibold text-lg")], [
+                element.text("Queue"),
+              ]),
+              html.div(
+                [
+                  attribute.class(
+                    "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
+                  ),
+                ],
+                list.map(queue.list(m.queue), fn(queue_entry) {
+                  elements.song(
+                    queue_entry.1,
+                    -1,
+                    [],
+                    cover_art: True,
+                    playing: m.current_song.id == { queue_entry.1 }.id,
+                    msg: { msg.QueueJumpTo(queue_entry.0) },
+                  )
+                }),
+              ),
+            ],
+          ),
         ]),
         html.i(
           [
@@ -410,33 +376,6 @@ fn playing_bar(m: model.Model) {
           playlist_menu.song_id(m.current_song.id),
         ]),
       ]),
-    ],
-  )
-}
-
-fn queue_menu(m: model.Model) {
-  html.div(
-    [
-      attribute.class(
-        "not-peer-has-checked:hidden absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 -top-83 -left-69 p-4",
-      ),
-    ],
-    [
-      html.h1([attribute.class("font-semibold text-lg")], [
-        element.text("Queue"),
-      ]),
-      html.div(
-        [
-          attribute.class(
-            "flex flex-col gap-2 pt-2 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700",
-          ),
-        ],
-        list.map(queue.list(m.queue), fn(queue_entry) {
-          elements.song(queue_entry.1, -1, [], cover_art: True, msg: {
-            msg.QueueJumpTo(queue_entry.0)
-          })
-        }),
-      ),
     ],
   )
 }

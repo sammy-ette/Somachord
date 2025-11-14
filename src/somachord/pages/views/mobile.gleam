@@ -9,6 +9,7 @@ import lustre/event
 import player
 import somachord/api_helper
 import somachord/api_models
+import somachord/components/fullscreen_player
 import somachord/model
 import somachord/msg
 import somachord/router
@@ -66,6 +67,7 @@ pub fn view(m: model.Model, page) {
           ),
         ]),
       ]),
+      fullscreen_player.view(m),
     ],
   )
 }
@@ -83,94 +85,83 @@ fn playing_bar(m: model.Model) {
       ),
     ],
     [
-      html.div([attribute.class("flex justify-between items-center")], [
-        html.div([attribute.class("flex gap-2 items-center")], [
-          html.div(
-            [
-              attribute.class(
-                "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center",
-              ),
-            ],
-            [
-              case m.current_song.cover_art_id == "" {
-                True ->
-                  html.i(
-                    [
-                      attribute.class(
-                        "text-zinc-500 text-3xl ph ph-music-notes-simple",
-                      ),
-                    ],
-                    [],
-                  )
-                False ->
-                  html.a(
-                    [attribute.href("/album/" <> m.current_song.album_id)],
-                    [
-                      html.img([
-                        attribute.src(
-                          api_helper.create_uri(
-                            "/rest/getCoverArt.view",
-                            auth_details,
-                            [
-                              #("id", m.current_song.cover_art_id),
-                              #("size", "500"),
-                            ],
-                          )
-                          |> uri.to_string,
-                        ),
-                        attribute.class(
-                          "hover:opacity-50 transition-all duration-200 rounded-md object-cover",
-                        ),
-                      ]),
-                    ],
-                  )
-              },
-            ],
-          ),
-          html.span([attribute.class("flex flex-col")], [
-            html.a(
+      html.div([attribute.class("flex justify-between items-center gap-2")], [
+        html.div(
+          [
+            attribute.class("flex gap-2 items-center flex-1 min-w-0"),
+            event.on_click(msg.ToggleFullscreenPlayer),
+          ],
+          [
+            html.div(
               [
-                attribute.class("text-xs"),
-                attribute.href("/song/" <> m.current_song.id),
-              ],
-              [
-                html.span(
-                  [
-                    attribute.class(
-                      "hover:underline font-normal text-nowrap text-ellipsis",
-                    ),
-                  ],
-                  [
-                    element.text(m.current_song.title),
-                  ],
+                attribute.class(
+                  "flex-none w-12 h-12 bg-zinc-800 rounded-md flex items-center justify-center",
                 ),
               ],
-            ),
-            html.span(
-              [],
-              list.map(
-                m.current_song.artists,
-                fn(artist: api_models.SmallArtist) {
-                  html.a(
-                    [
-                      attribute.class("text-xs"),
-                      attribute.href("/artist/" <> artist.id),
-                    ],
-                    [
-                      html.span(
-                        [
-                          attribute.class("hover:underline font-light"),
-                        ],
-                        [element.text(artist.name)],
+              [
+                case m.current_song.cover_art_id == "" {
+                  True ->
+                    html.i(
+                      [
+                        attribute.class(
+                          "text-zinc-500 text-3xl ph ph-music-notes-simple",
+                        ),
+                      ],
+                      [],
+                    )
+                  False ->
+                    html.img([
+                      attribute.src(
+                        api_helper.create_uri(
+                          "/rest/getCoverArt.view",
+                          auth_details,
+                          [
+                            #("id", m.current_song.cover_art_id),
+                            #("size", "500"),
+                          ],
+                        )
+                        |> uri.to_string,
                       ),
-                    ],
-                  )
+                      attribute.class(
+                        "w-12 h-12 transition-all duration-200 rounded-md object-cover",
+                      ),
+                    ])
                 },
-              )
-                |> list.intersperse(element.text(", ")),
+              ],
             ),
-          ]),
-        ]),
+            html.span([attribute.class("flex flex-col min-w-0")], [
+              html.span(
+                [
+                  attribute.class(
+                    "hover:underline select-none font-normal overflow-hidden text-nowrap text-ellipsis min-w-0",
+                  ),
+                ],
+                [
+                  element.text(m.current_song.title),
+                ],
+              ),
+              html.span(
+                [
+                  attribute.class(
+                    "hover:underline select-none text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0",
+                  ),
+                ],
+                list.map(
+                  m.current_song.artists,
+                  fn(artist: api_models.SmallArtist) {
+                    html.span(
+                      [
+                        attribute.class("hover:underline"),
+                      ],
+                      [element.text(artist.name)],
+                    )
+                  },
+                )
+                  |> list.intersperse(element.text(", ")),
+              ),
+            ]),
+          ],
+        ),
         html.div([attribute.class("flex gap-4 items-center")], [
           html.i(
             [

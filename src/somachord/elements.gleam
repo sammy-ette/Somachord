@@ -1,4 +1,6 @@
+import gleam/bool
 import gleam/dynamic/decode
+import gleam/float
 import gleam/int
 import gleam/list
 import gleam/string
@@ -7,9 +9,11 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
+import player
 import somachord/api_helper
 import somachord/components
 import somachord/model
+import somachord/msg
 import somachord/storage
 import varasto
 
@@ -22,6 +26,7 @@ pub fn song(
   index index: Int,
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
+  playing playing: Bool,
   msg msg: msg,
 ) {
   let auth_details = {
@@ -45,14 +50,23 @@ pub fn song(
           -1 -> element.none()
           _ ->
             html.div([attribute.class("w-5 grid grid-rows-1 grid-cols-1")], [
-              html.span(
-                [
-                  attribute.class(
-                    "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-smtext-right",
-                  ),
-                ],
-                [element.text(int.to_string(index + 1))],
-              ),
+              case playing {
+                True ->
+                  waveform([
+                    attribute.class(
+                      "col-start-1 row-start-1 group-hover:hidden fill-violet-400",
+                    ),
+                  ])
+                False ->
+                  html.span(
+                    [
+                      attribute.class(
+                        "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-sm text-right",
+                      ),
+                    ],
+                    [element.text(int.to_string(index + 1))],
+                  )
+              },
               html.i(
                 [
                   event.on_click(msg),
@@ -84,9 +98,11 @@ pub fn song(
               layout,
               html.span(
                 [
-                  attribute.class(
-                    "text-wrap text-sm text-zinc-100 hover:underline",
-                  ),
+                  attribute.class("text-wrap text-sm hover:underline"),
+                  case playing {
+                    False -> attribute.class("text-zinc-100")
+                    True -> attribute.class("text-violet-400")
+                  },
                 ],
                 [element.text(song.title)],
               )
@@ -147,6 +163,32 @@ pub fn song(
         ]),
       ]),
     ],
+  )
+}
+
+pub fn waveform(attrs: List(attribute.Attribute(a))) {
+  element.unsafe_raw_html(
+    "",
+    "waveform",
+    attrs,
+    "
+<svg width='32' height='32' viewBox='0 0 120 100' xmlns='http://www.w3.org/2000/svg'>
+  <rect x='20' y='90' width='5' height='0'>
+    <animate attributeName='height' values='0; 60; 10; 40; 0' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>
+    <animate attributeName='y' values='90; 30; 80; 50; 90' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>
+  </rect>
+
+  <rect x='40' y='90' width='5' height='0'>
+    <animate attributeName='height' values='0; 45; 20; 70; 0' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>
+    <animate attributeName='y' values='90; 45; 70; 20; 90' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>
+  </rect>
+
+  <rect x='60' y='90' width='5' height='0'>
+    <animate attributeName='height' values='0; 70; 30; 50; 0' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>
+    <animate attributeName='y' values='90; 20; 60; 40; 90' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>
+  </rect>
+</svg>
+    ",
   )
 }
 
@@ -433,4 +475,66 @@ pub fn nav_button(inactive, active, name, is_active, attrs) {
       html.h1([], [element.text(name)]),
     ],
   )
+}
+
+pub fn music_slider(m: model.Model, attrs: List(attribute.Attribute(msg.Msg))) {
+  html.div([attribute.class("grid grid-cols-1 grid-rows-1"), ..attrs], [
+    html.div(
+      [
+        attribute.class(
+          "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5",
+        ),
+      ],
+      [
+        html.div(
+          [
+            attribute.class(
+              "bg-zinc-100 transition-[width] duration-100 rounded-full h-1.5",
+            ),
+            attribute.style(
+              "width",
+              float.to_string(
+                case m.seeking {
+                  True -> int.to_float(m.seek_amount)
+                  False -> m.player |> player.time()
+                }
+                /. int.to_float(m.current_song.duration)
+                *. 100.0,
+              )
+                <> "%",
+            ),
+          ],
+          [],
+        ),
+      ],
+    ),
+    html.input([
+      attribute.class(
+        "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full",
+      ),
+      attribute.value("0"),
+      attribute.step("any"),
+      attribute.max(int.to_string(m.current_song.duration)),
+      event.on("input", {
+        use value <- decode.subfield(["target", "value"], decode.string)
+        let assert Ok(seek_amount) = float.parse(value)
+        decode.success(msg.PlayerSeek(seek_amount))
+      }),
+      event.on("mousedown", {
+        use btn <- decode.field("button", decode.int)
+        use <- bool.guard(btn != 0, decode.success(msg.ComponentClick))
+        m.player |> player.toggle_play()
+
+        decode.success(msg.ComponentClick)
+      }),
+      event.on("mouseup", {
+        use btn <- decode.field("button", decode.int)
+        use <- bool.guard(btn != 0, decode.success(msg.ComponentClick))
+        m.player |> player.toggle_play()
+
+        decode.success(msg.ComponentClick)
+      }),
+      attribute.type_("range"),
+    ]),
+  ])
 }

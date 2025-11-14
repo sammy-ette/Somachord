@@ -342,9 +342,10 @@ pub fn queue(auth_details: auth.Auth, msg: Response(queue.Queue, b)) {
 
         decode.success(
           queue.Queue(
-            ..queue.new(song_position:, songs: songs, position: current_song.0),
+            ..queue.new(song_position:, songs: songs, position: 0),
             changed:,
-          ),
+          )
+          |> queue.jump({ current_song.0 }),
         )
       }),
       msg,

@@ -31,7 +31,7 @@ pub fn layout() {
 }
 
 pub fn mobile_space() {
-  html.div([attribute.class("h-28")], [])
+  html.div([attribute.class("h-16")], [])
 }
 
 @external(javascript, "./components.ffi.mjs", "get_element_by_id")

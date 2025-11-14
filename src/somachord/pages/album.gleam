@@ -169,6 +169,7 @@ pub fn desktop_page(m: model.Model, id) {
                     ]
                   },
                   cover_art: False,
+                  playing: m.current_song.id == song.id,
                   msg: { msg.StreamAlbum(album, index) },
                 )
               },
@@ -217,7 +218,8 @@ fn buttons(m: model.Model, album: api_models.Album) {
         ),
         html.i(
           [
-            attribute.class("text-3xl ph ph-shuffle-simple cursor-not-allowed"),
+            attribute.class("text-3xl ph ph-shuffle-simple"),
+            event.on_click({ msg.StreamAlbumShuffled(album, 0) }),
           ],
           [],
         ),

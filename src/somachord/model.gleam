@@ -26,6 +26,8 @@ pub type Model {
     shuffled: Bool,
     looping: Bool,
     playlists: dict.Dict(String, api_models.Playlist),
+    fullscreen_player_open: Bool,
+    fullscreen_player_display: FullscreenPlayerDisplay,
   )
 }
 
@@ -48,4 +50,9 @@ pub type Song {
 
 pub type SongLyric {
   SongLyric(time: Int, line: String)
+}
+
+pub type FullscreenPlayerDisplay {
+  Default
+  Lyrics
 }

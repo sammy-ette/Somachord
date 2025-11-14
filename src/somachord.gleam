@@ -10,6 +10,8 @@ import gleam/result
 import gleam/uri
 import plinth/javascript/date
 import somachord/components
+import somachord/components/fullscreen_player
+import somachord/components/lyrics
 import somachord/components/playlist_menu
 import somachord/constants
 import somachord/models/auth
@@ -32,7 +34,6 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components/login
-import somachord/components/song_detail
 import somachord/model
 import somachord/msg
 import somachord/pages/album
@@ -47,7 +48,7 @@ import somachord/storage
 pub fn main() {
   let app = lustre.application(init, update, view)
   let assert Ok(_) = playlist_menu.register()
-  let assert Ok(_) = song_detail.register()
+  let assert Ok(_) = lyrics.register()
 
   let assert Ok(_) = login.register()
   let assert Ok(_) = home.register()
@@ -88,6 +89,8 @@ fn init(_) {
       shuffled: False,
       looping: False,
       playlists: dict.new(),
+      fullscreen_player_open: False,
+      fullscreen_player_display: model.Default,
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -156,7 +159,7 @@ fn update(
       // we dont want to use the queue if its older than 2 hours
       let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
       #(
-        model.Model(..m, queue: queue |> queue.jump(queue.position)),
+        model.Model(..m, queue: queue),
         case queue.changed |> date.get_time() < queue_time_range {
           True ->
             api.save_queue(
@@ -283,6 +286,13 @@ fn update(
         }
         |> queue.jump(index)
       #(model.Model(..m, queue:), play())
+    }
+    msg.StreamAlbumShuffled(album, index) -> {
+      let queue =
+        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        |> queue.shuffle
+        |> queue.jump(index)
+      #(model.Model(..m, queue:, shuffled: True), play())
     }
     msg.StreamSong(song) | msg.SongRetrieval(Ok(Ok(song))) -> {
       let auth_details = {
@@ -591,6 +601,17 @@ fn update(
     msg.Search(query) -> #(
       m,
       modem.push("/search/" <> query, option.None, option.None),
+    )
+    msg.ToggleFullscreenPlayer -> #(
+      model.Model(
+        ..m,
+        fullscreen_player_open: bool.negate(m.fullscreen_player_open),
+      ),
+      effect.none(),
+    )
+    msg.ChangeFullscreenPlayerView(view) -> #(
+      model.Model(..m, fullscreen_player_display: view),
+      effect.none(),
     )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
   }

@@ -28,6 +28,10 @@ pub type Msg {
   PlaylistWithSongs(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
+
+  ToggleFullscreenPlayer
+  ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
+
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)
@@ -39,6 +43,7 @@ pub type Msg {
   // and the queue.
   StreamAlbum(api_models.Album, Int)
   StreamPlaylist(api_models.Playlist, Int)
+  StreamAlbumShuffled(api_models.Album, Int)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
   StreamCurrent
