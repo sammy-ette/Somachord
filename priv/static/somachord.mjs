@@ -13217,15 +13217,15 @@ function view_info(m) {
         "let_assert",
         FILEPATH9,
         "somachord/components/fullscreen_player",
-        512,
+        518,
         "view_info",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 16500,
-          end: 16553,
-          pattern_start: 16511,
-          pattern_end: 16518
+          start: 16666,
+          end: 16719,
+          pattern_start: 16677,
+          pattern_end: 16684
         }
       );
     }
@@ -13380,7 +13380,17 @@ function view_mobile(m) {
         ])
       ),
       div(
-        toList([class$("overflow-y-auto flex-1 flex flex-col")]),
+        toList([
+          class$("flex-1 flex flex-col gap-4"),
+          (() => {
+            let $ = m.fullscreen_player_display;
+            if ($ instanceof Lyrics) {
+              return class$("overflow-y-auto");
+            } else {
+              return none();
+            }
+          })()
+        ]),
         (() => {
           let $ = m.fullscreen_player_display;
           if ($ instanceof Default) {
