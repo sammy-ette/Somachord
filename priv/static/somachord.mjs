@@ -12684,7 +12684,9 @@ function music_slider(m, attrs) {
         toList([
           div(
             toList([
-              class$("bg-zinc-100 rounded-full h-1.5"),
+              class$(
+                "bg-zinc-100 transition-[width] duration-100 rounded-full h-1.5"
+              ),
               style(
                 "width",
                 float_to_string(
@@ -12730,15 +12732,15 @@ function music_slider(m, attrs) {
                     "let_assert",
                     FILEPATH8,
                     "somachord/elements",
-                    396,
+                    398,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 12237,
-                      end: 12284,
-                      pattern_start: 12248,
-                      pattern_end: 12263
+                      start: 12298,
+                      end: 12345,
+                      pattern_start: 12309,
+                      pattern_end: 12324
                     }
                   );
                 }
