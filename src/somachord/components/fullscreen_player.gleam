@@ -255,42 +255,38 @@ fn view_desktop(m: model.Model) {
               tab_element(m, model.Lyrics),
             ],
           ),
-          html.div(
-            [
-              attribute.class("overflow-y-auto"),
-              attribute.class(elements.scrollbar_class),
-            ],
-            [
-              case m.fullscreen_player_display {
-                model.Default ->
-                  html.div(
-                    [
-                      attribute.class("flex flex-col gap-2 pt-2"),
-                    ],
-                    list.map(queue.list(m.queue), fn(queue_entry) {
-                      elements.song(
-                        queue_entry.1,
-                        queue_entry.0,
-                        [],
-                        cover_art: True,
-                        playing: m.current_song.id == { queue_entry.1 }.id,
-                        msg: { msg.QueueJumpTo(queue_entry.0) },
-                      )
-                    }),
+          case m.fullscreen_player_display {
+            model.Default ->
+              html.div(
+                [
+                  attribute.class("overflow-y-auto"),
+                  attribute.class(elements.scrollbar_class),
+                  attribute.class("flex flex-col gap-2 pt-2"),
+                ],
+                list.map(queue.list(m.queue), fn(queue_entry) {
+                  elements.song(
+                    queue_entry.1,
+                    queue_entry.0,
+                    [],
+                    cover_art: True,
+                    playing: m.current_song.id == { queue_entry.1 }.id,
+                    msg: { msg.QueueJumpTo(queue_entry.0) },
                   )
-                model.Lyrics ->
-                  lyrics.element([
-                    lyrics.id(m.current_song.id),
-                    lyrics.song_time(m.player |> player.time()),
-                    lyrics.size(lyrics.Large),
-                    case m.fullscreen_player_open {
-                      True -> lyrics.auto_scroll(True)
-                      False -> lyrics.auto_scroll(False)
-                    },
-                  ])
-              },
-            ],
-          ),
+                }),
+              )
+            model.Lyrics ->
+              lyrics.element([
+                attribute.class("overflow-y-auto"),
+                attribute.class(elements.scrollbar_class),
+                lyrics.id(m.current_song.id),
+                lyrics.song_time(m.player |> player.time()),
+                lyrics.size(lyrics.Large),
+                case m.fullscreen_player_open {
+                  True -> lyrics.auto_scroll(True)
+                  False -> lyrics.auto_scroll(False)
+                },
+              ])
+          },
         ]),
       ]),
     ],
