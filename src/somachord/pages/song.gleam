@@ -305,6 +305,7 @@ fn view(m: Model) {
               ],
             ),
             lyrics.element([
+              lyrics.nested_shadow(True),
               lyrics.id(m.song.id),
               lyrics.song_time(m.playtime |> option.unwrap(-1.0)),
               lyrics.auto_scroll(m.auto_scroll),

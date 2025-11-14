@@ -33,6 +33,7 @@ pub type Model {
     auto_scroll: Bool,
     font_size: Size,
     show_size_changer: Bool,
+    nested_shadow: Bool,
   )
 }
 
@@ -52,6 +53,7 @@ type Msg {
   SetAutoscroll(Bool)
   SizeChange(Size)
   ToggleSizeChanger
+  NestedShadow(Bool)
   Nothing
 }
 
@@ -72,6 +74,9 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
       component.on_property_change("auto-scroll", {
         decode.bool |> decode.map(SetAutoscroll)
+      }),
+      component.on_property_change("nested-shadow", {
+        decode.bool |> decode.map(NestedShadow)
       }),
     ])
   lustre.register(component, "song-lyrics")
@@ -102,6 +107,10 @@ pub fn auto_scroll(scroll: Bool) -> attribute.Attribute(msg) {
   attribute.property("auto-scroll", json.bool(scroll))
 }
 
+pub fn nested_shadow(nested: Bool) -> attribute.Attribute(msg) {
+  attribute.property("nested-shadow", json.bool(nested))
+}
+
 pub fn on_load(handler: fn(Bool) -> msg) -> attribute.Attribute(msg) {
   event.on("lyricsLoaded", {
     use loaded <- decode.subfield(["detail", "loaded"], decode.bool)
@@ -122,6 +131,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
         model.Mobile -> Small
       },
       show_size_changer: False,
+      nested_shadow: False,
     ),
     effect.none(),
   )
@@ -136,34 +146,62 @@ fn update(m: Model, msg: Msg) {
         api.lyrics(stg.auth, id, LyricsRetrieved)
       }
     })
-    Playtime(time) -> {
-      let ret = #(Model(..m, song_time: option.Some(time)), effect.none())
-      use <- bool.guard(bool.negate(m.auto_scroll), ret)
-      //   // song-lyrics is used in song-page (also a component).
-      //   // this is the only way to get its shadow root, and to query for elements in a shadow dom.
-      //   let assert Ok(parent_elem) =
-      //     document.get_elements_by_tag_name("song-page") |> array.get(0)
-      //   let assert Ok(parent_shadow_root) = shadow.shadow_root(parent_elem)
-      use <- bool.guard(
-        document.get_elements_by_tag_name("song-lyrics") |> array.size() == 0,
-        ret,
-      )
-      let assert Ok(elem) =
-        document.get_elements_by_tag_name("song-lyrics") |> array.get(0)
-      let assert Ok(shadow_root) = shadow.shadow_root(elem)
-      case
-        shadow.query_selector_all(shadow_root, ".off-time")
-        |> components.elems_to_array
-        |> array.to_list
-        |> list.take(5)
-        |> list.reverse
-        |> list.first
-      {
-        Ok(elem) -> components.scroll_into_view(elem)
-        Error(_) -> Nil
+    NestedShadow(nested) -> #(Model(..m, nested_shadow: nested), effect.none())
+    Playtime(time) ->
+      case m.nested_shadow {
+        True -> {
+          let ret = #(Model(..m, song_time: option.Some(time)), effect.none())
+          use <- bool.guard(bool.negate(m.auto_scroll), ret)
+          // song-lyrics is used in song-page (also a component).
+          // this is the only way to get its shadow root, and to query for elements in a shadow dom.
+          use <- bool.guard(
+            document.get_elements_by_tag_name("song-page") |> array.size() == 0,
+            ret,
+          )
+          let assert Ok(parent_elem) =
+            document.get_elements_by_tag_name("song-page") |> array.get(0)
+          let assert Ok(parent_shadow_root) = shadow.shadow_root(parent_elem)
+          let assert Ok(elem) =
+            shadow.query_selector(parent_shadow_root, "song-lyrics")
+          let assert Ok(shadow_root) = shadow.shadow_root(elem)
+          case
+            shadow.query_selector_all(shadow_root, ".off-time")
+            |> components.elems_to_array
+            |> array.to_list
+            |> list.take(5)
+            |> list.reverse
+            |> list.first
+          {
+            Ok(elem) -> components.scroll_into_view(elem)
+            Error(_) -> Nil
+          }
+          ret
+        }
+        False -> {
+          let ret = #(Model(..m, song_time: option.Some(time)), effect.none())
+          use <- bool.guard(bool.negate(m.auto_scroll), ret)
+          use <- bool.guard(
+            document.get_elements_by_tag_name("song-lyrics") |> array.size()
+              == 0,
+            ret,
+          )
+          let assert Ok(elem) =
+            document.get_elements_by_tag_name("song-lyrics") |> array.get(0)
+          let assert Ok(shadow_root) = shadow.shadow_root(elem)
+          case
+            shadow.query_selector_all(shadow_root, ".off-time")
+            |> components.elems_to_array
+            |> array.to_list
+            |> list.take(5)
+            |> list.reverse
+            |> list.first
+          {
+            Ok(elem) -> components.scroll_into_view(elem)
+            Error(_) -> Nil
+          }
+          ret
+        }
       }
-      ret
-    }
     LyricsRetrieved(Error(e)) -> {
       echo e
       panic as "rsvp error"
