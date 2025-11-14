@@ -110,7 +110,7 @@ pub fn next(queue: Queue) {
       let updated_played = [front_first, ..queue.song_order.played]
       Queue(
         ..queue,
-        song_order: echo SongOrder(updated_played, unplayed_rest),
+        song_order: SongOrder(updated_played, unplayed_rest),
         position: queue.position + 1,
       )
     }

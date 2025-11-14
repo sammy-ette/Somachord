@@ -150,7 +150,7 @@ fn update(
       // we dont want to use the queue if its older than 2 hours
       let queue_time_range = date.get_time(date.now()) - { 2 * 60 * 60 * 1000 }
       #(
-        model.Model(..m, queue: queue |> queue.jump(queue.position)),
+        model.Model(..m, queue: queue),
         case queue.changed |> date.get_time() < queue_time_range {
           True ->
             api.save_queue(
