@@ -567,10 +567,10 @@ fn buttons(m: Model) {
           ],
           [],
         ),
-        html.i(
-          [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-          [],
-        ),
+        // html.i(
+        //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+        //   [],
+        // ),
         case m.playlist.id == constants.somachord_likes_playlist_id {
           False ->
             html.i(
