@@ -51,16 +51,29 @@ fn view_desktop(m: model.Model) {
       ),
     ],
     [
-      html.i(
-        [
-          attribute.class("text-3xl ph ph-caret-down"),
-          event.on_click(msg.ToggleFullscreenPlayer),
-        ],
-        [],
-      ),
-      html.div([attribute.class("overflow-hidden flex-1 flex gap-2")], [
+      html.div([attribute.class("flex gap-8")], [
+        html.i(
+          [
+            attribute.class("text-3xl ph ph-caret-down"),
+            event.on_click(msg.ToggleFullscreenPlayer),
+          ],
+          [],
+        ),
+        // TV Mode (just an alternate layout, chromecast-y)
+        html.i(
+          [
+            attribute.class("text-3xl ph ph-television-simple"),
+          ],
+          [],
+        ),
+      ]),
+      html.div([attribute.class("overflow-hidden flex-1 flex gap-8")], [
         html.div(
-          [attribute.class("w-1/2 flex flex-col items-center justify-center")],
+          [
+            attribute.class(
+              "w-1/2 flex flex-col items-center justify-center gap-8",
+            ),
+          ],
           [
             html.img([
               attribute.src(
@@ -74,13 +87,167 @@ fn view_desktop(m: model.Model) {
                 "max-w-120 max-h-120 self-center object-fit rounded-md",
               ),
             ]),
+            html.div([attribute.class("w-full")], [
+              html.div([attribute.class("flex justify-between min-w-0")], [
+                html.a(
+                  [
+                    attribute.href("/song/" <> m.current_song.id),
+                    event.on_click(msg.ToggleFullscreenPlayer),
+                    attribute.class(
+                      "overflow-hidden text-nowrap text-ellipsis min-w-0",
+                    ),
+                  ],
+                  [
+                    html.span(
+                      [attribute.class("hover:underline font-bold text-2xl")],
+                      [
+                        element.text(m.current_song.title),
+                      ],
+                    ),
+                  ],
+                ),
+                html.div([attribute.class("flex gap-2")], [
+                  html.i(
+                    [
+                      case m.current_song.starred {
+                        True -> attribute.class("ph-fill text-violet-500")
+                        False -> attribute.class("ph")
+                      },
+                      attribute.class("text-3xl ph-heart-straight"),
+                      event.on_click(msg.Like),
+                    ],
+                    [],
+                  ),
+                  html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+                ]),
+              ]),
+              html.span(
+                [
+                  attribute.class(
+                    "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
+                  ),
+                ],
+                list.map(
+                  m.current_song.artists,
+                  fn(artist: api_models.SmallArtist) {
+                    html.a(
+                      [
+                        attribute.href("/artist/" <> artist.id),
+                        event.on_click(msg.ToggleFullscreenPlayer),
+                      ],
+                      [
+                        html.span(
+                          [
+                            attribute.class("hover:underline"),
+                          ],
+                          [element.text(artist.name)],
+                        ),
+                      ],
+                    )
+                  },
+                )
+                  |> list.intersperse(element.text(", ")),
+              ),
+            ]),
+            html.div([attribute.class("space-y-1 w-full")], [
+              html.div(
+                [
+                  attribute.class(
+                    "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]",
+                  ),
+                ],
+                [
+                  html.span([], [
+                    element.text({
+                      let minutes =
+                        float.round({ m.player |> player.time() }) / 60
+                      let seconds =
+                        float.round({ m.player |> player.time() }) % 60
+
+                      int.to_string(minutes)
+                      <> ":"
+                      <> int.to_string(seconds) |> string.pad_start(2, "0")
+                    }),
+                  ]),
+                  elements.music_slider(m, [attribute.class("w-full")]),
+                  html.span([], [
+                    element.text({
+                      let minutes = m.current_song.duration / 60
+                      let seconds = m.current_song.duration % 60
+
+                      int.to_string(minutes)
+                      <> ":"
+                      <> int.to_string(seconds) |> string.pad_start(2, "0")
+                    }),
+                  ]),
+                ],
+              ),
+              html.div(
+                [attribute.class("flex gap-4 justify-center items-center")],
+                [
+                  html.i(
+                    [
+                      attribute.class("text-2xl ph ph-shuffle-simple"),
+                      case m.shuffled {
+                        True ->
+                          attribute.class(
+                            "text-violet-400 underline underline-offset-4 decoration-dotted",
+                          )
+                        False -> attribute.none()
+                      },
+                      event.on_click(msg.PlayerShuffle),
+                    ],
+                    [],
+                  ),
+                  html.i(
+                    [
+                      attribute.class("text-2xl ph-fill ph-skip-back"),
+                      event.on_click(msg.PlayerPrevious),
+                    ],
+                    [],
+                  ),
+                  html.i(
+                    [
+                      attribute.class("text-5xl ph-fill"),
+                      case m.player |> player.is_paused {
+                        False -> attribute.class("ph-pause-circle")
+                        True -> attribute.class("ph-play-circle")
+                      },
+                      event.on_click(msg.PlayerPausePlay),
+                    ],
+                    [],
+                  ),
+                  html.i(
+                    [
+                      attribute.class("text-2xl ph-fill ph-skip-forward"),
+                      event.on_click(msg.PlayerNext),
+                    ],
+                    [],
+                  ),
+                  html.i(
+                    [
+                      attribute.class("text-2xl ph ph-repeat-once"),
+                      case m.looping {
+                        True ->
+                          attribute.class(
+                            "text-violet-400 underline underline-offset-4 decoration-dotted",
+                          )
+                        False -> attribute.none()
+                      },
+                      event.on_click(msg.PlayerLoop),
+                    ],
+                    [],
+                  ),
+                ],
+              ),
+            ]),
           ],
         ),
         html.div([attribute.class("w-1/2 flex flex-col")], [
           html.div(
             [
               attribute.class(
-                "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950",
+                "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950 mb-2",
               ),
             ],
             [
@@ -115,6 +282,7 @@ fn view_desktop(m: model.Model) {
                   lyrics.element([
                     lyrics.id(m.current_song.id),
                     lyrics.song_time(m.player |> player.time()),
+                    lyrics.size(lyrics.Large),
                     case m.fullscreen_player_open {
                       True -> lyrics.auto_scroll(True)
                       False -> lyrics.auto_scroll(False)
