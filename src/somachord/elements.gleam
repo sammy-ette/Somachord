@@ -366,7 +366,9 @@ pub fn music_slider(m: model.Model, attrs: List(attribute.Attribute(msg.Msg))) {
       [
         html.div(
           [
-            attribute.class("bg-zinc-100 rounded-full h-1.5"),
+            attribute.class(
+              "bg-zinc-100 transition-[width] duration-100 rounded-full h-1.5",
+            ),
             attribute.style(
               "width",
               float.to_string(
