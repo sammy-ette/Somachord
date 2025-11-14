@@ -131,7 +131,7 @@ fn playing_bar(m: model.Model) {
               html.span(
                 [
                   attribute.class(
-                    "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0",
+                    "hover:underline select-none font-normal overflow-hidden text-nowrap text-ellipsis min-w-0",
                   ),
                 ],
                 [
@@ -141,7 +141,7 @@ fn playing_bar(m: model.Model) {
               html.span(
                 [
                   attribute.class(
-                    "hover:underline text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0",
+                    "hover:underline select-none text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0",
                   ),
                 ],
                 list.map(
