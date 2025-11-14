@@ -695,6 +695,7 @@ fn view(m: model.Model) {
             }),
             msg.on_play(msg.Play),
             attribute.attribute("playlist-id", id),
+            attribute.attribute("song-id", m.current_song.id),
           ])
         router.Library -> library.element([msg.on_play(msg.Play)])
         router.Likes ->
@@ -707,6 +708,7 @@ fn view(m: model.Model) {
               "playlist-id",
               constants.somachord_likes_playlist_id,
             ),
+            attribute.attribute("song-id", m.current_song.id),
           ])
         _ -> not_found.page()
       }

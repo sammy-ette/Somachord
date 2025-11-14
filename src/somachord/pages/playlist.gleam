@@ -25,6 +25,7 @@ import varasto
 
 pub type Msg {
   PlaylistID(String)
+  CurrentSongID(String)
   PlaylistResponse(
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
@@ -47,6 +48,7 @@ pub type Model {
     layout: model.Layout,
     show_editor: Bool,
     playlist_form: form.Form(PlaylistForm),
+    current_song_id: String,
   )
 }
 
@@ -59,6 +61,9 @@ pub fn register() {
     lustre.component(init, update, view, [
       component.on_attribute_change("playlist-id", fn(value) {
         Ok(value |> PlaylistID)
+      }),
+      component.on_attribute_change("song-id", fn(value) {
+        Ok(value |> CurrentSongID)
       }),
     ])
   lustre.register(app, "playlist-page")
@@ -100,6 +105,7 @@ fn init(_) {
           public: playlist_public,
         ))
       }),
+      current_song_id: "",
     ),
     effect.none(),
   )
@@ -107,6 +113,7 @@ fn init(_) {
 
 fn update(m: Model, msg: Msg) {
   case msg {
+    CurrentSongID(id) -> #(Model(..m, current_song_id: id), effect.none())
     PlaylistID(id) -> {
       #(m, case id == constants.somachord_likes_playlist_id {
         True ->
@@ -446,7 +453,7 @@ fn page(m: Model) {
                   ]
                 },
                 cover_art: True,
-                playing: False,
+                playing: song.id == m.current_song_id,
                 msg: { PlayPlaylist(index) },
               )
             },
