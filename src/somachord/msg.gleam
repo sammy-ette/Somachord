@@ -25,6 +25,10 @@ pub type Msg {
   SimilarSongsArtist(
     Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
   )
+
+  ToggleFullscreenPlayer
+  ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
+
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)

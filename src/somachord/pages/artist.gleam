@@ -270,7 +270,7 @@ fn tab_element(m: Model, tab: DetailTab) {
           html.div(
             [
               attribute.class(
-                "absolute top-9 w-full h-1 border-b border-violet-500",
+                "absolute top-9.25 w-full h-1 border-b border-violet-500",
               ),
             ],
             [],

@@ -23,6 +23,8 @@ pub type Model {
     played_seconds: Int,
     shuffled: Bool,
     looping: Bool,
+    fullscreen_player_open: Bool,
+    fullscreen_player_display: FullscreenPlayerDisplay,
   )
 }
 
@@ -41,4 +43,9 @@ pub type Song {
 
 pub type SongLyric {
   SongLyric(time: Int, line: String)
+}
+
+pub type FullscreenPlayerDisplay {
+  Default
+  Lyrics
 }
