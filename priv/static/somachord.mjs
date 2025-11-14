@@ -8752,12 +8752,7 @@ function next(queue2) {
     return new Queue(
       queue2.song_position,
       queue2.songs,
-      echo(
-        new SongOrder(updated_played, unplayed_rest),
-        void 0,
-        "src/somachord/queue.gleam",
-        113
-      ),
+      new SongOrder(updated_played, unplayed_rest),
       queue2.position + 1,
       queue2.changed
     );
@@ -8841,10 +8836,10 @@ function list4(queue2) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 3368,
-            end: 3418,
-            pattern_start: 3379,
-            pattern_end: 3387
+            start: 3363,
+            end: 3413,
+            pattern_start: 3374,
+            pattern_end: 3382
           }
         );
       }
@@ -8952,10 +8947,10 @@ function current_song(queue2) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 3064,
-          end: 3114,
-          pattern_start: 3075,
-          pattern_end: 3083
+          start: 3059,
+          end: 3109,
+          pattern_start: 3070,
+          pattern_end: 3078
         }
       );
     }
@@ -8964,209 +8959,6 @@ function current_song(queue2) {
     return new None();
   }
 }
-function echo(value3, message2, file, line) {
-  const grey = "\x1B[90m";
-  const reset_color = "\x1B[39m";
-  const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector();
-  const string_value = inspector.inspect(value3);
-  const string_message = message2 === void 0 ? "" : " " + message2;
-  if (globalThis.process?.stderr?.write) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.process.stderr.write(string6);
-  } else if (globalThis.Deno) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
-  } else {
-    const string6 = `${file_line}
-${string_value}`;
-    globalThis.console.log(string6);
-  }
-  return value3;
-}
-var Echo$Inspector = class {
-  #references = /* @__PURE__ */ new Set();
-  #isDict(value3) {
-    try {
-      return value3 instanceof Dict;
-    } catch {
-      return false;
-    }
-  }
-  #float(float4) {
-    const string6 = float4.toString().replace("+", "");
-    if (string6.indexOf(".") >= 0) {
-      return string6;
-    } else {
-      const index5 = string6.indexOf("e");
-      if (index5 >= 0) {
-        return string6.slice(0, index5) + ".0" + string6.slice(index5);
-      } else {
-        return string6 + ".0";
-      }
-    }
-  }
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return this.#float(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i2 of Array(v.length).keys())
-        args.push(String.fromCharCode(i2 + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (v instanceof List) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (this.#isDict(v)) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body2 = props.length ? " " + props.join(", ") + " " : "";
-    const head = name2 === "Object" ? "" : name2 + " ";
-    return `//js(${head}{${body2}})`;
-  }
-  #dict(map7) {
-    let body2 = "dict.from_list([";
-    let first3 = true;
-    let key_value_pairs = [];
-    map7.forEach((value3, key3) => {
-      key_value_pairs.push([key3, value3]);
-    });
-    key_value_pairs.sort();
-    key_value_pairs.forEach(([key3, value3]) => {
-      if (!first3) body2 = body2 + ", ";
-      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
-      first3 = false;
-    });
-    return body2 + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label2) => {
-      const value3 = this.inspect(record[label2]);
-      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list5) {
-    if (list5 instanceof Empty) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current2 = list5;
-    while (current2 instanceof NonEmpty) {
-      let element10 = current2.head;
-      current2 = current2.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element10);
-      if (char_out) {
-        if (Number.isInteger(element10) && element10 >= 32 && element10 <= 126) {
-          char_out += String.fromCharCode(element10);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i2 = 0; i2 < str.length; i2++) {
-      const char = str[i2];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits) {
-    if (bits.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
-      acc += bits.byteAt(i2).toString();
-      acc += ", ";
-    }
-    if (bits.byteSize * 8 === bits.bitSize) {
-      acc += bits.byteAt(bits.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits.bitSize % 8;
-      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
 
 // build/dev/javascript/somachord/electron.ffi.mjs
 var import_is_electron = __toESM(require_is_electron(), 1);
@@ -9327,7 +9119,7 @@ var Unknown = class extends CustomType {
 };
 function uri_to_route(uri) {
   let router = (path) => {
-    echo2(path, void 0, "src/somachord/router.gleam", 27);
+    echo(path, void 0, "src/somachord/router.gleam", 27);
     if (path === "/") {
       return new Home();
     } else if (path === "") {
@@ -9459,11 +9251,11 @@ function get_route() {
   }
   return route;
 }
-function echo2(value3, message2, file, line) {
+function echo(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector2();
+  const inspector = new Echo$Inspector();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -9483,7 +9275,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector2 = class {
+var Echo$Inspector = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -10192,8 +9984,8 @@ function subsonic_response_decoder(inner) {
               toList(["subsonic-response", "error", "message"]),
               string3,
               (message2) => {
-                echo3(code2, void 0, "src/somachord/api/api.gleam", 85);
-                echo3(message2, void 0, "src/somachord/api/api.gleam", 86);
+                echo2(code2, void 0, "src/somachord/api/api.gleam", 85);
+                echo2(message2, void 0, "src/somachord/api/api.gleam", 86);
                 return success(
                   new Error2(
                     (() => {
@@ -10434,18 +10226,17 @@ function queue(auth_details, msg) {
                       (changed) => {
                         return success(
                           (() => {
-                            let _record = new$9(
-                              current_song2[0],
-                              songs,
-                              song_position$1
-                            );
-                            return new Queue(
+                            let _block;
+                            let _record = new$9(0, songs, song_position$1);
+                            _block = new Queue(
                               _record.song_position,
                               _record.songs,
                               _record.song_order,
                               _record.position,
                               changed
                             );
+                            let _pipe = _block;
+                            return jump(_pipe, current_song2[0]);
                           })()
                         );
                       }
@@ -10480,15 +10271,15 @@ function save_queue(auth_details, queue2, msg) {
             "let_assert",
             FILEPATH4,
             "somachord/api/api",
-            303,
+            304,
             "save_queue",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 7436,
-              end: 7505,
-              pattern_start: 7447,
-              pattern_end: 7463
+              start: 7467,
+              end: 7536,
+              pattern_start: 7478,
+              pattern_end: 7494
             }
           );
         }
@@ -10669,11 +10460,11 @@ function top_songs(auth_details, artist_name, msg) {
     )
   );
 }
-function echo3(value3, message2, file, line) {
+function echo2(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector3();
+  const inspector = new Echo$Inspector2();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -10693,7 +10484,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector3 = class {
+var Echo$Inspector2 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -11530,7 +11321,7 @@ function update2(m, message2) {
       }
     } else {
       let e = $[0];
-      echo4(e, void 0, "src/somachord/components/login.gleam", 108);
+      echo3(e, void 0, "src/somachord/components/login.gleam", 108);
       throw makeError(
         "panic",
         FILEPATH6,
@@ -11801,11 +11592,11 @@ function register() {
   let component2 = component(init2, update2, view2, toList([]));
   return make_component(component2, "login-page");
 }
-function echo4(value3, message2, file, line) {
+function echo3(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector4();
+  const inspector = new Echo$Inspector3();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -11825,7 +11616,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector4 = class {
+var Echo$Inspector3 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -12360,7 +12151,7 @@ function update3(m, msg) {
             none2()
           ];
         } else {
-          echo5(e, void 0, "src/somachord/components/song_detail.gleam", 183);
+          echo4(e, void 0, "src/somachord/components/song_detail.gleam", 183);
           throw makeError(
             "panic",
             FILEPATH7,
@@ -12374,7 +12165,7 @@ function update3(m, msg) {
       }
     } else {
       let e = $[0];
-      echo5(e, void 0, "src/somachord/components/song_detail.gleam", 176);
+      echo4(e, void 0, "src/somachord/components/song_detail.gleam", 176);
       throw makeError(
         "panic",
         FILEPATH7,
@@ -12747,11 +12538,11 @@ function register2() {
   );
   return make_component(component2, "song-detail");
 }
-function echo5(value3, message2, file, line) {
+function echo4(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector5();
+  const inspector = new Echo$Inspector4();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -12771,7 +12562,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector5 = class {
+var Echo$Inspector4 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -14777,14 +14568,14 @@ function update5(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo6("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
-        echo6(e, void 0, "src/somachord/pages/home.gleam", 99);
+        echo5("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
+        echo5(e, void 0, "src/somachord/pages/home.gleam", 99);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo6("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
-      echo6(e, void 0, "src/somachord/pages/home.gleam", 104);
+      echo5("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
+      echo5(e, void 0, "src/somachord/pages/home.gleam", 104);
       return [m, none2()];
     }
   } else if (msg instanceof Play2) {
@@ -14884,11 +14675,11 @@ function register4() {
   );
   return make_component(app, "home-page");
 }
-function echo6(value3, message2, file, line) {
+function echo5(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector6();
+  const inspector = new Echo$Inspector5();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -14908,7 +14699,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector6 = class {
+var Echo$Inspector5 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -15232,7 +15023,7 @@ function update6(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo7(e, void 0, "src/somachord/pages/search.gleam", 87);
+        echo6(e, void 0, "src/somachord/pages/search.gleam", 87);
         throw makeError(
           "panic",
           FILEPATH12,
@@ -15245,7 +15036,7 @@ function update6(m, msg) {
       }
     } else {
       let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/search.gleam", 91);
+      echo6(e, void 0, "src/somachord/pages/search.gleam", 91);
       throw makeError(
         "panic",
         FILEPATH12,
@@ -15333,11 +15124,11 @@ function register5() {
   );
   return make_component(app, "search-page");
 }
-function echo7(value3, message2, file, line) {
+function echo6(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector7();
+  const inspector = new Echo$Inspector6();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -15357,7 +15148,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector7 = class {
+var Echo$Inspector6 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -16547,15 +16338,15 @@ function playing_bar2(m) {
     ]),
     toList([
       div(
-        toList([class$("flex justify-between items-center")]),
+        toList([class$("flex justify-between items-center gap-2")]),
         toList([
           div(
-            toList([class$("flex gap-2 items-center")]),
+            toList([class$("flex gap-2 items-center flex-1 min-w-0")]),
             toList([
               div(
                 toList([
                   class$(
-                    "w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center"
+                    "flex-none w-12 h-12 bg-zinc-800 rounded-md flex items-center justify-center"
                   )
                 ]),
                 toList([
@@ -16571,30 +16362,23 @@ function playing_bar2(m) {
                         toList([])
                       );
                     } else {
-                      return a(
+                      return img(
                         toList([
-                          href("/album/" + m.current_song.album_id)
-                        ]),
-                        toList([
-                          img(
-                            toList([
-                              src(
-                                (() => {
-                                  let _pipe = create_uri(
-                                    "/rest/getCoverArt.view",
-                                    auth_details,
-                                    toList([
-                                      ["id", m.current_song.cover_art_id],
-                                      ["size", "500"]
-                                    ])
-                                  );
-                                  return to_string3(_pipe);
-                                })()
-                              ),
-                              class$(
-                                "hover:opacity-50 transition-all duration-200 rounded-md object-cover"
-                              )
-                            ])
+                          src(
+                            (() => {
+                              let _pipe = create_uri(
+                                "/rest/getCoverArt.view",
+                                auth_details,
+                                toList([
+                                  ["id", m.current_song.cover_art_id],
+                                  ["size", "500"]
+                                ])
+                              );
+                              return to_string3(_pipe);
+                            })()
+                          ),
+                          class$(
+                            "w-12 h-12 transition-all duration-200 rounded-md object-cover"
                           )
                         ])
                       );
@@ -16603,45 +16387,29 @@ function playing_bar2(m) {
                 ])
               ),
               span(
-                toList([class$("flex flex-col")]),
+                toList([class$("flex flex-col min-w-0")]),
                 toList([
-                  a(
+                  span(
                     toList([
-                      class$("text-xs"),
-                      href("/song/" + m.current_song.id)
-                    ]),
-                    toList([
-                      span(
-                        toList([
-                          class$(
-                            "hover:underline font-normal text-nowrap text-ellipsis"
-                          )
-                        ]),
-                        toList([text2(m.current_song.title)])
+                      class$(
+                        "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
                       )
-                    ])
+                    ]),
+                    toList([text2(m.current_song.title)])
                   ),
                   span(
-                    toList([]),
+                    toList([
+                      class$(
+                        "hover:underline text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0"
+                      )
+                    ]),
                     (() => {
                       let _pipe = map(
                         m.current_song.artists,
                         (artist2) => {
-                          return a(
-                            toList([
-                              class$("text-xs"),
-                              href("/artist/" + artist2.id)
-                            ]),
-                            toList([
-                              span(
-                                toList([
-                                  class$(
-                                    "hover:underline font-light"
-                                  )
-                                ]),
-                                toList([text2(artist2.name)])
-                              )
-                            ])
+                          return span(
+                            toList([class$("hover:underline")]),
+                            toList([text2(artist2.name)])
                           );
                         }
                       );
@@ -16901,10 +16669,10 @@ function check_scrobble(m) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 15165,
-              end: 15218,
-              pattern_start: 15176,
-              pattern_end: 15183
+              start: 15135,
+              end: 15188,
+              pattern_start: 15146,
+              pattern_end: 15153
             }
           );
         }
@@ -16974,10 +16742,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 6601,
-                end: 6654,
-                pattern_start: 6612,
-                pattern_end: 6619
+                start: 6571,
+                end: 6624,
+                pattern_start: 6582,
+                pattern_end: 6589
               }
             );
           }
@@ -17049,10 +16817,7 @@ function update8(m, msg) {
             m.confirmed,
             m.albums,
             m.player,
-            (() => {
-              let _pipe = queue2;
-              return jump(_pipe, queue2.position);
-            })(),
+            queue2,
             m.current_song,
             m.seeking,
             m.seek_amount,
@@ -17085,10 +16850,10 @@ function update8(m, msg) {
                       "Pattern match failed, no pattern matched the value.",
                       {
                         value: $3,
-                        start: 3880,
-                        end: 3933,
-                        pattern_start: 3891,
-                        pattern_end: 3898
+                        start: 3850,
+                        end: 3903,
+                        pattern_start: 3861,
+                        pattern_end: 3868
                       }
                     );
                   }
@@ -17188,10 +16953,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9432,
-                end: 9485,
-                pattern_start: 9443,
-                pattern_end: 9450
+                start: 9402,
+                end: 9455,
+                pattern_start: 9413,
+                pattern_end: 9420
               }
             );
           }
@@ -17251,10 +17016,10 @@ function update8(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 10037,
-                    end: 10103,
-                    pattern_start: 10048,
-                    pattern_end: 10064
+                    start: 10007,
+                    end: 10073,
+                    pattern_start: 10018,
+                    pattern_end: 10034
                   }
                 );
               }
@@ -17290,10 +17055,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $22,
-                start: 10364,
-                end: 10417,
-                pattern_start: 10375,
-                pattern_end: 10382
+                start: 10334,
+                end: 10387,
+                pattern_start: 10345,
+                pattern_end: 10352
               }
             );
           }
@@ -17317,10 +17082,10 @@ function update8(m, msg) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 10449,
-              end: 10515,
-              pattern_start: 10460,
-              pattern_end: 10476
+              start: 10419,
+              end: 10485,
+              pattern_start: 10430,
+              pattern_end: 10446
             }
           );
         }
@@ -17363,10 +17128,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9432,
-                end: 9485,
-                pattern_start: 9443,
-                pattern_end: 9450
+                start: 9402,
+                end: 9455,
+                pattern_start: 9413,
+                pattern_end: 9420
               }
             );
           }
@@ -17426,10 +17191,10 @@ function update8(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 10037,
-                    end: 10103,
-                    pattern_start: 10048,
-                    pattern_end: 10064
+                    start: 10007,
+                    end: 10073,
+                    pattern_start: 10018,
+                    pattern_end: 10034
                   }
                 );
               }
@@ -17453,13 +17218,13 @@ function update8(m, msg) {
     }
   } else if (msg instanceof Play) {
     let req = msg[0];
-    echo8(
+    echo7(
       "!!! play request id: " + req.id,
       void 0,
       "src/somachord.gleam",
       182
     );
-    echo8(
+    echo7(
       "play request type: " + req.type_,
       void 0,
       "src/somachord.gleam",
@@ -17484,10 +17249,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 4697,
-            end: 4750,
-            pattern_start: 4708,
-            pattern_end: 4715
+            start: 4667,
+            end: 4720,
+            pattern_start: 4678,
+            pattern_end: 4685
           }
         );
       }
@@ -17522,10 +17287,10 @@ function update8(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 4953,
-                    end: 5004,
-                    pattern_start: 4964,
-                    pattern_end: 4973
+                    start: 4923,
+                    end: 4974,
+                    pattern_start: 4934,
+                    pattern_end: 4943
                   }
                 );
               }
@@ -17557,7 +17322,7 @@ function update8(m, msg) {
                         return new StreamAlbum(album3, 0);
                       } else {
                         let e = $2[0];
-                        echo8(e, void 0, "src/somachord.gleam", 204);
+                        echo7(e, void 0, "src/somachord.gleam", 204);
                         throw makeError(
                           "panic",
                           FILEPATH16,
@@ -17570,7 +17335,7 @@ function update8(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo8(e, void 0, "src/somachord.gleam", 208);
+                      echo7(e, void 0, "src/somachord.gleam", 208);
                       throw makeError(
                         "panic",
                         FILEPATH16,
@@ -17700,10 +17465,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 6601,
-            end: 6654,
-            pattern_start: 6612,
-            pattern_end: 6619
+            start: 6571,
+            end: 6624,
+            pattern_start: 6582,
+            pattern_end: 6589
           }
         );
       }
@@ -17759,10 +17524,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 12445,
-            end: 12498,
-            pattern_start: 12456,
-            pattern_end: 12463
+            start: 12415,
+            end: 12468,
+            pattern_start: 12426,
+            pattern_end: 12433
           }
         );
       }
@@ -17787,10 +17552,10 @@ function update8(m, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 12580,
-          end: 12636,
-          pattern_start: 12591,
-          pattern_end: 12608
+          start: 12550,
+          end: 12606,
+          pattern_start: 12561,
+          pattern_end: 12578
         }
       );
     }
@@ -17848,10 +17613,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 11742,
-            end: 11795,
-            pattern_start: 11753,
-            pattern_end: 11760
+            start: 11712,
+            end: 11765,
+            pattern_start: 11723,
+            pattern_end: 11730
           }
         );
       }
@@ -17872,10 +17637,10 @@ function update8(m, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 11827,
-          end: 11885,
-          pattern_start: 11838,
-          pattern_end: 11855
+          start: 11797,
+          end: 11855,
+          pattern_start: 11808,
+          pattern_end: 11825
         }
       );
     }
@@ -17988,10 +17753,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 7732,
-                end: 7785,
-                pattern_start: 7743,
-                pattern_end: 7750
+                start: 7702,
+                end: 7755,
+                pattern_start: 7713,
+                pattern_end: 7720
               }
             );
           }
@@ -18063,10 +17828,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 8669,
-            end: 8722,
-            pattern_start: 8680,
-            pattern_end: 8687
+            start: 8639,
+            end: 8692,
+            pattern_start: 8650,
+            pattern_end: 8657
           }
         );
       }
@@ -18200,10 +17965,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 13118,
-                end: 13171,
-                pattern_start: 13129,
-                pattern_end: 13136
+                start: 13088,
+                end: 13141,
+                pattern_start: 13099,
+                pattern_end: 13106
               }
             );
           }
@@ -18249,10 +18014,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 8669,
-            end: 8722,
-            pattern_start: 8680,
-            pattern_end: 8687
+            start: 8639,
+            end: 8692,
+            pattern_start: 8650,
+            pattern_end: 8657
           }
         );
       }
@@ -18345,10 +18110,10 @@ function update8(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 13842,
-            end: 13895,
-            pattern_start: 13853,
-            pattern_end: 13860
+            start: 13812,
+            end: 13865,
+            pattern_start: 13823,
+            pattern_end: 13830
           }
         );
       }
@@ -18483,10 +18248,10 @@ function update8(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 4312,
-                end: 4365,
-                pattern_start: 4323,
-                pattern_end: 4330
+                start: 4282,
+                end: 4335,
+                pattern_start: 4293,
+                pattern_end: 4300
               }
             );
           }
@@ -18538,7 +18303,7 @@ function player_event_handler(event4, player) {
   } else if (event4 === "ended") {
     return new MusicEnded();
   } else {
-    echo8(event4, void 0, "src/somachord.gleam", 574);
+    echo7(event4, void 0, "src/somachord.gleam", 574);
     throw makeError(
       "panic",
       FILEPATH16,
@@ -18613,7 +18378,7 @@ function init8(_) {
       )
     ];
   } else {
-    let $1 = echo8(
+    let $1 = echo7(
       (() => {
         let _pipe$1 = get_route();
         return uri_to_route(_pipe$1);
@@ -18874,11 +18639,11 @@ function main() {
   }
   return $6;
 }
-function echo8(value3, message2, file, line) {
+function echo7(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector8();
+  const inspector = new Echo$Inspector7();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -18898,7 +18663,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector8 = class {
+var Echo$Inspector7 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
