@@ -17740,7 +17740,7 @@ function playing_bar2(m) {
                   span(
                     toList([
                       class$(
-                        "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
+                        "hover:underline select-none font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
                       )
                     ]),
                     toList([text2(m.current_song.title)])
@@ -17748,7 +17748,7 @@ function playing_bar2(m) {
                   span(
                     toList([
                       class$(
-                        "hover:underline text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0"
+                        "hover:underline select-none text-xs font-light overflow-hidden text-nowrap text-ellipsis min-w-0"
                       )
                     ]),
                     (() => {
