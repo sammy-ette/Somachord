@@ -25,6 +25,9 @@ pub type Msg {
   SimilarSongsArtist(
     Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
   )
+  PlaylistWithSongs(
+    Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
+  )
 
   ToggleFullscreenPlayer
   ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
@@ -39,6 +42,7 @@ pub type Msg {
   // handles actually playing the music in the browser
   // and the queue.
   StreamAlbum(api_models.Album, Int)
+  StreamPlaylist(api_models.Playlist, Int)
   StreamAlbumShuffled(api_models.Album, Int)
   StreamSong(api_models.Child)
   StreamFromQueue(queue_position: Int)
@@ -83,7 +87,32 @@ pub fn on_play(
   event.on("play", {
     use type_ <- decode.subfield(["detail", "type"], decode.string)
     use id <- decode.subfield(["detail", "id"], decode.string)
+    use index <- decode.then(decode.optionally_at(
+      ["detail", "index"],
+      0,
+      decode.int,
+    ))
 
-    decode.success(model.PlayRequest(type_:, id:)) |> decode.map(handler)
+    decode.success(model.PlayRequest(type_:, id:, index:))
+    |> decode.map(handler)
+  })
+}
+
+pub fn on_playlist(
+  handler: fn(model.PlaylistPlayRequest) -> msg,
+) -> attribute.Attribute(msg) {
+  event.on("playPlaylist", {
+    use playlist <- decode.subfield(
+      ["detail", "playlist"],
+      api_models.playlist_decoder(),
+    )
+    use index <- decode.then(decode.optionally_at(
+      ["detail", "index"],
+      0,
+      decode.int,
+    ))
+
+    decode.success(model.PlaylistPlayRequest(playlist, index))
+    |> decode.map(handler)
   })
 }

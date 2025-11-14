@@ -223,16 +223,16 @@ fn buttons(m: model.Model, album: api_models.Album) {
           ],
           [],
         ),
-        html.i(
-          [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-          [],
-        ),
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
-          ],
-          [],
-        ),
+        // html.i(
+        //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+        //   [],
+        // ),
+        // html.i(
+        //   [
+        //     attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
+        //   ],
+        //   [],
+        // ),
         html.i(
           [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
           [],

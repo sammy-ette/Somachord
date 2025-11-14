@@ -57,13 +57,15 @@ pub fn view(m: model.Model, page) {
             [],
           ),
         ]),
-        // mobile_nav_button(
-      //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-      //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-      //   "Library",
-      //   False,
-      //   [],
-      // ),
+        html.a([attribute.href("/library"), attribute.class("h-fit w-fit")], [
+          mobile_nav_button(
+            html.i([attribute.class("text-2xl ph ph-cards-three")], []),
+            html.i([attribute.class("text-2xl ph ph-cards-three")], []),
+            "Library",
+            False,
+            [],
+          ),
+        ]),
       ]),
       fullscreen_player.view(m),
     ],

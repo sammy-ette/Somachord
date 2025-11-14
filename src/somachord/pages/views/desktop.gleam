@@ -1,5 +1,3 @@
-import gleam/bool
-import gleam/dynamic/decode
 import gleam/float
 import gleam/int
 import gleam/list
@@ -13,6 +11,7 @@ import player
 import somachord/api_helper
 import somachord/api_models
 import somachord/components/fullscreen_player
+import somachord/components/playlist_menu
 import somachord/elements
 import somachord/model
 import somachord/msg
@@ -30,7 +29,7 @@ pub fn view(m: model.Model, page) {
     [
       top_bar(m),
       html.div([attribute.class("flex gap-2 min-w-0 min-h-0 w-full h-full")], [
-        //side_bar(m),
+        side_bar(m),
         html.div(
           [attribute.class("flex flex-col gap-2 min-w-0 min-h-0 w-full h-full")],
           [
@@ -45,12 +44,14 @@ pub fn view(m: model.Model, page) {
 }
 
 fn top_bar(m: model.Model) {
-  html.div([attribute.class("flex gap-4 justify-center")], [
-    // elements.button(
-    //   html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-    //   "Library",
-    //   [attribute.class("w-42")],
-    // ),
+  html.div([attribute.class("flex gap-4")], [
+    html.a([attribute.href("/library")], [
+      elements.button(
+        html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+        "Library",
+        [attribute.class("w-42")],
+      ),
+    ]),
     html.a([attribute.href("/")], [
       elements.nav_button(
         html.i([attribute.class("text-3xl ph ph-house")], []),
@@ -102,43 +103,48 @@ fn side_bar(_: model.Model) {
       ),
     ],
     [
-      elements.button(
-        html.i([attribute.class("text-3xl ph ph-playlist")], []),
-        "Playlists",
-        [],
-      ),
-      elements.button(
-        html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
-        "Liked Songs",
-        [],
-      ),
-      html.a([attribute.href("/albums")], [
+      // the query doesn't actually filter to playlists only (yet)
+      html.a([attribute.href("/library?filter=0")], [
         elements.button(
-          html.i(
-            [
-              attribute.class("cursor-not-allowed text-3xl ph ph-vinyl-record"),
-            ],
-            [],
-          ),
-          "Albums",
+          html.i([attribute.class("text-3xl ph ph-playlist")], []),
+          "Playlists",
           [],
         ),
       ]),
-      html.a(
-        [
-          //attribute.href("/artists")
-        ],
-        [
-          elements.button(
-            html.i(
-              [attribute.class("cursor-not-allowed text-3xl ph ph-user-sound")],
-              [],
-            ),
-            "Artists",
-            [],
-          ),
-        ],
-      ),
+      html.a([attribute.href("/likes")], [
+        elements.button(
+          html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
+          "Liked Songs",
+          [],
+        ),
+      ]),
+      // html.a([attribute.href("/albums")], [
+    //   elements.button(
+    //     html.i(
+    //       [
+    //         attribute.class("cursor-not-allowed text-3xl ph ph-vinyl-record"),
+    //       ],
+    //       [],
+    //     ),
+    //     "Albums",
+    //     [],
+    //   ),
+    // ]),
+    // html.a(
+    //   [
+    //     //attribute.href("/artists")
+    //   ],
+    //   [
+    //     elements.button(
+    //       html.i(
+    //         [attribute.class("cursor-not-allowed text-3xl ph ph-user-sound")],
+    //         [],
+    //       ),
+    //       "Artists",
+    //       [],
+    //     ),
+    //   ],
+    // ),
     ],
   )
 }
@@ -365,7 +371,10 @@ fn playing_bar(m: model.Model) {
           ],
           [],
         ),
-        html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+        playlist_menu.element(button_attrs: [], menu_attrs: [
+          attribute.class("absolute bottom-92 right-96"),
+          playlist_menu.song_id(m.current_song.id),
+        ]),
       ]),
     ],
   )

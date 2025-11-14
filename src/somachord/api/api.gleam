@@ -184,6 +184,30 @@ pub fn like(auth_details: auth.Auth, id id: String, msg msg: EmptyResponse(a)) {
   )
 }
 
+pub fn likes(
+  auth_details auth_details: auth.Auth,
+  msg msg: Response(List(api_models.Child), b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/getStarred2.view", query: [])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use songs <- decode.then(decode.optionally_at(
+          ["subsonic-response", "starred2", "song"],
+          [],
+          decode.list(api_models.song_decoder()),
+        ))
+
+        decode.success(songs)
+      }),
+      msg,
+    ),
+  )
+}
+
 pub fn unlike(auth_details: auth.Auth, id id: String, msg msg: EmptyResponse(a)) {
   let req =
     get_request(auth_details:, path: "/rest/unstar.view", query: [#("id", id)])
@@ -228,6 +252,56 @@ pub fn ping(auth_details auth_details: auth.Auth, msg msg: EmptyResponse(a)) {
   rsvp.send(
     req,
     rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}
+
+pub fn playlists(
+  auth_details auth_details: auth.Auth,
+  msg msg: Response(List(api_models.Playlist), b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/getPlaylists.view", query: [])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use playlists <- decode.then(decode.optionally_at(
+          ["subsonic-response", "playlists", "playlist"],
+          [],
+          decode.list(api_models.playlist_decoder()),
+        ))
+
+        decode.success(playlists)
+      }),
+      msg,
+    ),
+  )
+}
+
+pub fn playlist(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  msg msg: Response(api_models.Playlist, b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/getPlaylist.view", query: [
+      #("id", id),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use playlist <- decode.subfield(
+          ["subsonic-response", "playlist"],
+          api_models.playlist_decoder(),
+        )
+
+        decode.success(playlist)
+      }),
+      msg,
+    ),
   )
 }
 
@@ -472,5 +546,91 @@ pub fn top_songs(
       }),
       msg,
     ),
+  )
+}
+
+pub fn add_to_playlist(
+  auth_details auth_details: auth.Auth,
+  playlist_id playlist_id: String,
+  song_id song_id: String,
+  msg msg: EmptyResponse(a),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/updatePlaylist.view", query: [
+      #("playlistId", playlist_id),
+      #("songIdToAdd", song_id),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}
+
+pub fn remove_from_playlist(
+  auth_details auth_details: auth.Auth,
+  playlist_id playlist_id: String,
+  song_id song_id: String,
+  msg msg: EmptyResponse(a),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/updatePlaylist.view", query: [
+      #("playlistId", playlist_id),
+      #("songIndexToRemove", song_id),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}
+
+pub fn create_playlist(
+  auth_details auth_details: auth.Auth,
+  name name: String,
+  songs songs: List(String),
+  msg msg: Response(api_models.Playlist, b),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/createPlaylist.view", query: [
+      #("name", name),
+      ..list.map(songs, fn(song_id: String) { #("songId", song_id) })
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(
+      subsonic_response_decoder({
+        use playlist <- decode.subfield(
+          ["subsonic-response", "playlist"],
+          api_models.playlist_decoder(),
+        )
+
+        decode.success(playlist)
+      }),
+      msg,
+    ),
+  )
+}
+
+pub fn update_playlist(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  name name: String,
+  description description: String,
+  public public: Bool,
+  msg msg: EmptyResponse(a),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/updatePlaylist.view", query: [
+      #("playlistId", id),
+      #("name", name),
+      #("comment", description),
+      #("public", bool.to_string(public) |> string.lowercase),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
   )
 }

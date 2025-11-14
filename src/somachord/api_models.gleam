@@ -1,5 +1,6 @@
 import gleam/dynamic/decode
 import gleam/int
+import gleam/json
 import gleam/option
 import plinth/browser/element
 
@@ -14,6 +15,14 @@ pub type Artist {
 
 pub type SmallArtist {
   SmallArtist(id: String, name: String)
+}
+
+pub fn artist_encode(small_artist: SmallArtist) -> json.Json {
+  let SmallArtist(id:, name:) = small_artist
+  json.object([
+    #("id", json.string(id)),
+    #("name", json.string(name)),
+  ])
 }
 
 pub fn artist_decoder() {
@@ -110,6 +119,90 @@ pub fn album_decoder() {
   ))
 }
 
+pub type Playlist {
+  Playlist(
+    id: String,
+    name: String,
+    owner: String,
+    public: Bool,
+    cover_art_id: String,
+    created: String,
+    updated: String,
+    duration: Int,
+    songs: List(Child),
+    song_count: Int,
+  )
+}
+
+pub fn new_playlist() {
+  Playlist(
+    id: "",
+    name: "",
+    owner: "",
+    public: False,
+    cover_art_id: "",
+    created: "",
+    updated: "",
+    duration: 0,
+    songs: [],
+    song_count: 0,
+  )
+}
+
+pub fn playlist_decoder() -> decode.Decoder(Playlist) {
+  use id <- decode.field("id", decode.string)
+  use name <- decode.field("name", decode.string)
+  use owner <- decode.optional_field("owner", "", decode.string)
+  use public <- decode.optional_field("public", False, decode.bool)
+  use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
+  use created <- decode.field("created", decode.string)
+  use updated <- decode.field("changed", decode.string)
+  use duration <- decode.field("duration", decode.int)
+  use songs <- decode.optional_field("entry", [], decode.list(song_decoder()))
+  use song_count <- decode.optional_field("songCount", 0, decode.int)
+
+  decode.success(Playlist(
+    id:,
+    name:,
+    owner:,
+    public:,
+    cover_art_id:,
+    created:,
+    updated:,
+    duration:,
+    songs:,
+    song_count:,
+  ))
+}
+
+pub fn playlist_encode(playlist: Playlist) -> json.Json {
+  let Playlist(
+    id:,
+    name:,
+    owner:,
+    public:,
+    cover_art_id:,
+    created:,
+    updated:,
+    duration:,
+    songs:,
+    song_count:,
+  ) = playlist
+  json.object([
+    #("id", json.string(id)),
+    #("name", json.string(name)),
+    #("owner", json.string(owner)),
+    #("public", json.bool(public)),
+    #("coverArt", json.string(cover_art_id)),
+    #("created", json.string(created)),
+    #("changed", json.string(created)),
+    #("updated", json.string(updated)),
+    #("duration", json.int(duration)),
+    #("entry", json.array(songs, song_encode)),
+    #("songCount", json.int(song_count)),
+  ])
+}
+
 pub type Child {
   Child(
     id: String,
@@ -172,6 +265,35 @@ pub fn song_decoder() {
     starred:,
     plays:,
   ))
+}
+
+pub fn song_encode(child: Child) -> json.Json {
+  let Child(
+    id:,
+    album_name:,
+    album_id:,
+    cover_art_id:,
+    artists:,
+    duration:,
+    title:,
+    track:,
+    year:,
+    starred:,
+    plays:,
+  ) = child
+  json.object([
+    #("id", json.string(id)),
+    #("album", json.string(album_name)),
+    #("albumID", json.string(album_id)),
+    #("coverArt", json.string(cover_art_id)),
+    #("artists", json.array(artists, artist_encode)),
+    #("duration", json.int(duration)),
+    #("title", json.string(title)),
+    #("track", json.int(track)),
+    #("year", json.int(year)),
+    #("starred", json.bool(starred)),
+    #("playCount", json.int(plays)),
+  ])
 }
 
 pub type LyricSet {

@@ -15,10 +15,15 @@ pub type Route {
   Login
   Search(query: String)
   Artist(id: String)
-  Artists
   Album(id: String)
-  Albums
   Song(id: String)
+  Playlist(id: String)
+  Likes
+
+  Library
+  Playlists
+  Artists
+  Albums
   Unknown
 }
 
@@ -38,6 +43,10 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
       "/albums" -> Albums
       "/album/" <> id -> Album(id)
       "/song/" <> id -> Song(id)
+      "/playlist/" <> id -> Playlist(id)
+      "/playlists/" -> Playlists
+      "/library" -> Library
+      "/likes" -> Likes
       _ -> Unknown
     }
   }

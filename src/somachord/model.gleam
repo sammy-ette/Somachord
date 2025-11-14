@@ -1,4 +1,5 @@
 import gleam/dict
+import somachord/models/auth
 import somachord/storage
 import varasto
 
@@ -13,6 +14,7 @@ pub type Model {
     route: router.Route,
     layout: Layout,
     storage: varasto.TypedStorage(storage.Storage),
+    auth: auth.Auth,
     confirmed: Bool,
     albums: dict.Dict(String, api_models.Album),
     player: Player,
@@ -23,13 +25,18 @@ pub type Model {
     played_seconds: Int,
     shuffled: Bool,
     looping: Bool,
+    playlists: dict.Dict(String, api_models.Playlist),
     fullscreen_player_open: Bool,
     fullscreen_player_display: FullscreenPlayerDisplay,
   )
 }
 
 pub type PlayRequest {
-  PlayRequest(type_: String, id: String)
+  PlayRequest(type_: String, id: String, index: Int)
+}
+
+pub type PlaylistPlayRequest {
+  PlaylistPlayRequest(playlist: api_models.Playlist, index: Int)
 }
 
 pub type Layout {

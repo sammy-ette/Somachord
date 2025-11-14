@@ -18,6 +18,7 @@ import somachord/api_helper
 import somachord/api_models
 import somachord/components
 import somachord/components/lyrics
+import somachord/components/playlist_menu
 import somachord/elements
 import somachord/model
 import somachord/storage
@@ -265,7 +266,7 @@ fn view(m: Model) {
               ],
               [],
             ),
-            html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+            playlist_menu.element([], []),
             html.i([attribute.class("text-3xl ph ph-download-simple")], []),
             html.i([attribute.class("text-3xl ph ph-link")], []),
             html.i([attribute.class("text-3xl ph ph-dots-three")], []),
