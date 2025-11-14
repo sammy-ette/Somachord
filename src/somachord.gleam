@@ -29,7 +29,6 @@ import somachord/api/api
 import somachord/api_helper
 import somachord/api_models
 import somachord/components/login
-import somachord/components/song_detail
 import somachord/model
 import somachord/msg
 import somachord/pages/album
@@ -48,7 +47,6 @@ pub fn main() {
   let assert Ok(_) = home.register()
   let assert Ok(_) = artist.register()
   let assert Ok(_) = song.register()
-  let assert Ok(_) = song_detail.register()
   let assert Ok(_) = search.register()
   let assert Ok(_) = lustre.start(app, "#app", 0)
 }

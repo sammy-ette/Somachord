@@ -18,12 +18,10 @@ import somachord/api_helper
 import somachord/api_models
 import somachord/components
 import somachord/components/lyrics
+import somachord/elements
 import somachord/model
 import somachord/storage
 import varasto
-
-import somachord/components/song_detail
-import somachord/elements
 
 pub type Tab {
   Lyrics
