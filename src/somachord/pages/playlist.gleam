@@ -446,6 +446,7 @@ fn page(m: Model) {
                   ]
                 },
                 cover_art: True,
+                playing: False,
                 msg: { PlayPlaylist(index) },
               )
             },
