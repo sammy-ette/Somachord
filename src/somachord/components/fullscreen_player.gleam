@@ -372,7 +372,13 @@ fn view_mobile(m: model.Model) {
       // 1. Lyrics
       // 2. Album Art + Song Info
       html.div(
-        [attribute.class("overflow-y-auto flex-1 flex flex-col")],
+        [
+          attribute.class("flex-1 flex flex-col gap-4"),
+          case m.fullscreen_player_display {
+            model.Lyrics -> attribute.class("overflow-y-auto")
+            _ -> attribute.none()
+          },
+        ],
         case m.fullscreen_player_display {
           model.Default -> view_info(m)
           model.Lyrics -> [
