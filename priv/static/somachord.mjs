@@ -12859,7 +12859,7 @@ function song2(song3, index5, attrs, cover_art, playing, msg) {
           span(
             toList([
               class$(
-                "font-[Azeret_Mono] font-light text-zinc-500 text-sm"
+                "font-[Azeret_Mono] select-none font-light text-zinc-500 text-sm"
               )
             ]),
             toList([
@@ -12921,10 +12921,10 @@ function album2(album3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6508,
-          end: 6568,
-          pattern_start: 6519,
-          pattern_end: 6526
+          start: 6520,
+          end: 6580,
+          pattern_start: 6531,
+          pattern_end: 6538
         }
       );
     }
@@ -13063,10 +13063,10 @@ function playlist2(playlist3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9706,
-          end: 9766,
-          pattern_start: 9717,
-          pattern_end: 9724
+          start: 9718,
+          end: 9778,
+          pattern_start: 9729,
+          pattern_end: 9736
         }
       );
     }
@@ -13346,10 +13346,10 @@ function music_slider(m, attrs) {
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15901,
-                      end: 15948,
-                      pattern_start: 15912,
-                      pattern_end: 15927
+                      start: 15913,
+                      end: 15960,
+                      pattern_start: 15924,
+                      pattern_end: 15939
                     }
                   );
                 }
@@ -13483,10 +13483,6 @@ function view_desktop(m) {
               class$("text-3xl ph ph-caret-down"),
               on_click(new ToggleFullscreenPlayer())
             ]),
-            toList([])
-          ),
-          i(
-            toList([class$("text-3xl ph ph-television-simple")]),
             toList([])
           )
         ])
@@ -13833,10 +13829,10 @@ function view_info(m) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 16666,
-          end: 16719,
-          pattern_start: 16677,
-          pattern_end: 16684
+          start: 16672,
+          end: 16725,
+          pattern_start: 16683,
+          pattern_end: 16690
         }
       );
     }
@@ -17869,6 +17865,12 @@ var PlaylistID = class extends CustomType {
     this[0] = $0;
   }
 };
+var CurrentSongID = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var PlaylistResponse = class extends CustomType {
   constructor($0) {
     super();
@@ -17908,12 +17910,13 @@ var PlaylistUpdateResponse = class extends CustomType {
 var ComponentClick3 = class extends CustomType {
 };
 var Model8 = class extends CustomType {
-  constructor(playlist3, layout2, show_editor, playlist_form) {
+  constructor(playlist3, layout2, show_editor, playlist_form, current_song_id) {
     super();
     this.playlist = playlist3;
     this.layout = layout2;
     this.show_editor = show_editor;
     this.playlist_form = playlist_form;
+    this.current_song_id = current_song_id;
   }
 };
 var PlaylistForm = class extends CustomType {
@@ -17971,7 +17974,8 @@ function init8(_) {
             );
           }
         )
-      )
+      ),
+      ""
     ),
     none2()
   ];
@@ -18006,15 +18010,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  115,
+                  122,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 2796,
-                    end: 2856,
-                    pattern_start: 2807,
-                    pattern_end: 2814
+                    start: 3055,
+                    end: 3115,
+                    pattern_start: 3066,
+                    pattern_end: 3073
                   }
                 );
               }
@@ -18039,15 +18043,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  123,
+                  130,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 3027,
-                    end: 3087,
-                    pattern_start: 3038,
-                    pattern_end: 3045
+                    start: 3286,
+                    end: 3346,
+                    pattern_start: 3297,
+                    pattern_end: 3304
                   }
                 );
               }
@@ -18061,6 +18065,12 @@ function update8(m, msg) {
         }
       })()
     ];
+  } else if (msg instanceof CurrentSongID) {
+    let id3 = msg[0];
+    return [
+      new Model8(m.playlist, m.layout, m.show_editor, m.playlist_form, id3),
+      none2()
+    ];
   } else if (msg instanceof PlaylistResponse) {
     let $ = msg[0];
     if ($ instanceof Ok) {
@@ -18068,17 +18078,23 @@ function update8(m, msg) {
       if ($1 instanceof Ok) {
         let playlist3 = $1[0];
         return [
-          new Model8(playlist3, m.layout, m.show_editor, m.playlist_form),
+          new Model8(
+            playlist3,
+            m.layout,
+            m.show_editor,
+            m.playlist_form,
+            m.current_song_id
+          ),
           none2()
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 155);
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 162);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 155);
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 162);
       return [m, none2()];
     }
   } else if (msg instanceof LikedSongsResponse) {
@@ -18105,17 +18121,23 @@ function update8(m, msg) {
         );
         let playlist3 = _block;
         return [
-          new Model8(playlist3, m.layout, m.show_editor, m.playlist_form),
+          new Model8(
+            playlist3,
+            m.layout,
+            m.show_editor,
+            m.playlist_form,
+            m.current_song_id
+          ),
           none2()
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 147);
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 154);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 147);
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 154);
       return [m, none2()];
     }
   } else if (msg instanceof PlayPlaylist2) {
@@ -18124,13 +18146,13 @@ function update8(m, msg) {
       "playing playlist",
       void 0,
       "src/somachord/pages/playlist.gleam",
-      159
+      166
     );
     return [m, emit("playPlaylist", playlist_json(m.playlist, index5))];
   } else if (msg instanceof ShowEditor) {
     let show = msg[0];
     return [
-      new Model8(m.playlist, m.layout, show, m.playlist_form),
+      new Model8(m.playlist, m.layout, show, m.playlist_form, m.current_song_id),
       none2()
     ];
   } else if (msg instanceof PlaylistUpdate) {
@@ -18162,7 +18184,8 @@ function update8(m, msg) {
                 ]
               ])
             );
-          })()
+          })(),
+          m.current_song_id
         ),
         update_playlist(
           (() => {
@@ -18178,15 +18201,15 @@ function update8(m, msg) {
                 "let_assert",
                 FILEPATH15,
                 "somachord/pages/playlist",
-                179,
+                186,
                 "update",
                 "Pattern match failed, no pattern matched the value.",
                 {
                   value: $1,
-                  start: 4709,
-                  end: 4769,
-                  pattern_start: 4720,
-                  pattern_end: 4727
+                  start: 4968,
+                  end: 5028,
+                  pattern_start: 4979,
+                  pattern_end: 4986
                 }
               );
             }
@@ -18202,7 +18225,7 @@ function update8(m, msg) {
         )
       ];
     } else {
-      echo8("form error!", void 0, "src/somachord/pages/playlist.gleam", 191);
+      echo8("form error!", void 0, "src/somachord/pages/playlist.gleam", 198);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistUpdateResponse) {
@@ -18242,18 +18265,19 @@ function update8(m, msg) {
             })(),
             m.layout,
             false,
-            m.playlist_form
+            m.playlist_form,
+            m.current_song_id
           ),
           none2()
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 213);
+        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 220);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 213);
+      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 220);
       return [m, none2()];
     }
   } else {
@@ -18501,15 +18525,15 @@ function page3(m) {
         "let_assert",
         FILEPATH15,
         "somachord/pages/playlist",
-        355,
+        362,
         "page",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 10104,
-          end: 10164,
-          pattern_start: 10115,
-          pattern_end: 10122
+          start: 10363,
+          end: 10423,
+          pattern_start: 10374,
+          pattern_end: 10381
         }
       );
     }
@@ -18644,7 +18668,7 @@ function page3(m) {
                     }
                   })(),
                   true,
-                  false,
+                  song3.id === m.current_song_id,
                   new PlayPlaylist2(index5)
                 );
               }
@@ -18763,6 +18787,17 @@ function register8() {
             (() => {
               let _pipe = value3;
               return new PlaylistID(_pipe);
+            })()
+          );
+        }
+      ),
+      on_attribute_change(
+        "song-id",
+        (value3) => {
+          return new Ok(
+            (() => {
+              let _pipe = value3;
+              return new CurrentSongID(_pipe);
             })()
           );
         }
@@ -23122,7 +23157,8 @@ function view14(m) {
           on_play((var0) => {
             return new Play(var0);
           }),
-          attribute2("playlist-id", id3)
+          attribute2("playlist-id", id3),
+          attribute2("song-id", m.current_song.id)
         ])
       );
     } else if ($1 instanceof Likes) {
@@ -23139,7 +23175,8 @@ function view14(m) {
           attribute2(
             "playlist-id",
             somachord_likes_playlist_id
-          )
+          ),
+          attribute2("song-id", m.current_song.id)
         ])
       );
     } else if ($1 instanceof Library) {
