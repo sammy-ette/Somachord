@@ -60,12 +60,12 @@ fn view_desktop(m: model.Model) {
           [],
         ),
         // TV Mode (just an alternate layout, chromecast-y)
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-television-simple"),
-          ],
-          [],
-        ),
+      // html.i(
+      //   [
+      //     attribute.class("text-3xl ph ph-television-simple"),
+      //   ],
+      //   [],
+      // ),
       ]),
       html.div([attribute.class("overflow-hidden flex-1 flex gap-8")], [
         html.div(

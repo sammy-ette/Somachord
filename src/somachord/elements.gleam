@@ -133,7 +133,7 @@ pub fn song(
         html.span(
           [
             attribute.class(
-              "font-[Azeret_Mono] font-light text-zinc-500 text-sm",
+              "font-[Azeret_Mono] select-none font-light text-zinc-500 text-sm",
             ),
           ],
           [
