@@ -17,6 +17,7 @@ import somachord/model
 import somachord/msg
 import somachord/queue
 import varasto
+import vibrant
 
 pub fn view(m: model.Model) {
   html.div(
@@ -34,261 +35,6 @@ pub fn view(m: model.Model) {
         model.Desktop -> view_desktop(m)
         model.Mobile -> view_mobile(m)
       },
-    ],
-  )
-}
-
-fn view_desktop(m: model.Model) {
-  let auth_details = {
-    let assert Ok(stg) = m.storage |> varasto.get("auth")
-    stg.auth
-  }
-
-  html.div(
-    [
-      attribute.class(
-        "bg-zinc-950 border-t border-zinc-800 flex flex-col gap-8 min-w-0 min-h-0 w-full h-full p-8",
-      ),
-    ],
-    [
-      html.div([attribute.class("flex gap-8")], [
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-caret-down"),
-            event.on_click(msg.ToggleFullscreenPlayer),
-          ],
-          [],
-        ),
-        // TV Mode (just an alternate layout, chromecast-y)
-      // html.i(
-      //   [
-      //     attribute.class("text-3xl ph ph-television-simple"),
-      //   ],
-      //   [],
-      // ),
-      ]),
-      html.div([attribute.class("overflow-hidden flex-1 flex gap-8")], [
-        html.div(
-          [
-            attribute.class(
-              "w-1/2 flex flex-col items-center justify-center gap-8",
-            ),
-          ],
-          [
-            html.img([
-              attribute.src(
-                api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                  #("id", m.current_song.cover_art_id),
-                  #("size", "500"),
-                ])
-                |> uri.to_string,
-              ),
-              attribute.class(
-                "max-w-120 max-h-120 self-center object-fit rounded-md",
-              ),
-            ]),
-            html.div([attribute.class("w-full")], [
-              html.div([attribute.class("flex justify-between min-w-0")], [
-                html.a(
-                  [
-                    attribute.href("/song/" <> m.current_song.id),
-                    event.on_click(msg.ToggleFullscreenPlayer),
-                    attribute.class(
-                      "overflow-hidden text-nowrap text-ellipsis min-w-0",
-                    ),
-                  ],
-                  [
-                    html.span(
-                      [attribute.class("hover:underline font-bold text-2xl")],
-                      [
-                        element.text(m.current_song.title),
-                      ],
-                    ),
-                  ],
-                ),
-                html.div([attribute.class("flex gap-2")], [
-                  html.i(
-                    [
-                      case m.current_song.starred {
-                        True -> attribute.class("ph-fill text-violet-500")
-                        False -> attribute.class("ph")
-                      },
-                      attribute.class("text-3xl ph-heart-straight"),
-                      event.on_click(msg.Like),
-                    ],
-                    [],
-                  ),
-                  html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
-                ]),
-              ]),
-              html.span(
-                [
-                  attribute.class(
-                    "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
-                  ),
-                ],
-                list.map(
-                  m.current_song.artists,
-                  fn(artist: api_models.SmallArtist) {
-                    html.a(
-                      [
-                        attribute.href("/artist/" <> artist.id),
-                        event.on_click(msg.ToggleFullscreenPlayer),
-                      ],
-                      [
-                        html.span(
-                          [
-                            attribute.class("hover:underline"),
-                          ],
-                          [element.text(artist.name)],
-                        ),
-                      ],
-                    )
-                  },
-                )
-                  |> list.intersperse(element.text(", ")),
-              ),
-            ]),
-            html.div([attribute.class("space-y-1 w-full")], [
-              html.div(
-                [
-                  attribute.class(
-                    "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]",
-                  ),
-                ],
-                [
-                  html.span([], [
-                    element.text({
-                      let minutes =
-                        float.round({ m.player |> player.time() }) / 60
-                      let seconds =
-                        float.round({ m.player |> player.time() }) % 60
-
-                      int.to_string(minutes)
-                      <> ":"
-                      <> int.to_string(seconds) |> string.pad_start(2, "0")
-                    }),
-                  ]),
-                  elements.music_slider(m, [attribute.class("w-full")]),
-                  html.span([], [
-                    element.text({
-                      let minutes = m.current_song.duration / 60
-                      let seconds = m.current_song.duration % 60
-
-                      int.to_string(minutes)
-                      <> ":"
-                      <> int.to_string(seconds) |> string.pad_start(2, "0")
-                    }),
-                  ]),
-                ],
-              ),
-              html.div(
-                [attribute.class("flex gap-4 justify-center items-center")],
-                [
-                  html.i(
-                    [
-                      attribute.class("text-2xl ph ph-shuffle-simple"),
-                      case m.shuffled {
-                        True ->
-                          attribute.class(
-                            "text-violet-400 underline underline-offset-4 decoration-dotted",
-                          )
-                        False -> attribute.none()
-                      },
-                      event.on_click(msg.PlayerShuffle),
-                    ],
-                    [],
-                  ),
-                  html.i(
-                    [
-                      attribute.class("text-2xl ph-fill ph-skip-back"),
-                      event.on_click(msg.PlayerPrevious),
-                    ],
-                    [],
-                  ),
-                  html.i(
-                    [
-                      attribute.class("text-5xl ph-fill"),
-                      case m.player |> player.is_paused {
-                        False -> attribute.class("ph-pause-circle")
-                        True -> attribute.class("ph-play-circle")
-                      },
-                      event.on_click(msg.PlayerPausePlay),
-                    ],
-                    [],
-                  ),
-                  html.i(
-                    [
-                      attribute.class("text-2xl ph-fill ph-skip-forward"),
-                      event.on_click(msg.PlayerNext),
-                    ],
-                    [],
-                  ),
-                  html.i(
-                    [
-                      attribute.class("text-2xl ph ph-repeat-once"),
-                      case m.looping {
-                        True ->
-                          attribute.class(
-                            "text-violet-400 underline underline-offset-4 decoration-dotted",
-                          )
-                        False -> attribute.none()
-                      },
-                      event.on_click(msg.PlayerLoop),
-                    ],
-                    [],
-                  ),
-                ],
-              ),
-            ]),
-          ],
-        ),
-        html.div([attribute.class("w-1/2 flex flex-col")], [
-          html.div(
-            [
-              attribute.class(
-                "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950 mb-2",
-              ),
-            ],
-            [
-              tab_element(m, model.Default),
-              tab_element(m, model.Lyrics),
-            ],
-          ),
-          case m.fullscreen_player_display {
-            model.Default ->
-              html.div(
-                [
-                  attribute.class("overflow-y-auto"),
-                  attribute.class(elements.scrollbar_class),
-                  attribute.class("flex flex-col gap-2 pt-2"),
-                ],
-                list.map(queue.list(m.queue), fn(queue_entry) {
-                  elements.song(
-                    queue_entry.1,
-                    queue_entry.0,
-                    [],
-                    cover_art: True,
-                    playing: m.current_song.id == { queue_entry.1 }.id,
-                    msg: { msg.QueueJumpTo(queue_entry.0) },
-                  )
-                }),
-              )
-            model.Lyrics ->
-              lyrics.element([
-                attribute.class("overflow-y-auto"),
-                attribute.class(elements.scrollbar_class),
-                lyrics.id(m.current_song.id),
-                lyrics.song_time(m.player |> player.time()),
-                lyrics.size(lyrics.Large),
-                case m.fullscreen_player_open {
-                  True -> lyrics.auto_scroll(True)
-                  False -> lyrics.auto_scroll(False)
-                },
-              ])
-          },
-        ]),
-      ]),
     ],
   )
 }
@@ -316,9 +62,15 @@ fn tab_element(m: model.Model, tab: model.FullscreenPlayerDisplay) {
         True ->
           html.div(
             [
-              attribute.class(
-                "absolute top-9.25 w-full h-1 border-b border-violet-500",
-              ),
+              attribute.class("absolute top-9.25 w-full h-1 border-b"),
+              case m.current_palette.empty {
+                True -> attribute.class("border-violet-500")
+                False ->
+                  attribute.style(
+                    "border-color",
+                    m.current_palette |> vibrant.vibrant |> vibrant.hex,
+                  )
+              },
             ],
             [],
           )
@@ -328,11 +80,390 @@ fn tab_element(m: model.Model, tab: model.FullscreenPlayerDisplay) {
   )
 }
 
+fn view_desktop(m: model.Model) {
+  let auth_details = {
+    let assert Ok(stg) = m.storage |> varasto.get("auth")
+    stg.auth
+  }
+
+  html.div(
+    [
+      case m.current_palette.empty {
+        True -> attribute.class("bg-zinc-950")
+        False ->
+          attribute.style(
+            "background",
+            "radial-gradient(circle at left,"
+              <> m.current_palette |> vibrant.muted |> vibrant.hex
+              <> " 0%, #000000 100%);",
+          )
+      },
+      attribute.class(
+        "border-t border-zinc-800 flex flex-col gap-8 min-w-0 min-h-0 w-full h-full",
+      ),
+    ],
+    [
+      html.div(
+        [
+          attribute.class(
+            "backdrop-blur-lg bg-zinc-950/50 flex flex-col gap-8  min-w-0 min-h-0 w-full h-full p-8",
+          ),
+        ],
+        [
+          html.div([attribute.class("flex gap-8")], [
+            html.i(
+              [
+                attribute.class("text-3xl ph ph-caret-down"),
+                event.on_click(msg.ToggleFullscreenPlayer),
+              ],
+              [],
+            ),
+            // TV Mode (just an alternate layout, chromecast-y)
+          // html.i(
+          //   [
+          //     attribute.class("text-3xl ph ph-television-simple"),
+          //   ],
+          //   [],
+          // ),
+          ]),
+          html.div([attribute.class("overflow-hidden flex-1 flex gap-8")], [
+            html.div(
+              [
+                attribute.class(
+                  "w-1/2 flex flex-col items-center justify-center gap-8",
+                ),
+              ],
+              [
+                case m.current_song.cover_art_id == "" {
+                  True ->
+                    html.div(
+                      [
+                        attribute.class(
+                          "bg-zinc-900 rounded-md w-120 h-120 flex justify-center items-center",
+                        ),
+                      ],
+                      [
+                        html.i(
+                          [
+                            attribute.class(
+                              "text-zinc-500 self-center align-self-center text-[10em] ph ph-music-notes-simple",
+                            ),
+                          ],
+                          [],
+                        ),
+                      ],
+                    )
+                  False ->
+                    html.img([
+                      attribute.src(
+                        api_helper.create_uri(
+                          "/rest/getCoverArt.view",
+                          auth_details,
+                          [
+                            #("id", m.current_song.cover_art_id),
+                            #("size", "500"),
+                          ],
+                        )
+                        |> uri.to_string,
+                      ),
+                      attribute.class(
+                        "max-w-120 max-h-120 self-center object-fit rounded-md",
+                      ),
+                    ])
+                },
+                html.div([attribute.class("w-full")], [
+                  html.div([attribute.class("flex justify-between min-w-0")], [
+                    html.a(
+                      [
+                        attribute.href("/song/" <> m.current_song.id),
+                        event.on_click(msg.ToggleFullscreenPlayer),
+                        attribute.class(
+                          "overflow-hidden text-nowrap text-ellipsis min-w-0",
+                        ),
+                      ],
+                      [
+                        html.span(
+                          [
+                            attribute.class(
+                              "hover:underline font-bold text-2xl",
+                            ),
+                          ],
+                          [
+                            element.text(m.current_song.title),
+                          ],
+                        ),
+                      ],
+                    ),
+                    html.div([attribute.class("flex gap-2")], [
+                      html.i(
+                        [
+                          attribute.class("text-3xl ph-heart-straight"),
+                          event.on_click(msg.Like),
+                          ..case m.current_song.starred {
+                            True ->
+                              case m.current_palette.empty {
+                                True -> [
+                                  attribute.class("ph-fill text-violet-500"),
+                                ]
+                                False -> [
+                                  attribute.class("ph-fill"),
+                                  attribute.style(
+                                    "color",
+                                    m.current_palette
+                                      |> vibrant.vibrant
+                                      |> vibrant.hex,
+                                  ),
+                                ]
+                              }
+                            False -> [attribute.class("ph")]
+                          }
+                        ],
+                        [],
+                      ),
+                      // html.i(
+                    //   [attribute.class("text-3xl ph ph-plus-circle")],
+                    //   [],
+                    // ),
+                    ]),
+                  ]),
+                  html.span(
+                    [
+                      attribute.class(
+                        "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
+                      ),
+                    ],
+                    list.map(
+                      m.current_song.artists,
+                      fn(artist: api_models.SmallArtist) {
+                        html.a(
+                          [
+                            attribute.href("/artist/" <> artist.id),
+                            event.on_click(msg.ToggleFullscreenPlayer),
+                          ],
+                          [
+                            html.span(
+                              [
+                                attribute.class("hover:underline"),
+                              ],
+                              [element.text(artist.name)],
+                            ),
+                          ],
+                        )
+                      },
+                    )
+                      |> list.intersperse(element.text(", ")),
+                  ),
+                ]),
+                html.div([attribute.class("space-y-1 w-full")], [
+                  html.div(
+                    [
+                      attribute.class(
+                        "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]",
+                      ),
+                    ],
+                    [
+                      html.span([], [
+                        element.text({
+                          let minutes =
+                            float.round({ m.player |> player.time() }) / 60
+                          let seconds =
+                            float.round({ m.player |> player.time() }) % 60
+
+                          int.to_string(minutes)
+                          <> ":"
+                          <> int.to_string(seconds) |> string.pad_start(2, "0")
+                        }),
+                      ]),
+                      elements.music_slider(m, True, [attribute.class("w-full")]),
+                      html.span([], [
+                        element.text({
+                          let minutes = m.current_song.duration / 60
+                          let seconds = m.current_song.duration % 60
+
+                          int.to_string(minutes)
+                          <> ":"
+                          <> int.to_string(seconds) |> string.pad_start(2, "0")
+                        }),
+                      ]),
+                    ],
+                  ),
+                  html.div(
+                    [attribute.class("flex gap-4 justify-center items-center")],
+                    [
+                      html.i(
+                        [
+                          attribute.class("text-2xl ph ph-shuffle-simple"),
+                          event.on_click(msg.PlayerShuffle),
+                          ..case m.shuffled {
+                            True ->
+                              case m.current_palette.empty {
+                                True -> [
+                                  attribute.class(
+                                    "text-violet-500 underline underline-offset-4 decoration-dotted",
+                                  ),
+                                ]
+                                False -> [
+                                  attribute.class(
+                                    "underline underline-offset-4 decoration-dotted",
+                                  ),
+                                  attribute.style(
+                                    "color",
+                                    m.current_palette
+                                      |> vibrant.vibrant
+                                      |> vibrant.hex,
+                                  ),
+                                ]
+                              }
+                            False -> [attribute.none()]
+                          }
+                        ],
+                        [],
+                      ),
+                      html.i(
+                        [
+                          attribute.class("text-2xl ph-fill ph-skip-back"),
+                          event.on_click(msg.PlayerPrevious),
+                        ],
+                        [],
+                      ),
+                      html.i(
+                        [
+                          attribute.class("text-5xl ph-fill"),
+                          case m.player |> player.is_paused {
+                            False -> attribute.class("ph-pause-circle")
+                            True -> attribute.class("ph-play-circle")
+                          },
+                          event.on_click(msg.PlayerPausePlay),
+                        ],
+                        [],
+                      ),
+                      html.i(
+                        [
+                          attribute.class("text-2xl ph-fill ph-skip-forward"),
+                          event.on_click(msg.PlayerNext),
+                        ],
+                        [],
+                      ),
+                      html.i(
+                        [
+                          attribute.class("text-2xl ph ph-repeat-once"),
+                          event.on_click(msg.PlayerLoop),
+                          ..case m.looping {
+                            True ->
+                              case m.current_palette.empty {
+                                True -> [
+                                  attribute.class(
+                                    "text-violet-500 underline underline-offset-4 decoration-dotted",
+                                  ),
+                                ]
+                                False -> [
+                                  attribute.class(
+                                    "underline underline-offset-4 decoration-dotted",
+                                  ),
+                                  attribute.style(
+                                    "color",
+                                    m.current_palette
+                                      |> vibrant.vibrant
+                                      |> vibrant.hex,
+                                  ),
+                                ]
+                              }
+                            False -> [attribute.none()]
+                          }
+                        ],
+                        [],
+                      ),
+                    ],
+                  ),
+                ]),
+              ],
+            ),
+            html.div([attribute.class("w-1/2 flex flex-col")], [
+              html.div(
+                [
+                  attribute.class(
+                    "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 mb-2",
+                  ),
+                ],
+                [
+                  tab_element(m, model.Default),
+                  tab_element(m, model.Lyrics),
+                ],
+              ),
+              case m.fullscreen_player_display {
+                model.Default ->
+                  html.div(
+                    [
+                      attribute.class("overflow-y-auto"),
+                      attribute.class(elements.scrollbar_class),
+                      attribute.class("flex flex-col gap-2 pt-2"),
+                    ],
+                    list.map(queue.list(m.queue), fn(queue_entry) {
+                      elements.song(
+                        queue_entry.1,
+                        [
+                          attribute.attribute(
+                            "data-index",
+                            queue_entry.0 + 1 |> int.to_string,
+                          ),
+                          case m.current_song.id == { queue_entry.1 }.id {
+                            True -> attribute.attribute("data-playing", "")
+                            False -> attribute.none()
+                          },
+                          ..case m.current_palette.empty {
+                            True -> [attribute.none()]
+                            False -> [
+                              attribute.style(
+                                "--dynamic-color",
+                                m.current_palette
+                                  |> vibrant.vibrant
+                                  |> vibrant.hex,
+                              ),
+                              attribute.class("has-dynamic-color"),
+                            ]
+                          }
+                        ],
+                        cover_art: True,
+                        msg: { msg.QueueJumpTo(queue_entry.0) },
+                      )
+                    }),
+                  )
+                model.Lyrics ->
+                  lyrics.element([
+                    attribute.class("overflow-y-auto"),
+                    attribute.class(elements.scrollbar_class),
+                    lyrics.id(m.current_song.id),
+                    lyrics.song_time(m.player |> player.time()),
+                    lyrics.size(lyrics.Large),
+                    case m.fullscreen_player_open {
+                      True -> lyrics.auto_scroll(True)
+                      False -> lyrics.auto_scroll(False)
+                    },
+                  ])
+              },
+            ]),
+          ]),
+        ],
+      ),
+    ],
+  )
+}
+
 fn view_mobile(m: model.Model) {
   html.div(
     [
+      case m.current_palette.empty {
+        True -> attribute.class("bg-zinc-900")
+        False ->
+          attribute.style(
+            "background",
+            "linear-gradient(180deg,"
+              <> m.current_palette |> vibrant.dark_muted |> vibrant.hex
+              <> " 0%, oklch(21% 0.006 285.885) 75%);",
+          )
+      },
       attribute.class(
-        "bg-zinc-900 w-full h-full flex flex-col [@media(max-height:700px)]:gap-2 gap-8 px-8 [@media(max-height:700px)]:py-4 py-16",
+        "w-full h-full flex flex-col [@media(max-height:700px)]:gap-2 gap-8 px-8 [@media(max-height:700px)]:py-4 py-16",
       ),
     ],
     [
@@ -360,7 +491,16 @@ fn view_mobile(m: model.Model) {
                   ),
                 ],
                 [
-                  elements.waveform([attribute.class("fill-violet-500")]),
+                  elements.waveform([
+                    case m.current_palette.empty {
+                      True -> attribute.class("fill-violet-500")
+                      False ->
+                        attribute.style(
+                          "fill",
+                          m.current_palette |> vibrant.vibrant |> vibrant.hex,
+                        )
+                    },
+                  ]),
                   element.text(m.current_song.title),
                 ],
               )
@@ -383,6 +523,14 @@ fn view_mobile(m: model.Model) {
           model.Default -> view_info(m)
           model.Lyrics -> [
             lyrics.element([
+              // case m.current_palette.empty {
+              //   True -> attribute.none()
+              //   False ->
+              //     attribute.style(
+              //       "--unplayed-color",
+              //       m.current_palette |> vibrant.dark_muted |> vibrant.hex,
+              //     )
+              // },
               lyrics.id(m.current_song.id),
               lyrics.song_time(m.player |> player.time()),
               case m.fullscreen_player_open {
@@ -396,7 +544,7 @@ fn view_mobile(m: model.Model) {
       // Main player UI (slider, skip buttons, blah blah)
       html.div([], [
         html.div([attribute.class("space-y-2")], [
-          elements.music_slider(m, [attribute.class("w-full")]),
+          elements.music_slider(m, False, [attribute.class("w-full")]),
           html.div(
             [
               attribute.class(
@@ -431,14 +579,29 @@ fn view_mobile(m: model.Model) {
           html.i(
             [
               attribute.class("text-2xl ph ph-shuffle-simple"),
-              case m.shuffled {
-                True ->
-                  attribute.class(
-                    "text-violet-400 underline underline-offset-4 decoration-dotted",
-                  )
-                False -> attribute.none()
-              },
               event.on_click(msg.PlayerShuffle),
+              ..case m.shuffled {
+                True ->
+                  case m.current_palette.empty {
+                    True -> [
+                      attribute.class(
+                        "text-violet-500 underline underline-offset-4 decoration-dotted",
+                      ),
+                    ]
+                    False -> [
+                      attribute.class(
+                        "underline underline-offset-4 decoration-dotted",
+                      ),
+                      attribute.style(
+                        "color",
+                        m.current_palette
+                          |> vibrant.vibrant
+                          |> vibrant.hex,
+                      ),
+                    ]
+                  }
+                False -> [attribute.none()]
+              }
             ],
             [],
           ),
@@ -470,14 +633,29 @@ fn view_mobile(m: model.Model) {
           html.i(
             [
               attribute.class("text-2xl ph ph-repeat-once"),
-              case m.looping {
-                True ->
-                  attribute.class(
-                    "text-violet-400 underline underline-offset-4 decoration-dotted",
-                  )
-                False -> attribute.none()
-              },
               event.on_click(msg.PlayerLoop),
+              ..case m.looping {
+                True ->
+                  case m.current_palette.empty {
+                    True -> [
+                      attribute.class(
+                        "text-violet-500 underline underline-offset-4 decoration-dotted",
+                      ),
+                    ]
+                    False -> [
+                      attribute.class(
+                        "underline underline-offset-4 decoration-dotted",
+                      ),
+                      attribute.style(
+                        "color",
+                        m.current_palette
+                          |> vibrant.vibrant
+                          |> vibrant.hex,
+                      ),
+                    ]
+                  }
+                False -> [attribute.none()]
+              }
             ],
             [],
           ),
@@ -536,7 +714,7 @@ fn view_info(m: model.Model) {
       ],
     ),
     html.div([], [
-      html.div([attribute.class("flex justify-between min-w-0")], [
+      html.div([attribute.class("flex gap-2 justify-between min-w-0")], [
         html.a(
           [
             attribute.href("/song/" <> m.current_song.id),
@@ -552,16 +730,30 @@ fn view_info(m: model.Model) {
         html.div([attribute.class("flex gap-2")], [
           html.i(
             [
-              case m.current_song.starred {
-                True -> attribute.class("ph-fill text-violet-500")
-                False -> attribute.class("ph")
-              },
               attribute.class("text-3xl ph-heart-straight"),
               event.on_click(msg.Like),
+              ..case m.current_song.starred {
+                True ->
+                  case m.current_palette.empty {
+                    True -> [
+                      attribute.class("ph-fill text-violet-500"),
+                    ]
+                    False -> [
+                      attribute.class("ph-fill"),
+                      attribute.style(
+                        "color",
+                        m.current_palette
+                          |> vibrant.vibrant
+                          |> vibrant.hex,
+                      ),
+                    ]
+                  }
+                False -> [attribute.class("ph")]
+              }
             ],
             [],
           ),
-          html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
+          // html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
         ]),
       ]),
       html.span(

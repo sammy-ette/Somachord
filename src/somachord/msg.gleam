@@ -36,6 +36,7 @@ pub type Msg {
   // based on PlayRequest. because its "light data"
   // that comes from components (only id for song/album/artist)
   Play(model.PlayRequest)
+  CurrentSongPalette(model.Palette)
 
   Search(query: String)
 
@@ -48,6 +49,7 @@ pub type Msg {
   StreamFromQueue(queue_position: Int)
   StreamCurrent
   StreamError
+  LoadSong
 
   // player events
   ProgressDrag(Int)

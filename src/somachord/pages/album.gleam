@@ -158,18 +158,13 @@ pub fn desktop_page(m: model.Model, id) {
               fn(song: api_models.Child, index: Int) {
                 elements.song(
                   song,
-                  index:,
-                  attrs: case m.layout {
-                    model.Desktop -> [attribute.none()]
-                    model.Mobile -> [
-                      event.on_click(msg.StreamAlbum(album, index)),
-                      attribute.class(
-                        "duration-50 transition-all active:scale-[98%] active:bg-zinc-900",
-                      ),
-                    ]
-                  },
+                  attrs: [
+                    attribute.attribute(
+                      "data-index",
+                      index + 1 |> int.to_string,
+                    ),
+                  ],
                   cover_art: False,
-                  playing: m.current_song.id == song.id,
                   msg: { msg.StreamAlbum(album, index) },
                 )
               },

@@ -16,6 +16,7 @@ import somachord/model
 import somachord/msg
 import somachord/storage
 import varasto
+import vibrant
 
 import somachord/api_models
 
@@ -23,10 +24,8 @@ pub const scrollbar_class = "[&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar]:w
 
 pub fn song(
   song song: api_models.Child,
-  index index: Int,
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
-  playing playing: Bool,
   msg msg: msg,
 ) {
   let auth_details = {
@@ -38,46 +37,47 @@ pub fn song(
 
   html.div(
     [
+      case layout {
+        model.Mobile ->
+          attribute.class("duration-50 transition-all active:scale-[98%]")
+        model.Desktop -> attribute.none()
+      },
+      // Song Index styling
       attribute.class(
-        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between gap-2",
+        "before:-mr-4 before:content-[attr(data-index)] before:w-2 before:text-zinc-600 before:font-[Azeret_Mono] before:font-light before:text-sm before:text-right before:self-center hover:before:invisible data-playing:before:invisible",
+      ),
+      // For the element itself
+      attribute.class(
+        "group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2",
       ),
       event.on("dblclick", { decode.success(msg) }),
       ..attrs
     ],
     [
-      html.div([attribute.class("flex gap-4 items-center")], [
-        case index {
-          -1 -> element.none()
-          _ ->
-            html.div([attribute.class("w-5 grid grid-rows-1 grid-cols-1")], [
-              case playing {
-                True ->
-                  waveform([
-                    attribute.class(
-                      "col-start-1 row-start-1 group-hover:hidden fill-violet-400",
-                    ),
-                  ])
-                False ->
-                  html.span(
-                    [
-                      attribute.class(
-                        "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-sm text-right",
-                      ),
-                    ],
-                    [element.text(int.to_string(index + 1))],
-                  )
-              },
-              html.i(
-                [
-                  event.on_click(msg),
-                  attribute.class(
-                    "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
-                  ),
-                ],
-                [],
+      html.div([attribute.class("flex flex-grow gap-4 items-center")], [
+        html.div(
+          [
+            attribute.class(
+              "group-data-[index=-1]:hidden not-group-data-index:hidden w-5 grid grid-rows-1 grid-cols-1",
+            ),
+          ],
+          [
+            waveform([
+              attribute.class(
+                "group-hover:hidden not-group-data-playing:hidden col-start-1 row-start-1 group-[.has-dynamic-color]:fill-(--dynamic-color)! fill-violet-400",
               ),
-            ])
-        },
+            ]),
+            html.i(
+              [
+                event.on_click(msg),
+                attribute.class(
+                  "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block",
+                ),
+              ],
+              [],
+            ),
+          ],
+        ),
         html.div([attribute.class("flex gap-2 items-center")], [
           case cover_art {
             True ->
@@ -98,11 +98,9 @@ pub fn song(
               layout,
               html.span(
                 [
-                  attribute.class("text-wrap text-sm hover:underline"),
-                  case playing {
-                    False -> attribute.class("text-zinc-100")
-                    True -> attribute.class("text-violet-400")
-                  },
+                  attribute.class(
+                    "group-[.has-dynamic-color]:group-data-playing:text-(--dynamic-color)! text-violet-400 not-group-data-playing:text-zinc-100 select-none text-wrap text-sm hover:underline",
+                  ),
                 ],
                 [element.text(song.title)],
               )
@@ -112,7 +110,7 @@ pub fn song(
               model.Mobile, elem -> elem
             },
             html.span(
-              [attribute.class("text-sm text-zinc-500 font-light")],
+              [attribute.class("select-none text-sm text-zinc-500 font-light")],
               list.map(song.artists, fn(artist: api_models.SmallArtist) {
                 let elem =
                   html.span([attribute.class("text-zinc-300 hover:underline")], [
@@ -477,13 +475,23 @@ pub fn nav_button(inactive, active, name, is_active, attrs) {
   )
 }
 
-pub fn music_slider(m: model.Model, attrs: List(attribute.Attribute(msg.Msg))) {
+pub fn music_slider(
+  m: model.Model,
+  dynamic: Bool,
+  attrs: List(attribute.Attribute(msg.Msg)),
+) {
   html.div([attribute.class("grid grid-cols-1 grid-rows-1"), ..attrs], [
     html.div(
       [
-        attribute.class(
-          "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5",
-        ),
+        attribute.class("col-start-1 row-start-1 rounded-full h-1.5"),
+        case dynamic, m.current_palette.empty {
+          True, False ->
+            attribute.style(
+              "background-color",
+              m.current_palette |> vibrant.muted |> vibrant.hex,
+            )
+          _, _ -> attribute.class("bg-zinc-800")
+        },
       ],
       [
         html.div(

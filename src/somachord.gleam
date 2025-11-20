@@ -20,6 +20,7 @@ import somachord/pages/not_found
 import somachord/pages/playlist
 import somachord/pages/search
 import somachord/queue
+import vibrant
 
 import lustre
 import lustre/attribute
@@ -91,6 +92,7 @@ fn init(_) {
       playlists: dict.new(),
       fullscreen_player_open: False,
       fullscreen_player_display: model.Default,
+      current_palette: model.Palette(True),
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -173,7 +175,7 @@ fn update(
           False -> {
             m.player
             |> player.seek(queue.song_position)
-            play()
+            load()
           }
         },
       )
@@ -311,7 +313,7 @@ fn update(
           ..m,
           queue: queue.new(songs: [song], song_position: 0.0, position: 0),
         ),
-        effect.none(),
+        play(),
       )
     }
     msg.StreamError | msg.SongRetrieval(_) -> todo as "handle stream error"
@@ -475,6 +477,50 @@ fn update(
     //     _ -> #(m, effect.none())
     //   }
     // }
+    msg.LoadSong -> {
+      case queue.current_song(m.queue) {
+        option.None -> #(m, effect.none())
+        option.Some(song) -> {
+          let stream_uri =
+            api_helper.create_uri("/rest/stream.view", m.auth, [
+              #("id", song.id),
+            ])
+            |> uri.to_string
+          m.player |> player.load_song(stream_uri, song)
+          case song.cover_art_id {
+            "" -> #(
+              model.Model(..m, current_palette: model.Palette(empty: True)),
+              effect.none(),
+            )
+            _ -> #(
+              model.Model(..m, current_song: song),
+              vibrant.palette(
+                api_helper.create_uri(
+                  "/rest/getCoverArt.view",
+                  {
+                    let assert Ok(stg) = m.storage |> varasto.get("auth")
+                    stg.auth
+                  },
+                  [
+                    #("id", song.cover_art_id),
+                    #("size", "500"),
+                  ],
+                )
+                  |> uri.to_string,
+                fn(res) {
+                  case res {
+                    Ok(palette) -> msg.CurrentSongPalette(palette)
+                    Error(e) -> {
+                      echo msg.DisgardedResponse(Ok(Ok(Nil)))
+                    }
+                  }
+                },
+              ),
+            )
+          }
+        }
+      }
+    }
     msg.StreamCurrent -> {
       case queue.current_song(m.queue) {
         option.None -> #(m, effect.none())
@@ -485,10 +531,44 @@ fn update(
             ])
             |> uri.to_string
           m.player |> player.load_song(stream_uri, song)
-          #(
-            m,
-            api.save_queue(m.auth, option.Some(m.queue), msg.DisgardedResponse),
-          )
+          m.player |> player.toggle_play()
+
+          let save_queue =
+            api.save_queue(m.auth, option.Some(m.queue), msg.DisgardedResponse)
+          case song.cover_art_id {
+            "" -> #(
+              model.Model(..m, current_palette: model.Palette(empty: True)),
+              save_queue,
+            )
+            _ -> #(
+              m,
+              effect.batch([
+                save_queue,
+                vibrant.palette(
+                  api_helper.create_uri(
+                    "/rest/getCoverArt.view",
+                    {
+                      let assert Ok(stg) = m.storage |> varasto.get("auth")
+                      stg.auth
+                    },
+                    [
+                      #("id", song.cover_art_id),
+                      #("size", "500"),
+                    ],
+                  )
+                    |> uri.to_string,
+                  fn(res) {
+                    case res {
+                      Ok(palette) -> msg.CurrentSongPalette(palette)
+                      Error(e) -> {
+                        echo msg.DisgardedResponse(Ok(Ok(Nil)))
+                      }
+                    }
+                  },
+                ),
+              ]),
+            )
+          }
         }
       }
     }
@@ -613,6 +693,10 @@ fn update(
       model.Model(..m, fullscreen_player_display: view),
       effect.none(),
     )
+    msg.CurrentSongPalette(palette) -> #(
+      model.Model(..m, current_palette: echo palette),
+      effect.none(),
+    )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())
   }
 }
@@ -639,6 +723,10 @@ fn play_from_queue(position: Int) {
 
 fn play() {
   effect.from(fn(dispatch) { msg.StreamCurrent |> dispatch })
+}
+
+fn load() {
+  effect.from(fn(dispatch) { msg.LoadSong |> dispatch })
 }
 
 fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
