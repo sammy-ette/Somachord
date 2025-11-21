@@ -9927,9 +9927,10 @@ var Echo$Inspector2 = class {
 
 // build/dev/javascript/somachord/somachord/model.mjs
 var Model = class extends CustomType {
-  constructor(route, layout2, storage, auth, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, playlists2, fullscreen_player_open, fullscreen_player_display) {
+  constructor(route, success3, layout2, storage, auth, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, playlists2, fullscreen_player_open, fullscreen_player_display) {
     super();
     this.route = route;
+    this.success = success3;
     this.layout = layout2;
     this.storage = storage;
     this.auth = auth;
@@ -12458,6 +12459,12 @@ var Router = class extends CustomType {
     this[0] = $0;
   }
 };
+var Ping = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var SongRetrieval = class extends CustomType {
   constructor($0) {
     super();
@@ -12619,15 +12626,15 @@ function on_url_change(url) {
             "let_assert",
             FILEPATH7,
             "somachord/msg",
-            76,
+            77,
             "on_url_change",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 1952,
-              end: 2e3,
-              pattern_start: 1963,
-              pattern_end: 1970
+              start: 2011,
+              end: 2059,
+              pattern_start: 2022,
+              pattern_end: 2029
             }
           );
         }
@@ -14914,7 +14921,7 @@ function view4(m) {
                           prepend(
                             input(
                               toList([
-                                autocomplete("text"),
+                                autocomplete("username"),
                                 type_("input"),
                                 name("username"),
                                 class$(
@@ -17862,8 +17869,32 @@ function register7() {
   return make_component(app, "library-page");
 }
 
-// build/dev/javascript/somachord/somachord/pages/not_found.mjs
+// build/dev/javascript/somachord/somachord/pages/loading.mjs
 function page2() {
+  return div(
+    toList([
+      class$(
+        "flex-1 flex flex-col items-center justify-center gap-4"
+      )
+    ]),
+    toList([
+      div(
+        toList([
+          class$(
+            "text-center font-[Poppins,sans-serif] font-extrabold text-3xl"
+          )
+        ]),
+        toList([
+          h1(toList([]), toList([text2("\u01AA(\u02D8\u2323\u02D8)\u0283")])),
+          h1(toList([]), toList([text2("Loading....")]))
+        ])
+      )
+    ])
+  );
+}
+
+// build/dev/javascript/somachord/somachord/pages/not_found.mjs
+function page3() {
   return div(
     toList([
       class$(
@@ -18553,7 +18584,7 @@ function buttons2(m) {
     );
   }
 }
-function page3(m) {
+function page4(m) {
   let _block;
   {
     let _block$1;
@@ -18805,7 +18836,7 @@ function view9(m) {
       editor(m),
       (() => {
         let $ = m.layout;
-        let $1 = page3(m);
+        let $1 = page4(m);
         if ($ instanceof Desktop) {
           return $1;
         } else {
@@ -19463,6 +19494,34 @@ var Echo$Inspector9 = class {
     return acc;
   }
 };
+
+// build/dev/javascript/somachord/somachord/pages/server_down.mjs
+function page5() {
+  return div(
+    toList([
+      class$(
+        "flex-1 flex flex-col items-center justify-center gap-4"
+      )
+    ]),
+    toList([
+      div(
+        toList([
+          class$(
+            "text-center font-[Poppins] font-extrabold text-3xl"
+          )
+        ]),
+        toList([
+          h1(toList([]), toList([text2("(\uFF1B\u4E00_\u4E00)")])),
+          h1(toList([]), toList([text2("Server Down")]))
+        ])
+      ),
+      p(
+        toList([]),
+        toList([text2("i couldn't reach the music server...")])
+      )
+    ])
+  );
+}
 
 // build/dev/javascript/somachord/somachord/pages/song.mjs
 var FILEPATH17 = "src/somachord/pages/song.gleam";
@@ -20647,7 +20706,7 @@ function playing_bar(m) {
     ])
   );
 }
-function view12(m, page4) {
+function view12(m, page6) {
   return div(
     toList([
       class$(
@@ -20666,7 +20725,7 @@ function view12(m, page4) {
                 "flex flex-col gap-2 min-w-0 min-h-0 w-full h-full"
               )
             ]),
-            toList([page4, playing_bar(m)])
+            toList([page6, playing_bar(m)])
           )
         ])
       ),
@@ -20897,7 +20956,7 @@ function mobile_nav_button(inactive, active2, name2, is_active, attrs) {
     ])
   );
 }
-function view13(m, page4) {
+function view13(m, page6) {
   return div(
     toList([
       class$(
@@ -20905,7 +20964,7 @@ function view13(m, page4) {
       )
     ]),
     toList([
-      page4,
+      page6,
       (() => {
         let $ = m.current_song.id === "";
         if ($) {
@@ -20993,6 +21052,131 @@ function view13(m, page4) {
 
 // build/dev/javascript/somachord/somachord.mjs
 var FILEPATH20 = "src/somachord.gleam";
+function init11(_) {
+  let _block;
+  let _pipe = do_initial_uri();
+  _block = ((uri) => {
+    if (uri instanceof Ok) {
+      let a2 = uri[0];
+      return uri_to_route(a2);
+    } else {
+      return new Home();
+    }
+  })(_pipe);
+  let route = _block;
+  let layout2 = layout();
+  let m = new Model(
+    route,
+    new None(),
+    layout2,
+    create(),
+    new Auth("", new Credentials("", ""), ""),
+    false,
+    new_map(),
+    new_2(),
+    empty4(),
+    new_song(),
+    false,
+    0,
+    0,
+    false,
+    false,
+    new_map(),
+    false,
+    new Default()
+  );
+  let $ = (() => {
+    let _pipe$1 = m.storage;
+    return get2(_pipe$1, "auth");
+  })();
+  if ($ instanceof Ok) {
+    let stg = $[0];
+    return [
+      new Model(
+        m.route,
+        m.success,
+        m.layout,
+        m.storage,
+        stg.auth,
+        true,
+        m.albums,
+        m.player,
+        m.queue,
+        m.current_song,
+        m.seeking,
+        m.seek_amount,
+        m.played_seconds,
+        m.shuffled,
+        m.looping,
+        m.playlists,
+        m.fullscreen_player_open,
+        m.fullscreen_player_display
+      ),
+      ping(stg.auth, (var0) => {
+        return new Ping(var0);
+      })
+    ];
+  } else {
+    let $1 = echo10(
+      (() => {
+        let _pipe$1 = get_route();
+        return uri_to_route(_pipe$1);
+      })(),
+      void 0,
+      "src/somachord.gleam",
+      104
+    );
+    if ($1 instanceof Login) {
+      return [
+        new Model(
+          m.route,
+          m.success,
+          m.layout,
+          m.storage,
+          m.auth,
+          true,
+          m.albums,
+          m.player,
+          m.queue,
+          m.current_song,
+          m.seeking,
+          m.seek_amount,
+          m.played_seconds,
+          m.shuffled,
+          m.looping,
+          m.playlists,
+          m.fullscreen_player_open,
+          m.fullscreen_player_display
+        ),
+        init(on_url_change)
+      ];
+    } else {
+      return [
+        new Model(
+          new Login(),
+          new Some(true),
+          m.layout,
+          m.storage,
+          m.auth,
+          true,
+          m.albums,
+          m.player,
+          m.queue,
+          m.current_song,
+          m.seeking,
+          m.seek_amount,
+          m.played_seconds,
+          m.shuffled,
+          m.looping,
+          m.playlists,
+          m.fullscreen_player_open,
+          m.fullscreen_player_display
+        ),
+        none2()
+      ];
+    }
+  }
+}
 function route_effect(m, route) {
   if (route instanceof Album2) {
     let id3 = route.id;
@@ -21010,15 +21194,15 @@ function route_effect(m, route) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          126,
+          128,
           "route_effect",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 3169,
-            end: 3222,
-            pattern_start: 3180,
-            pattern_end: 3187
+            start: 3170,
+            end: 3223,
+            pattern_start: 3181,
+            pattern_end: 3188
           }
         );
       }
@@ -21066,15 +21250,15 @@ function check_scrobble(m) {
             "let_assert",
             FILEPATH20,
             "somachord",
-            625,
+            647,
             "check_scrobble",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 17670,
-              end: 17723,
-              pattern_start: 17681,
-              pattern_end: 17688
+              start: 18216,
+              end: 18269,
+              pattern_start: 18227,
+              pattern_end: 18234
             }
           );
         }
@@ -21098,12 +21282,47 @@ function play() {
     }
   );
 }
+function player_event_handler(event4, player) {
+  if (event4 === "loaded") {
+    return new PlayerSongLoaded(
+      (() => {
+        let _pipe = player;
+        return current(_pipe);
+      })()
+    );
+  } else if (event4 === "time") {
+    return new PlayerTick(
+      (() => {
+        let _pipe = player;
+        return time(_pipe);
+      })()
+    );
+  } else if (event4 === "previous") {
+    return new PlayerPrevious();
+  } else if (event4 === "next") {
+    return new PlayerNext();
+  } else if (event4 === "ended") {
+    return new MusicEnded();
+  } else {
+    echo10(event4, void 0, "src/somachord.gleam", 674);
+    throw makeError(
+      "panic",
+      FILEPATH20,
+      "somachord",
+      675,
+      "player_event_handler",
+      "shouldnt happen",
+      {}
+    );
+  }
+}
 function update11(m, msg) {
   if (msg instanceof Router) {
     let route = msg[0][0];
     return [
       new Model(
         route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -21123,6 +21342,123 @@ function update11(m, msg) {
       ),
       route_effect(m, route)
     ];
+  } else if (msg instanceof Ping) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        return [
+          new Model(
+            m.route,
+            new Some(true),
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            m.current_song,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            m.playlists,
+            m.fullscreen_player_open,
+            m.fullscreen_player_display
+          ),
+          batch(
+            toList([
+              init(on_url_change),
+              route_effect(m, m.route),
+              listen_events2(m.player, player_event_handler),
+              queue(
+                (() => {
+                  let _block;
+                  let _pipe = m.storage;
+                  _block = get2(_pipe, "auth");
+                  let $2 = _block;
+                  let stg;
+                  if ($2 instanceof Ok) {
+                    stg = $2[0];
+                  } else {
+                    throw makeError(
+                      "let_assert",
+                      FILEPATH20,
+                      "somachord",
+                      162,
+                      "update",
+                      "Pattern match failed, no pattern matched the value.",
+                      {
+                        value: $2,
+                        start: 3994,
+                        end: 4047,
+                        pattern_start: 4005,
+                        pattern_end: 4012
+                      }
+                    );
+                  }
+                  return stg.auth;
+                })(),
+                (var0) => {
+                  return new Queue2(var0);
+                }
+              ),
+              unload_event()
+            ])
+          )
+        ];
+      } else {
+        return [
+          new Model(
+            m.route,
+            new Some(false),
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            m.current_song,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            m.playlists,
+            m.fullscreen_player_open,
+            m.fullscreen_player_display
+          ),
+          none2()
+        ];
+      }
+    } else {
+      return [
+        new Model(
+          m.route,
+          new Some(false),
+          m.layout,
+          m.storage,
+          m.auth,
+          m.confirmed,
+          m.albums,
+          m.player,
+          m.queue,
+          m.current_song,
+          m.seeking,
+          m.seek_amount,
+          m.played_seconds,
+          m.shuffled,
+          m.looping,
+          m.playlists,
+          m.fullscreen_player_open,
+          m.fullscreen_player_display
+        ),
+        none2()
+      ];
+    }
   } else if (msg instanceof SongRetrieval) {
     let $ = msg[0];
     if ($ instanceof Ok) {
@@ -21143,15 +21479,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              299,
+              321,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 8488,
-                end: 8541,
-                pattern_start: 8499,
-                pattern_end: 8506
+                start: 9034,
+                end: 9087,
+                pattern_start: 9045,
+                pattern_end: 9052
               }
             );
           }
@@ -21171,6 +21507,7 @@ function update11(m, msg) {
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21195,7 +21532,7 @@ function update11(m, msg) {
           "todo",
           FILEPATH20,
           "somachord",
-          317,
+          339,
           "update",
           "handle stream error",
           {}
@@ -21206,7 +21543,7 @@ function update11(m, msg) {
         "todo",
         FILEPATH20,
         "somachord",
-        317,
+        339,
         "update",
         "handle stream error",
         {}
@@ -21222,6 +21559,7 @@ function update11(m, msg) {
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21259,15 +21597,15 @@ function update11(m, msg) {
                       "let_assert",
                       FILEPATH20,
                       "somachord",
-                      167,
+                      189,
                       "update",
                       "Pattern match failed, no pattern matched the value.",
                       {
                         value: $3,
-                        start: 4362,
-                        end: 4415,
-                        pattern_start: 4373,
-                        pattern_end: 4380
+                        start: 4908,
+                        end: 4961,
+                        pattern_start: 4919,
+                        pattern_end: 4926
                       }
                     );
                   }
@@ -21300,6 +21638,7 @@ function update11(m, msg) {
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21327,7 +21666,7 @@ function update11(m, msg) {
           "todo",
           FILEPATH20,
           "somachord",
-          156,
+          178,
           "update",
           "album not found",
           {}
@@ -21338,7 +21677,7 @@ function update11(m, msg) {
         "todo",
         FILEPATH20,
         "somachord",
-        157,
+        179,
         "update",
         "album not found: rsvp",
         {}
@@ -21366,15 +21705,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              403,
+              425,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 11319,
-                end: 11372,
-                pattern_start: 11330,
-                pattern_end: 11337
+                start: 11865,
+                end: 11918,
+                pattern_start: 11876,
+                pattern_end: 11883
               }
             );
           }
@@ -21398,6 +21737,7 @@ function update11(m, msg) {
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21433,15 +21773,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  421,
+                  443,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 11924,
-                    end: 11990,
-                    pattern_start: 11935,
-                    pattern_end: 11951
+                    start: 12470,
+                    end: 12536,
+                    pattern_start: 12481,
+                    pattern_end: 12497
                   }
                 );
               }
@@ -21472,15 +21812,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              433,
+              455,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $22,
-                start: 12251,
-                end: 12304,
-                pattern_start: 12262,
-                pattern_end: 12269
+                start: 12797,
+                end: 12850,
+                pattern_start: 12808,
+                pattern_end: 12815
               }
             );
           }
@@ -21499,15 +21839,15 @@ function update11(m, msg) {
             "let_assert",
             FILEPATH20,
             "somachord",
-            436,
+            458,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 12336,
-              end: 12402,
-              pattern_start: 12347,
-              pattern_end: 12363
+              start: 12882,
+              end: 12948,
+              pattern_start: 12893,
+              pattern_end: 12909
             }
           );
         }
@@ -21545,15 +21885,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              403,
+              425,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 11319,
-                end: 11372,
-                pattern_start: 11330,
-                pattern_end: 11337
+                start: 11865,
+                end: 11918,
+                pattern_start: 11876,
+                pattern_end: 11883
               }
             );
           }
@@ -21577,6 +21917,7 @@ function update11(m, msg) {
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21612,15 +21953,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  421,
+                  443,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 11924,
-                    end: 11990,
-                    pattern_start: 11935,
-                    pattern_end: 11951
+                    start: 12470,
+                    end: 12536,
+                    pattern_start: 12481,
+                    pattern_end: 12497
                   }
                 );
               }
@@ -21648,12 +21989,13 @@ function update11(m, msg) {
       let $1 = $[0];
       if ($1 instanceof Ok) {
         let playlist3 = $1[0];
-        echo10(playlist3.name, void 0, "src/somachord.gleam", 586);
-        echo10(playlist3.songs, void 0, "src/somachord.gleam", 587);
-        echo10(m.current_song, void 0, "src/somachord.gleam", 588);
+        echo10(playlist3.name, void 0, "src/somachord.gleam", 608);
+        echo10(playlist3.songs, void 0, "src/somachord.gleam", 609);
+        echo10(m.current_song, void 0, "src/somachord.gleam", 610);
         return [
           new Model(
             m.route,
+            m.success,
             m.layout,
             m.storage,
             m.auth,
@@ -21678,18 +22020,19 @@ function update11(m, msg) {
         ];
       } else {
         let e = $;
-        echo10(e, void 0, "src/somachord.gleam", 598);
+        echo10(e, void 0, "src/somachord.gleam", 620);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo10(e, void 0, "src/somachord.gleam", 598);
+      echo10(e, void 0, "src/somachord.gleam", 620);
       return [m, none2()];
     }
   } else if (msg instanceof ToggleFullscreenPlayer) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -21714,6 +22057,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -21739,13 +22083,13 @@ function update11(m, msg) {
       "!!! play request id: " + req.id,
       void 0,
       "src/somachord.gleam",
-      196
+      218
     );
     echo10(
       "play request type: " + req.type_,
       void 0,
       "src/somachord.gleam",
-      197
+      219
     );
     let _block;
     {
@@ -21761,15 +22105,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          199,
+          221,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 5179,
-            end: 5232,
-            pattern_start: 5190,
-            pattern_end: 5197
+            start: 5725,
+            end: 5778,
+            pattern_start: 5736,
+            pattern_end: 5743
           }
         );
       }
@@ -21799,15 +22143,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  207,
+                  229,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 5435,
-                    end: 5486,
-                    pattern_start: 5446,
-                    pattern_end: 5455
+                    start: 5981,
+                    end: 6032,
+                    pattern_start: 5992,
+                    pattern_end: 6001
                   }
                 );
               }
@@ -21839,12 +22183,12 @@ function update11(m, msg) {
                         return new StreamAlbum(album3, 0);
                       } else {
                         let e = $2[0];
-                        echo10(e, void 0, "src/somachord.gleam", 218);
+                        echo10(e, void 0, "src/somachord.gleam", 240);
                         throw makeError(
                           "panic",
                           FILEPATH20,
                           "somachord",
-                          219,
+                          241,
                           "update",
                           "album subsonic err",
                           {}
@@ -21852,12 +22196,12 @@ function update11(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo10(e, void 0, "src/somachord.gleam", 222);
+                      echo10(e, void 0, "src/somachord.gleam", 244);
                       throw makeError(
                         "panic",
                         FILEPATH20,
                         "somachord",
-                        223,
+                        245,
                         "update",
                         "album req fetch failed",
                         {}
@@ -21868,7 +22212,7 @@ function update11(m, msg) {
                       "panic",
                       FILEPATH20,
                       "somachord",
-                      225,
+                      247,
                       "update",
                       "unreachable",
                       {}
@@ -21902,15 +22246,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  234,
+                  256,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 6386,
-                    end: 6443,
-                    pattern_start: 6397,
-                    pattern_end: 6409
+                    start: 6932,
+                    end: 6989,
+                    pattern_start: 6943,
+                    pattern_end: 6955
                   }
                 );
               }
@@ -21942,12 +22286,12 @@ function update11(m, msg) {
                         return new StreamPlaylist(playlist3, req.index);
                       } else {
                         let e = $2[0];
-                        echo10(e, void 0, "src/somachord.gleam", 246);
+                        echo10(e, void 0, "src/somachord.gleam", 268);
                         throw makeError(
                           "panic",
                           FILEPATH20,
                           "somachord",
-                          247,
+                          269,
                           "update",
                           "playlist subsonic err",
                           {}
@@ -21955,12 +22299,12 @@ function update11(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo10(e, void 0, "src/somachord.gleam", 250);
+                      echo10(e, void 0, "src/somachord.gleam", 272);
                       throw makeError(
                         "panic",
                         FILEPATH20,
                         "somachord",
-                        251,
+                        273,
                         "update",
                         "playlist req fetch failed",
                         {}
@@ -21971,7 +22315,7 @@ function update11(m, msg) {
                       "panic",
                       FILEPATH20,
                       "somachord",
-                      253,
+                      275,
                       "update",
                       "unreachable",
                       {}
@@ -22023,6 +22367,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22045,7 +22390,7 @@ function update11(m, msg) {
   } else if (msg instanceof StreamPlaylist) {
     let playlist3 = msg[0];
     let index5 = msg[1];
-    echo10(playlist3.name, void 0, "src/somachord.gleam", 278);
+    echo10(playlist3.name, void 0, "src/somachord.gleam", 300);
     let _block;
     let _block$1;
     let $ = m.shuffled;
@@ -22063,6 +22408,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22093,6 +22439,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22128,15 +22475,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          299,
+          321,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 8488,
-            end: 8541,
-            pattern_start: 8499,
-            pattern_end: 8506
+            start: 9034,
+            end: 9087,
+            pattern_start: 9045,
+            pattern_end: 9052
           }
         );
       }
@@ -22156,6 +22503,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22191,15 +22539,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          501,
+          523,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 14273,
-            end: 14326,
-            pattern_start: 14284,
-            pattern_end: 14291
+            start: 14819,
+            end: 14872,
+            pattern_start: 14830,
+            pattern_end: 14837
           }
         );
       }
@@ -22219,15 +22567,15 @@ function update11(m, msg) {
         "let_assert",
         FILEPATH20,
         "somachord",
-        505,
+        527,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 14408,
-          end: 14464,
-          pattern_start: 14419,
-          pattern_end: 14436
+          start: 14954,
+          end: 15010,
+          pattern_start: 14965,
+          pattern_end: 14982
         }
       );
     }
@@ -22244,6 +22592,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22301,7 +22650,7 @@ function update11(m, msg) {
       "todo",
       FILEPATH20,
       "somachord",
-      317,
+      339,
       "update",
       "handle stream error",
       {}
@@ -22311,6 +22660,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22337,6 +22687,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22361,6 +22712,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22392,15 +22744,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              339,
+              361,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 9619,
-                end: 9672,
-                pattern_start: 9630,
-                pattern_end: 9637
+                start: 10165,
+                end: 10218,
+                pattern_start: 10176,
+                pattern_end: 10183
               }
             );
           }
@@ -22431,6 +22783,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22471,15 +22824,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          375,
+          397,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 10556,
-            end: 10609,
-            pattern_start: 10567,
-            pattern_end: 10574
+            start: 11102,
+            end: 11155,
+            pattern_start: 11113,
+            pattern_end: 11120
           }
         );
       }
@@ -22489,6 +22842,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22539,6 +22893,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22579,6 +22934,7 @@ function update11(m, msg) {
       return [
         new Model(
           m.route,
+          m.success,
           m.layout,
           m.storage,
           m.auth,
@@ -22620,15 +22976,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              523,
+              545,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 14946,
-                end: 14999,
-                pattern_start: 14957,
-                pattern_end: 14964
+                start: 15492,
+                end: 15545,
+                pattern_start: 15503,
+                pattern_end: 15510
               }
             );
           }
@@ -22669,15 +23025,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          375,
+          397,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 10556,
-            end: 10609,
-            pattern_start: 10567,
-            pattern_end: 10574
+            start: 11102,
+            end: 11155,
+            pattern_start: 11113,
+            pattern_end: 11120
           }
         );
       }
@@ -22687,6 +23043,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22739,6 +23096,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22773,15 +23131,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          547,
+          569,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 15670,
-            end: 15723,
-            pattern_start: 15681,
-            pattern_end: 15688
+            start: 16216,
+            end: 16269,
+            pattern_start: 16227,
+            pattern_end: 16234
           }
         );
       }
@@ -22791,6 +23149,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22880,6 +23239,7 @@ function update11(m, msg) {
     return [
       new Model(
         m.route,
+        m.success,
         m.layout,
         m.storage,
         m.auth,
@@ -22919,15 +23279,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              186,
+              208,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 4794,
-                end: 4847,
-                pattern_start: 4805,
-                pattern_end: 4812
+                start: 5340,
+                end: 5393,
+                pattern_start: 5351,
+                pattern_end: 5358
               }
             );
           }
@@ -22957,295 +23317,152 @@ function update11(m, msg) {
     return [m, none2()];
   }
 }
-function player_event_handler(event4, player) {
-  if (event4 === "loaded") {
-    return new PlayerSongLoaded(
-      (() => {
-        let _pipe = player;
-        return current(_pipe);
-      })()
-    );
-  } else if (event4 === "time") {
-    return new PlayerTick(
-      (() => {
-        let _pipe = player;
-        return time(_pipe);
-      })()
-    );
-  } else if (event4 === "previous") {
-    return new PlayerPrevious();
-  } else if (event4 === "next") {
-    return new PlayerNext();
-  } else if (event4 === "ended") {
-    return new MusicEnded();
-  } else {
-    echo10(event4, void 0, "src/somachord.gleam", 652);
-    throw makeError(
-      "panic",
-      FILEPATH20,
-      "somachord",
-      653,
-      "player_event_handler",
-      "shouldnt happen",
-      {}
-    );
-  }
-}
-function init11(_) {
-  let _block;
-  let _pipe = do_initial_uri();
-  _block = ((uri) => {
-    if (uri instanceof Ok) {
-      let a2 = uri[0];
-      return uri_to_route(a2);
-    } else {
-      return new Home();
-    }
-  })(_pipe);
-  let route = _block;
-  let layout2 = layout();
-  let m = new Model(
-    route,
-    layout2,
-    create(),
-    new Auth("", new Credentials("", ""), ""),
-    false,
-    new_map(),
-    new_2(),
-    empty4(),
-    new_song(),
-    false,
-    0,
-    0,
-    false,
-    false,
-    new_map(),
-    false,
-    new Default()
-  );
-  let $ = (() => {
-    let _pipe$1 = m.storage;
-    return get2(_pipe$1, "auth");
-  })();
-  if ($ instanceof Ok) {
-    let stg = $[0];
-    return [
-      new Model(
-        m.route,
-        m.layout,
-        m.storage,
-        stg.auth,
-        true,
-        m.albums,
-        m.player,
-        m.queue,
-        m.current_song,
-        m.seeking,
-        m.seek_amount,
-        m.played_seconds,
-        m.shuffled,
-        m.looping,
-        m.playlists,
-        m.fullscreen_player_open,
-        m.fullscreen_player_display
-      ),
-      batch(
-        toList([
-          init(on_url_change),
-          route_effect(m, route),
-          listen_events2(m.player, player_event_handler),
-          queue(stg.auth, (var0) => {
-            return new Queue2(var0);
-          }),
-          unload_event()
-        ])
-      )
-    ];
-  } else {
-    let $1 = echo10(
-      (() => {
-        let _pipe$1 = get_route();
-        return uri_to_route(_pipe$1);
-      })(),
-      void 0,
-      "src/somachord.gleam",
-      107
-    );
-    if ($1 instanceof Login) {
-      return [
-        new Model(
-          m.route,
-          m.layout,
-          m.storage,
-          m.auth,
-          true,
-          m.albums,
-          m.player,
-          m.queue,
-          m.current_song,
-          m.seeking,
-          m.seek_amount,
-          m.played_seconds,
-          m.shuffled,
-          m.looping,
-          m.playlists,
-          m.fullscreen_player_open,
-          m.fullscreen_player_display
-        ),
-        init(on_url_change)
-      ];
-    } else {
-      return [
-        new Model(
-          new Login(),
-          m.layout,
-          m.storage,
-          m.auth,
-          true,
-          m.albums,
-          m.player,
-          m.queue,
-          m.current_song,
-          m.seeking,
-          m.seek_amount,
-          m.played_seconds,
-          m.shuffled,
-          m.looping,
-          m.playlists,
-          m.fullscreen_player_open,
-          m.fullscreen_player_display
-        ),
-        none2()
-      ];
-    }
-  }
-}
 function view14(m) {
-  let $ = m.confirmed;
-  if ($) {
-    let _block;
-    let $1 = m.route;
-    if ($1 instanceof Home) {
-      _block = element8(
-        toList([on_play((var0) => {
-          return new Play(var0);
-        })])
-      );
-    } else if ($1 instanceof Search) {
-      let query2 = $1.query;
-      _block = element11(
-        toList([
-          on_play((var0) => {
-            return new Play(var0);
-          }),
-          query(query2)
-        ])
-      );
-    } else if ($1 instanceof Artist2) {
-      let id3 = $1.id;
-      _block = element7(
-        toList([
-          on_play((var0) => {
-            return new Play(var0);
-          }),
-          attribute2("artist-id", id3),
-          (() => {
-            let $22 = m.layout;
-            if ($22 instanceof Desktop) {
-              return class$("rounded-md border border-zinc-800");
-            } else {
-              return none();
+  return guard(
+    negate(m.confirmed),
+    page2(),
+    () => {
+      let $ = m.success;
+      if ($ instanceof Some) {
+        let $1 = $[0];
+        if ($1) {
+          return guard(
+            isEqual(m.route, new Login()),
+            element5(),
+            () => {
+              let _block;
+              let $2 = m.route;
+              if ($2 instanceof Home) {
+                _block = element8(
+                  toList([
+                    on_play((var0) => {
+                      return new Play(var0);
+                    })
+                  ])
+                );
+              } else if ($2 instanceof Search) {
+                let query2 = $2.query;
+                _block = element11(
+                  toList([
+                    on_play((var0) => {
+                      return new Play(var0);
+                    }),
+                    query(query2)
+                  ])
+                );
+              } else if ($2 instanceof Artist2) {
+                let id3 = $2.id;
+                _block = element7(
+                  toList([
+                    on_play((var0) => {
+                      return new Play(var0);
+                    }),
+                    attribute2("artist-id", id3),
+                    (() => {
+                      let $32 = m.layout;
+                      if ($32 instanceof Desktop) {
+                        return class$(
+                          "rounded-md border border-zinc-800"
+                        );
+                      } else {
+                        return none();
+                      }
+                    })()
+                  ])
+                );
+              } else if ($2 instanceof Album2) {
+                let id3 = $2.id;
+                _block = page(m, id3);
+              } else if ($2 instanceof Song) {
+                let id3 = $2.id;
+                _block = element12(
+                  toList([
+                    on_play((var0) => {
+                      return new Play(var0);
+                    }),
+                    attribute2("song-id", id3),
+                    (() => {
+                      let $32 = id3 === m.current_song.id;
+                      if ($32) {
+                        return song_time2(time(m.player));
+                      } else {
+                        return song_time2(-1);
+                      }
+                    })(),
+                    (() => {
+                      let $32 = m.layout;
+                      if ($32 instanceof Desktop) {
+                        return class$(
+                          "rounded-md border border-zinc-800"
+                        );
+                      } else {
+                        return none();
+                      }
+                    })()
+                  ])
+                );
+              } else if ($2 instanceof Playlist2) {
+                let id3 = $2.id;
+                _block = element10(
+                  toList([
+                    on_playlist(
+                      (req) => {
+                        return new StreamPlaylist(req.playlist, req.index);
+                      }
+                    ),
+                    on_play((var0) => {
+                      return new Play(var0);
+                    }),
+                    attribute2("playlist-id", id3),
+                    attribute2("song-id", m.current_song.id)
+                  ])
+                );
+              } else if ($2 instanceof Likes) {
+                _block = element10(
+                  toList([
+                    on_playlist(
+                      (req) => {
+                        return new StreamPlaylist(req.playlist, req.index);
+                      }
+                    ),
+                    on_play((var0) => {
+                      return new Play(var0);
+                    }),
+                    attribute2(
+                      "playlist-id",
+                      somachord_likes_playlist_id
+                    ),
+                    attribute2("song-id", m.current_song.id)
+                  ])
+                );
+              } else if ($2 instanceof Library) {
+                _block = element9(
+                  toList([
+                    on_play((var0) => {
+                      return new Play(var0);
+                    })
+                  ])
+                );
+              } else {
+                _block = page3();
+              }
+              let page6 = _block;
+              let $3 = m.layout;
+              if ($3 instanceof Desktop) {
+                return view12(m, page6);
+              } else {
+                return view13(m, page6);
+              }
             }
-          })()
-        ])
-      );
-    } else if ($1 instanceof Album2) {
-      let id3 = $1.id;
-      _block = page(m, id3);
-    } else if ($1 instanceof Song) {
-      let id3 = $1.id;
-      _block = element12(
-        toList([
-          on_play((var0) => {
-            return new Play(var0);
-          }),
-          attribute2("song-id", id3),
-          (() => {
-            let $22 = id3 === m.current_song.id;
-            if ($22) {
-              return song_time2(time(m.player));
-            } else {
-              return song_time2(-1);
-            }
-          })(),
-          (() => {
-            let $22 = m.layout;
-            if ($22 instanceof Desktop) {
-              return class$("rounded-md border border-zinc-800");
-            } else {
-              return none();
-            }
-          })()
-        ])
-      );
-    } else if ($1 instanceof Playlist2) {
-      let id3 = $1.id;
-      _block = element10(
-        toList([
-          on_playlist(
-            (req) => {
-              return new StreamPlaylist(req.playlist, req.index);
-            }
-          ),
-          on_play((var0) => {
-            return new Play(var0);
-          }),
-          attribute2("playlist-id", id3),
-          attribute2("song-id", m.current_song.id)
-        ])
-      );
-    } else if ($1 instanceof Likes) {
-      _block = element10(
-        toList([
-          on_playlist(
-            (req) => {
-              return new StreamPlaylist(req.playlist, req.index);
-            }
-          ),
-          on_play((var0) => {
-            return new Play(var0);
-          }),
-          attribute2(
-            "playlist-id",
-            somachord_likes_playlist_id
-          ),
-          attribute2("song-id", m.current_song.id)
-        ])
-      );
-    } else if ($1 instanceof Library) {
-      _block = element9(
-        toList([on_play((var0) => {
-          return new Play(var0);
-        })])
-      );
-    } else {
-      _block = page2();
-    }
-    let page4 = _block;
-    let $2 = m.route;
-    if ($2 instanceof Login) {
-      return element5();
-    } else {
-      let $3 = m.layout;
-      if ($3 instanceof Desktop) {
-        return view12(m, page4);
+          );
+        } else {
+          return page5();
+        }
       } else {
-        return view13(m, page4);
+        return page2();
       }
     }
-  } else {
-    return none3();
-  }
+  );
 }
 function main() {
   let app = application(init11, update11, view14);
@@ -23255,15 +23472,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      50,
+      52,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1190,
-        end: 1233,
-        pattern_start: 1201,
-        pattern_end: 1206
+        start: 1256,
+        end: 1299,
+        pattern_start: 1267,
+        pattern_end: 1272
       }
     );
   }
@@ -23273,15 +23490,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      51,
+      53,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $1,
-        start: 1236,
-        end: 1272,
-        pattern_start: 1247,
-        pattern_end: 1252
+        start: 1302,
+        end: 1338,
+        pattern_start: 1313,
+        pattern_end: 1318
       }
     );
   }
@@ -23291,15 +23508,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      53,
+      55,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $2,
-        start: 1276,
-        end: 1311,
-        pattern_start: 1287,
-        pattern_end: 1292
+        start: 1342,
+        end: 1377,
+        pattern_start: 1353,
+        pattern_end: 1358
       }
     );
   }
@@ -23309,15 +23526,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      54,
+      56,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $3,
-        start: 1314,
-        end: 1348,
-        pattern_start: 1325,
-        pattern_end: 1330
+        start: 1380,
+        end: 1414,
+        pattern_start: 1391,
+        pattern_end: 1396
       }
     );
   }
@@ -23327,15 +23544,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      55,
+      57,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $4,
-        start: 1351,
-        end: 1387,
-        pattern_start: 1362,
-        pattern_end: 1367
+        start: 1417,
+        end: 1453,
+        pattern_start: 1428,
+        pattern_end: 1433
       }
     );
   }
@@ -23345,15 +23562,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      56,
+      58,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $5,
-        start: 1390,
-        end: 1424,
-        pattern_start: 1401,
-        pattern_end: 1406
+        start: 1456,
+        end: 1490,
+        pattern_start: 1467,
+        pattern_end: 1472
       }
     );
   }
@@ -23363,15 +23580,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      57,
+      59,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $6,
-        start: 1427,
-        end: 1463,
-        pattern_start: 1438,
-        pattern_end: 1443
+        start: 1493,
+        end: 1529,
+        pattern_start: 1504,
+        pattern_end: 1509
       }
     );
   }
@@ -23381,15 +23598,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      58,
+      60,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $7,
-        start: 1466,
-        end: 1504,
-        pattern_start: 1477,
-        pattern_end: 1482
+        start: 1532,
+        end: 1570,
+        pattern_start: 1543,
+        pattern_end: 1548
       }
     );
   }
@@ -23399,15 +23616,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      59,
+      61,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $8,
-        start: 1507,
-        end: 1544,
-        pattern_start: 1518,
-        pattern_end: 1523
+        start: 1573,
+        end: 1610,
+        pattern_start: 1584,
+        pattern_end: 1589
       }
     );
   }
@@ -23417,15 +23634,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      60,
+      62,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $9,
-        start: 1547,
-        end: 1594,
-        pattern_start: 1558,
-        pattern_end: 1563
+        start: 1613,
+        end: 1660,
+        pattern_start: 1624,
+        pattern_end: 1629
       }
     );
   }
