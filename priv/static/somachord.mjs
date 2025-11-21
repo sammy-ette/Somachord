@@ -8087,7 +8087,7 @@ async function requestWakeLock() {
     return new Error2(error.toString());
   }
 }
-function location() {
+function location2() {
   return window.location.href;
 }
 function locationOf(w) {
@@ -8334,7 +8334,6 @@ function load_song(player, link, info) {
   if (player.ctx.state == "suspended") {
     player.ctx.resume();
   }
-  player.element.play();
   let auth = JSON.parse(localStorage.getItem("auth")).auth;
   let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`;
   if ("mediaSession" in navigator) {
@@ -9125,7 +9124,6 @@ function jump(queue2, position) {
   }
 }
 function list4(queue2) {
-  echo(queue2.song_order, void 0, "src/somachord/queue.gleam", 145);
   return map(
     (() => {
       let _pipe = toList([
@@ -9147,15 +9145,15 @@ function list4(queue2) {
           "let_assert",
           FILEPATH,
           "somachord/queue",
-          150,
+          149,
           "list",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 3387,
-            end: 3437,
-            pattern_start: 3398,
-            pattern_end: 3406
+            start: 3363,
+            end: 3413,
+            pattern_start: 3374,
+            pattern_end: 3382
           }
         );
       }
@@ -9274,6 +9272,249 @@ function current_song(queue2) {
   } else {
     return new None();
   }
+}
+
+// build/dev/javascript/somachord/electron.ffi.mjs
+var import_is_electron = __toESM(require_is_electron(), 1);
+function am_i_electron() {
+  return (0, import_is_electron.default)();
+}
+
+// build/dev/javascript/somachord/somachord/storage.mjs
+var FILEPATH2 = "src/somachord/storage.gleam";
+var Storage = class extends CustomType {
+  constructor(auth) {
+    super();
+    this.auth = auth;
+  }
+};
+function storage_reader() {
+  return field(
+    "auth",
+    decoder(),
+    (auth) => {
+      return success(new Storage(auth));
+    }
+  );
+}
+function storage_writer(storage) {
+  return object2(toList([["auth", encoder(storage.auth)]]));
+}
+function create() {
+  let $ = localStorage2();
+  let localstorage;
+  if ($ instanceof Ok) {
+    localstorage = $[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "somachord/storage",
+      21,
+      "create",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $, start: 411, end: 456, pattern_start: 422, pattern_end: 438 }
+    );
+  }
+  return new$8(localstorage, storage_reader(), storage_writer);
+}
+
+// build/dev/javascript/somachord/somachord/router.mjs
+var FILEPATH3 = "src/somachord/router.gleam";
+var ChangeRoute = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var Home = class extends CustomType {
+};
+var Login = class extends CustomType {
+};
+var Search = class extends CustomType {
+  constructor(query2) {
+    super();
+    this.query = query2;
+  }
+};
+var Artist2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Album2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Song = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Playlist2 = class extends CustomType {
+  constructor(id3) {
+    super();
+    this.id = id3;
+  }
+};
+var Likes = class extends CustomType {
+};
+var Library = class extends CustomType {
+};
+var Playlists = class extends CustomType {
+};
+var Artists = class extends CustomType {
+};
+var Albums = class extends CustomType {
+};
+var Unknown = class extends CustomType {
+};
+function uri_to_route(uri) {
+  let router = (path) => {
+    echo(path, void 0, "src/somachord/router.gleam", 32);
+    if (path === "/") {
+      return new Home();
+    } else if (path === "") {
+      return new Home();
+    } else if (path === "/login") {
+      return new Login();
+    } else if (path === "/search") {
+      return new Search("");
+    } else if (path.startsWith("/search/")) {
+      let query2 = path.slice(8);
+      let $2 = percent_decode(query2);
+      let decoded_query;
+      if ($2 instanceof Ok) {
+        decoded_query = $2[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH3,
+          "somachord/router",
+          38,
+          "uri_to_route",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $2,
+            start: 590,
+            end: 646,
+            pattern_start: 601,
+            pattern_end: 618
+          }
+        );
+      }
+      return new Search(decoded_query);
+    } else if (path === "/artists") {
+      return new Artists();
+    } else if (path.startsWith("/artist/")) {
+      let id3 = path.slice(8);
+      return new Artist2(id3);
+    } else if (path === "/albums") {
+      return new Albums();
+    } else if (path.startsWith("/album/")) {
+      let id3 = path.slice(7);
+      return new Album2(id3);
+    } else if (path.startsWith("/song/")) {
+      let id3 = path.slice(6);
+      return new Song(id3);
+    } else if (path.startsWith("/playlist/")) {
+      let id3 = path.slice(10);
+      return new Playlist2(id3);
+    } else if (path === "/playlists/") {
+      return new Playlists();
+    } else if (path === "/library") {
+      return new Library();
+    } else if (path === "/likes") {
+      return new Likes();
+    } else {
+      return new Unknown();
+    }
+  };
+  let $ = am_i_electron();
+  if ($) {
+    let $1 = uri.fragment;
+    if ($1 instanceof Some) {
+      let path = $1[0];
+      return router(path);
+    } else {
+      return router("");
+    }
+  } else {
+    return router(uri.path);
+  }
+}
+function direct(root3, rel) {
+  let $ = parse(rel);
+  let rel_url;
+  if ($ instanceof Ok) {
+    rel_url = $[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "somachord/router",
+      89,
+      "direct",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $,
+        start: 1738,
+        end: 1777,
+        pattern_start: 1749,
+        pattern_end: 1760
+      }
+    );
+  }
+  let $1 = merge(root3, rel_url);
+  let direction;
+  if ($1 instanceof Ok) {
+    direction = $1[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "somachord/router",
+      90,
+      "direct",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $1,
+        start: 1780,
+        end: 1831,
+        pattern_start: 1791,
+        pattern_end: 1804
+      }
+    );
+  }
+  return to_string3(direction);
+}
+function get_route() {
+  let $ = parse(location2());
+  let route;
+  if ($ instanceof Ok) {
+    route = $[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "somachord/router",
+      95,
+      "get_route",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $,
+        start: 1896,
+        end: 1947,
+        pattern_start: 1907,
+        pattern_end: 1916
+      }
+    );
+  }
+  return route;
 }
 function echo(value3, message2, file, line) {
   const grey = "\x1B[90m";
@@ -9479,455 +9720,15 @@ var Echo$Inspector = class {
   }
 };
 
-// build/dev/javascript/somachord/electron.ffi.mjs
-var import_is_electron = __toESM(require_is_electron(), 1);
-function am_i_electron() {
-  return (0, import_is_electron.default)();
-}
-
-// build/dev/javascript/somachord/somachord/storage.mjs
-var FILEPATH2 = "src/somachord/storage.gleam";
-var Storage = class extends CustomType {
-  constructor(auth) {
-    super();
-    this.auth = auth;
-  }
-};
-function storage_reader() {
-  return field(
-    "auth",
-    decoder(),
-    (auth) => {
-      return success(new Storage(auth));
-    }
-  );
-}
-function storage_writer(storage) {
-  return object2(toList([["auth", encoder(storage.auth)]]));
-}
-function create() {
-  let $ = localStorage2();
-  let localstorage;
-  if ($ instanceof Ok) {
-    localstorage = $[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "somachord/storage",
-      21,
-      "create",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 411, end: 456, pattern_start: 422, pattern_end: 438 }
-    );
-  }
-  return new$8(localstorage, storage_reader(), storage_writer);
-}
-
-// build/dev/javascript/somachord/somachord/router.mjs
-var FILEPATH3 = "src/somachord/router.gleam";
-var ChangeRoute = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var Home = class extends CustomType {
-};
-var Login = class extends CustomType {
-};
-var Search = class extends CustomType {
-  constructor(query2) {
-    super();
-    this.query = query2;
-  }
-};
-var Artist2 = class extends CustomType {
-  constructor(id3) {
-    super();
-    this.id = id3;
-  }
-};
-var Album2 = class extends CustomType {
-  constructor(id3) {
-    super();
-    this.id = id3;
-  }
-};
-var Song = class extends CustomType {
-  constructor(id3) {
-    super();
-    this.id = id3;
-  }
-};
-var Playlist2 = class extends CustomType {
-  constructor(id3) {
-    super();
-    this.id = id3;
-  }
-};
-var Likes = class extends CustomType {
-};
-var Library = class extends CustomType {
-};
-var Playlists = class extends CustomType {
-};
-var Artists = class extends CustomType {
-};
-var Albums = class extends CustomType {
-};
-var Unknown = class extends CustomType {
-};
-function uri_to_route(uri) {
-  let router = (path) => {
-    echo2(path, void 0, "src/somachord/router.gleam", 32);
-    if (path === "/") {
-      return new Home();
-    } else if (path === "") {
-      return new Home();
-    } else if (path === "/login") {
-      return new Login();
-    } else if (path === "/search") {
-      return new Search("");
-    } else if (path.startsWith("/search/")) {
-      let query2 = path.slice(8);
-      let $2 = percent_decode(query2);
-      let decoded_query;
-      if ($2 instanceof Ok) {
-        decoded_query = $2[0];
-      } else {
-        throw makeError(
-          "let_assert",
-          FILEPATH3,
-          "somachord/router",
-          38,
-          "uri_to_route",
-          "Pattern match failed, no pattern matched the value.",
-          {
-            value: $2,
-            start: 590,
-            end: 646,
-            pattern_start: 601,
-            pattern_end: 618
-          }
-        );
-      }
-      return new Search(decoded_query);
-    } else if (path === "/artists") {
-      return new Artists();
-    } else if (path.startsWith("/artist/")) {
-      let id3 = path.slice(8);
-      return new Artist2(id3);
-    } else if (path === "/albums") {
-      return new Albums();
-    } else if (path.startsWith("/album/")) {
-      let id3 = path.slice(7);
-      return new Album2(id3);
-    } else if (path.startsWith("/song/")) {
-      let id3 = path.slice(6);
-      return new Song(id3);
-    } else if (path.startsWith("/playlist/")) {
-      let id3 = path.slice(10);
-      return new Playlist2(id3);
-    } else if (path === "/playlists/") {
-      return new Playlists();
-    } else if (path === "/library") {
-      return new Library();
-    } else if (path === "/likes") {
-      return new Likes();
-    } else {
-      return new Unknown();
-    }
-  };
-  let $ = am_i_electron();
-  if ($) {
-    let $1 = uri.fragment;
-    if ($1 instanceof Some) {
-      let path = $1[0];
-      return router(path);
-    } else {
-      return router("");
-    }
-  } else {
-    return router(uri.path);
-  }
-}
-function direct(root3, rel) {
-  let $ = parse(rel);
-  let rel_url;
-  if ($ instanceof Ok) {
-    rel_url = $[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH3,
-      "somachord/router",
-      89,
-      "direct",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 1738,
-        end: 1777,
-        pattern_start: 1749,
-        pattern_end: 1760
-      }
-    );
-  }
-  let $1 = merge(root3, rel_url);
-  let direction;
-  if ($1 instanceof Ok) {
-    direction = $1[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH3,
-      "somachord/router",
-      90,
-      "direct",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $1,
-        start: 1780,
-        end: 1831,
-        pattern_start: 1791,
-        pattern_end: 1804
-      }
-    );
-  }
-  return to_string3(direction);
-}
-function get_route() {
-  let $ = parse(location());
-  let route;
-  if ($ instanceof Ok) {
-    route = $[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH3,
-      "somachord/router",
-      95,
-      "get_route",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 1896,
-        end: 1947,
-        pattern_start: 1907,
-        pattern_end: 1916
-      }
-    );
-  }
-  return route;
-}
-function echo2(value3, message2, file, line) {
-  const grey = "\x1B[90m";
-  const reset_color = "\x1B[39m";
-  const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector2();
-  const string_value = inspector.inspect(value3);
-  const string_message = message2 === void 0 ? "" : " " + message2;
-  if (globalThis.process?.stderr?.write) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.process.stderr.write(string6);
-  } else if (globalThis.Deno) {
-    const string6 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string6));
-  } else {
-    const string6 = `${file_line}
-${string_value}`;
-    globalThis.console.log(string6);
-  }
-  return value3;
-}
-var Echo$Inspector2 = class {
-  #references = /* @__PURE__ */ new Set();
-  #isDict(value3) {
-    try {
-      return value3 instanceof Dict;
-    } catch {
-      return false;
-    }
-  }
-  #float(float4) {
-    const string6 = float4.toString().replace("+", "");
-    if (string6.indexOf(".") >= 0) {
-      return string6;
-    } else {
-      const index5 = string6.indexOf("e");
-      if (index5 >= 0) {
-        return string6.slice(0, index5) + ".0" + string6.slice(index5);
-      } else {
-        return string6 + ".0";
-      }
-    }
-  }
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return this.#float(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i2 of Array(v.length).keys())
-        args.push(String.fromCharCode(i2 + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (v instanceof List) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (this.#isDict(v)) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name2 = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body2 = props.length ? " " + props.join(", ") + " " : "";
-    const head = name2 === "Object" ? "" : name2 + " ";
-    return `//js(${head}{${body2}})`;
-  }
-  #dict(map7) {
-    let body2 = "dict.from_list([";
-    let first3 = true;
-    let key_value_pairs = [];
-    map7.forEach((value3, key3) => {
-      key_value_pairs.push([key3, value3]);
-    });
-    key_value_pairs.sort();
-    key_value_pairs.forEach(([key3, value3]) => {
-      if (!first3) body2 = body2 + ", ";
-      body2 = body2 + "#(" + this.inspect(key3) + ", " + this.inspect(value3) + ")";
-      first3 = false;
-    });
-    return body2 + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label2) => {
-      const value3 = this.inspect(record[label2]);
-      return isNaN(parseInt(label2)) ? `${label2}: ${value3}` : value3;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list5) {
-    if (list5 instanceof Empty) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current2 = list5;
-    while (current2 instanceof NonEmpty) {
-      let element13 = current2.head;
-      current2 = current2.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element13);
-      if (char_out) {
-        if (Number.isInteger(element13) && element13 >= 32 && element13 <= 126) {
-          char_out += String.fromCharCode(element13);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i2 = 0; i2 < str.length; i2++) {
-      const char = str[i2];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits) {
-    if (bits.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i2 = 0; i2 < bits.byteSize - 1; i2++) {
-      acc += bits.byteAt(i2).toString();
-      acc += ", ";
-    }
-    if (bits.byteSize * 8 === bits.bitSize) {
-      acc += bits.byteAt(bits.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits.bitSize % 8;
-      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
-
 // build/dev/javascript/somachord/somachord/model.mjs
+var Palette = class extends CustomType {
+  constructor(empty6) {
+    super();
+    this.empty = empty6;
+  }
+};
 var Model = class extends CustomType {
-  constructor(route, success3, layout2, storage, auth, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, playlists2, fullscreen_player_open, fullscreen_player_display) {
+  constructor(route, success3, layout2, storage, auth, confirmed, albums, player, queue2, current_song2, seeking, seek_amount, played_seconds, shuffled, looping, playlists2, fullscreen_player_open, fullscreen_player_display, current_palette) {
     super();
     this.route = route;
     this.success = success3;
@@ -9947,6 +9748,7 @@ var Model = class extends CustomType {
     this.playlists = playlists2;
     this.fullscreen_player_open = fullscreen_player_open;
     this.fullscreen_player_display = fullscreen_player_display;
+    this.current_palette = current_palette;
   }
 };
 var PlayRequest = class extends CustomType {
@@ -10471,8 +10273,8 @@ function subsonic_response_decoder(inner) {
               toList(["subsonic-response", "error", "message"]),
               string3,
               (message2) => {
-                echo3(code2, void 0, "src/somachord/api/api.gleam", 85);
-                echo3(message2, void 0, "src/somachord/api/api.gleam", 86);
+                echo2(code2, void 0, "src/somachord/api/api.gleam", 85);
+                echo2(message2, void 0, "src/somachord/api/api.gleam", 86);
                 return success(
                   new Error2(
                     (() => {
@@ -11091,11 +10893,11 @@ function update_playlist(auth_details, id3, name2, description, public$, msg) {
     )
   );
 }
-function echo3(value3, message2, file, line) {
+function echo2(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector3();
+  const inspector = new Echo$Inspector2();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -11115,7 +10917,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector3 = class {
+var Echo$Inspector2 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -11603,7 +11405,14 @@ var NestedShadow = class extends CustomType {
   }
 };
 function element4(attrs) {
-  return element2("song-lyrics", attrs, toList([]));
+  return element2(
+    "song-lyrics",
+    prepend(
+      style("--unplayed-color", "var(--color-zinc-600)"),
+      attrs
+    ),
+    toList([])
+  );
 }
 function id2(id3) {
   return attribute2("song-id", id3);
@@ -11727,15 +11536,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  161,
+                  165,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 4247,
-                    end: 4350,
-                    pattern_start: 4258,
-                    pattern_end: 4273
+                    start: 4330,
+                    end: 4433,
+                    pattern_start: 4341,
+                    pattern_end: 4356
                   }
                 );
               }
@@ -11748,15 +11557,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  163,
+                  167,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $2,
-                    start: 4361,
-                    end: 4428,
-                    pattern_start: 4372,
-                    pattern_end: 4394
+                    start: 4444,
+                    end: 4511,
+                    pattern_start: 4455,
+                    pattern_end: 4477
                   }
                 );
               }
@@ -11769,15 +11578,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  164,
+                  168,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 4439,
-                    end: 4529,
-                    pattern_start: 4450,
-                    pattern_end: 4458
+                    start: 4522,
+                    end: 4612,
+                    pattern_start: 4533,
+                    pattern_end: 4541
                   }
                 );
               }
@@ -11790,15 +11599,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  166,
+                  170,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $4,
-                    start: 4540,
-                    end: 4593,
-                    pattern_start: 4551,
-                    pattern_end: 4566
+                    start: 4623,
+                    end: 4676,
+                    pattern_start: 4634,
+                    pattern_end: 4649
                   }
                 );
               }
@@ -11860,15 +11669,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  188,
+                  192,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 5283,
-                    end: 5381,
-                    pattern_start: 5294,
-                    pattern_end: 5302
+                    start: 5366,
+                    end: 5464,
+                    pattern_start: 5377,
+                    pattern_end: 5385
                   }
                 );
               }
@@ -11881,15 +11690,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH6,
                   "somachord/components/lyrics",
-                  190,
+                  194,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $2,
-                    start: 5392,
-                    end: 5445,
-                    pattern_start: 5403,
-                    pattern_end: 5418
+                    start: 5475,
+                    end: 5528,
+                    pattern_start: 5486,
+                    pattern_end: 5501
                   }
                 );
               }
@@ -11951,12 +11760,12 @@ function update2(m, msg) {
             emit_lyrics_loaded(false)
           ];
         } else {
-          echo4(e, void 0, "src/somachord/components/lyrics.gleam", 216);
+          echo3(e, void 0, "src/somachord/components/lyrics.gleam", 220);
           throw makeError(
             "panic",
             FILEPATH6,
             "somachord/components/lyrics",
-            217,
+            221,
             "update",
             "should be unreachable",
             {}
@@ -11965,12 +11774,12 @@ function update2(m, msg) {
       }
     } else {
       let e = $[0];
-      echo4(e, void 0, "src/somachord/components/lyrics.gleam", 206);
+      echo3(e, void 0, "src/somachord/components/lyrics.gleam", 210);
       throw makeError(
         "panic",
         FILEPATH6,
         "somachord/components/lyrics",
-        207,
+        211,
         "update",
         "rsvp error",
         {}
@@ -12165,7 +11974,9 @@ function view2(m) {
                             if ($2) {
                               return class$("text-zinc-300");
                             } else {
-                              return class$("text-zinc-600 off-time");
+                              return class$(
+                                "text-(--unplayed-color) off-time"
+                              );
                             }
                           }
                         } else {
@@ -12247,11 +12058,11 @@ function register() {
   );
   return make_component(component2, "song-lyrics");
 }
-function echo4(value3, message2, file, line) {
+function echo3(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector4();
+  const inspector = new Echo$Inspector3();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -12271,7 +12082,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector4 = class {
+var Echo$Inspector3 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -12521,6 +12332,12 @@ var Play = class extends CustomType {
     this[0] = $0;
   }
 };
+var CurrentSongPalette = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var Search3 = class extends CustomType {
   constructor(query2) {
     super();
@@ -12563,6 +12380,8 @@ var StreamFromQueue = class extends CustomType {
 var StreamCurrent = class extends CustomType {
 };
 var StreamError = class extends CustomType {
+};
+var LoadSong = class extends CustomType {
 };
 var ProgressDrag = class extends CustomType {
   constructor($0) {
@@ -12626,15 +12445,15 @@ function on_url_change(url) {
             "let_assert",
             FILEPATH7,
             "somachord/msg",
-            77,
+            79,
             "on_url_change",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 2011,
-              end: 2059,
-              pattern_start: 2022,
-              pattern_end: 2029
+              start: 2058,
+              end: 2106,
+              pattern_start: 2069,
+              pattern_end: 2076
             }
           );
         }
@@ -12694,6 +12513,1240 @@ function on_playlist(handler) {
   );
 }
 
+// node_modules/@vibrant/image/dist/esm/histogram.js
+var Histogram = class {
+  constructor(pixels, opts) {
+    this.pixels = pixels;
+    this.opts = opts;
+    const { sigBits } = opts;
+    const getColorIndex = (r2, g2, b2) => (r2 << 2 * sigBits) + (g2 << sigBits) + b2;
+    this.getColorIndex = getColorIndex;
+    const rshift = 8 - sigBits;
+    const hn = 1 << 3 * sigBits;
+    const hist = new Uint32Array(hn);
+    let rmax;
+    let rmin;
+    let gmax;
+    let gmin;
+    let bmax;
+    let bmin;
+    let r;
+    let g;
+    let b;
+    let a2;
+    rmax = gmax = bmax = 0;
+    rmin = gmin = bmin = Number.MAX_VALUE;
+    const n = pixels.length / 4;
+    let i2 = 0;
+    while (i2 < n) {
+      const offset = i2 * 4;
+      i2++;
+      r = pixels[offset + 0];
+      g = pixels[offset + 1];
+      b = pixels[offset + 2];
+      a2 = pixels[offset + 3];
+      if (a2 === 0) continue;
+      r = r >> rshift;
+      g = g >> rshift;
+      b = b >> rshift;
+      const index5 = getColorIndex(r, g, b);
+      if (hist[index5] === void 0) hist[index5] = 0;
+      hist[index5] += 1;
+      if (r > rmax) rmax = r;
+      if (r < rmin) rmin = r;
+      if (g > gmax) gmax = g;
+      if (g < gmin) gmin = g;
+      if (b > bmax) bmax = b;
+      if (b < bmin) bmin = b;
+    }
+    this._colorCount = hist.reduce(
+      (total, c) => c > 0 ? total + 1 : total,
+      0
+    );
+    this.hist = hist;
+    this.rmax = rmax;
+    this.rmin = rmin;
+    this.gmax = gmax;
+    this.gmin = gmin;
+    this.bmax = bmax;
+    this.bmin = bmin;
+  }
+  get colorCount() {
+    return this._colorCount;
+  }
+};
+
+// node_modules/@vibrant/image/dist/esm/index.js
+var ImageBase = class {
+  scaleDown(opts) {
+    const width = this.getWidth();
+    const height = this.getHeight();
+    let ratio = 1;
+    if (opts.maxDimension > 0) {
+      const maxSide = Math.max(width, height);
+      if (maxSide > opts.maxDimension) ratio = opts.maxDimension / maxSide;
+    } else {
+      ratio = 1 / opts.quality;
+    }
+    if (ratio < 1) this.resize(width * ratio, height * ratio, ratio);
+  }
+};
+function applyFilters(imageData, filters) {
+  var _a;
+  if (filters.length > 0) {
+    const pixels = imageData.data;
+    const n = pixels.length / 4;
+    let offset;
+    let r;
+    let g;
+    let b;
+    let a2;
+    for (let i2 = 0; i2 < n; i2++) {
+      offset = i2 * 4;
+      r = pixels[offset + 0];
+      g = pixels[offset + 1];
+      b = pixels[offset + 2];
+      a2 = pixels[offset + 3];
+      for (let j = 0; j < filters.length; j++) {
+        if (!((_a = filters[j]) == null ? void 0 : _a.call(filters, r, g, b, a2))) {
+          pixels[offset + 3] = 0;
+          break;
+        }
+      }
+    }
+  }
+  return imageData;
+}
+
+// node_modules/@vibrant/image-browser/dist/esm/index.js
+function isRelativeUrl(url) {
+  const u = new URL(url, location.href);
+  return u.protocol === location.protocol && u.host === location.host && u.port === location.port;
+}
+function isSameOrigin(a2, b) {
+  const ua = new URL(a2);
+  const ub = new URL(b);
+  return ua.protocol === ub.protocol && ua.hostname === ub.hostname && ua.port === ub.port;
+}
+var BrowserImage = class extends ImageBase {
+  _getCanvas() {
+    if (!this._canvas) {
+      throw new Error("Canvas is not initialized");
+    }
+    return this._canvas;
+  }
+  _getContext() {
+    if (!this._context) {
+      throw new Error("Context is not initialized");
+    }
+    return this._context;
+  }
+  _getWidth() {
+    if (!this._width) {
+      throw new Error("Width is not initialized");
+    }
+    return this._width;
+  }
+  _getHeight() {
+    if (!this._height) {
+      throw new Error("Height is not initialized");
+    }
+    return this._height;
+  }
+  _initCanvas() {
+    const img2 = this.image;
+    if (!img2) {
+      throw new Error("Image is not initialized");
+    }
+    const canvas = this._canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new ReferenceError("Failed to create canvas context");
+    this._context = context;
+    canvas.className = "@vibrant/canvas";
+    canvas.style.display = "none";
+    this._width = canvas.width = img2.width;
+    this._height = canvas.height = img2.height;
+    context.drawImage(img2, 0, 0);
+    document.body.appendChild(canvas);
+  }
+  load(image) {
+    let img2;
+    let src2;
+    if (typeof image === "string") {
+      img2 = document.createElement("img");
+      src2 = image;
+      if (!isRelativeUrl(src2) && !isSameOrigin(window.location.href, src2)) {
+        img2.crossOrigin = "anonymous";
+      }
+      img2.src = src2;
+    } else if (image instanceof HTMLImageElement) {
+      img2 = image;
+      src2 = image.src;
+    } else {
+      return Promise.reject(
+        new Error(`Cannot load buffer as an image in browser`)
+      );
+    }
+    this.image = img2;
+    return new Promise((resolve2, reject) => {
+      const onImageLoad = () => {
+        this._initCanvas();
+        resolve2(this);
+      };
+      if (img2.complete) {
+        onImageLoad();
+      } else {
+        img2.onload = onImageLoad;
+        img2.onerror = (_e) => reject(new Error(`Fail to load image: ${src2}`));
+      }
+    });
+  }
+  clear() {
+    this._getContext().clearRect(0, 0, this._getWidth(), this._getHeight());
+  }
+  update(imageData) {
+    this._getContext().putImageData(imageData, 0, 0);
+  }
+  getWidth() {
+    return this._getWidth();
+  }
+  getHeight() {
+    return this._getHeight();
+  }
+  resize(targetWidth, targetHeight, ratio) {
+    if (!this.image) {
+      throw new Error("Image is not initialized");
+    }
+    this._width = this._getCanvas().width = targetWidth;
+    this._height = this._getCanvas().height = targetHeight;
+    this._getContext().scale(ratio, ratio);
+    this._getContext().drawImage(this.image, 0, 0);
+  }
+  getPixelCount() {
+    return this._getWidth() * this._getHeight();
+  }
+  getImageData() {
+    return this._getContext().getImageData(
+      0,
+      0,
+      this._getWidth(),
+      this._getHeight()
+    );
+  }
+  remove() {
+    if (this._canvas && this._canvas.parentNode) {
+      this._canvas.parentNode.removeChild(this._canvas);
+    }
+  }
+};
+
+// node_modules/@vibrant/core/dist/esm/utils.js
+function assignDeep(target2, ...sources) {
+  sources.forEach((s) => {
+    if (!s) return;
+    for (const key3 in s) {
+      if (s.hasOwnProperty(key3)) {
+        const v = s[key3];
+        if (Array.isArray(v)) {
+          target2[key3] = v.slice(0);
+        } else if (typeof v === "object") {
+          if (!target2[key3]) target2[key3] = {};
+          assignDeep(target2[key3], v);
+        } else {
+          target2[key3] = v;
+        }
+      }
+    }
+  });
+  return target2;
+}
+
+// node_modules/@vibrant/core/dist/esm/options.js
+function buildProcessOptions(opts, override) {
+  const { colorCount, quantizer, generators, filters } = opts;
+  const commonQuantizerOpts = { colorCount };
+  const q = typeof quantizer === "string" ? { name: quantizer, options: {} } : quantizer;
+  q.options = assignDeep({}, commonQuantizerOpts, q.options);
+  return assignDeep(
+    {},
+    {
+      quantizer: q,
+      generators,
+      filters
+    },
+    override
+  );
+}
+
+// node_modules/@vibrant/core/dist/esm/builder.js
+var Builder = class {
+  /**
+   * Arguments are the same as `Vibrant.constructor`.
+   */
+  constructor(src2, opts = {}) {
+    this._src = src2;
+    this._opts = assignDeep({}, Vibrant.DefaultOpts, opts);
+  }
+  /**
+   * Sets `opts.colorCount` to `n`.
+   * @returns this `Builder` instance.
+   */
+  maxColorCount(n) {
+    this._opts.colorCount = n;
+    return this;
+  }
+  /**
+   * Sets `opts.maxDimension` to `d`.
+   * @returns this `Builder` instance.
+   */
+  maxDimension(d) {
+    this._opts.maxDimension = d;
+    return this;
+  }
+  /**
+   * Adds a filter function
+   * @returns this `Builder` instance.
+   */
+  addFilter(name2) {
+    if (!this._opts.filters) {
+      this._opts.filters = [name2];
+    } else {
+      this._opts.filters.push(name2);
+    }
+    return this;
+  }
+  /**
+   * Removes a filter function.
+   * @returns this `Builder` instance.
+   */
+  removeFilter(name2) {
+    if (this._opts.filters) {
+      const i2 = this._opts.filters.indexOf(name2);
+      if (i2 > 0) this._opts.filters.splice(i2);
+    }
+    return this;
+  }
+  /**
+   * Clear all filters.
+   * @returns this `Builder` instance.
+   */
+  clearFilters() {
+    this._opts.filters = [];
+    return this;
+  }
+  /**
+   * Sets `opts.quality` to `q`.
+   * @returns this `Builder` instance.
+   */
+  quality(q) {
+    this._opts.quality = q;
+    return this;
+  }
+  /**
+   * Specifies which `Image` implementation class to use.
+   * @returns this `Builder` instance.
+   */
+  useImageClass(imageClass) {
+    this._opts.ImageClass = imageClass;
+    return this;
+  }
+  /**
+   * Sets `opts.generator` to `generator`
+   * @returns this `Builder` instance.
+   */
+  useGenerator(generator, options) {
+    if (!this._opts.generators) this._opts.generators = [];
+    this._opts.generators.push(
+      options ? { name: generator, options } : generator
+    );
+    return this;
+  }
+  /**
+   * Specifies which `Quantizer` implementation class to use
+   * @returns this `Builder` instance.
+   */
+  useQuantizer(quantizer, options) {
+    this._opts.quantizer = options ? { name: quantizer, options } : quantizer;
+    return this;
+  }
+  /**
+   * Builds and returns a `Vibrant` instance as configured.
+   */
+  build() {
+    return new Vibrant(this._src, this._opts);
+  }
+  /**
+   * Builds a `Vibrant` instance as configured and calls its `getPalette` method.
+   */
+  getPalette() {
+    return this.build().getPalette();
+  }
+};
+
+// node_modules/@vibrant/core/dist/esm/pipeline/index.js
+var Stage = class {
+  constructor(pipeline2) {
+    this.pipeline = pipeline2;
+    this._map = {};
+  }
+  names() {
+    return Object.keys(this._map);
+  }
+  has(name2) {
+    return !!this._map[name2];
+  }
+  get(name2) {
+    return this._map[name2];
+  }
+  register(name2, stageFn) {
+    this._map[name2] = stageFn;
+    return this.pipeline;
+  }
+};
+var BasicPipeline = class {
+  constructor() {
+    this.filter = new Stage(this);
+    this.quantizer = new Stage(this);
+    this.generator = new Stage(this);
+  }
+  _buildProcessTasks({
+    filters,
+    quantizer,
+    generators
+  }) {
+    if (generators.length === 1 && generators[0] === "*") {
+      generators = this.generator.names();
+    }
+    return {
+      filters: filters.map((f) => createTask(this.filter, f)),
+      quantizer: createTask(this.quantizer, quantizer),
+      generators: generators.map((g) => createTask(this.generator, g))
+    };
+    function createTask(stage, o) {
+      let name2;
+      let options;
+      if (typeof o === "string") {
+        name2 = o;
+      } else {
+        name2 = o.name;
+        options = o.options;
+      }
+      return {
+        name: name2,
+        fn: stage.get(name2),
+        options
+      };
+    }
+  }
+  async process(imageData, opts) {
+    const { filters, quantizer, generators } = this._buildProcessTasks(opts);
+    const imageFilterData = await this._filterColors(filters, imageData);
+    const colors = await this._generateColors(quantizer, imageFilterData);
+    const palettes = await this._generatePalettes(generators, colors);
+    return {
+      colors,
+      palettes
+    };
+  }
+  _filterColors(filters, imageData) {
+    return Promise.resolve(
+      applyFilters(
+        imageData,
+        filters.map(({ fn }) => fn)
+      )
+    );
+  }
+  _generateColors(quantizer, imageData) {
+    return Promise.resolve(quantizer.fn(imageData.data, quantizer.options));
+  }
+  async _generatePalettes(generators, colors) {
+    const promiseArr = await Promise.all(
+      generators.map(({ fn, options }) => Promise.resolve(fn(colors, options)))
+    );
+    return Promise.resolve(
+      promiseArr.reduce(
+        (promises, promiseVal, i2) => {
+          promises[generators[i2].name] = promiseVal;
+          return promises;
+        },
+        {}
+      )
+    );
+  }
+};
+
+// node_modules/@vibrant/color/dist/esm/converter.js
+function rgbToHex(r, g, b) {
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1, 7);
+}
+function rgbToHsl(r, g, b) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max3 = Math.max(r, g, b);
+  const min2 = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max3 + min2) / 2;
+  if (max3 !== min2) {
+    const d = max3 - min2;
+    s = l > 0.5 ? d / (2 - max3 - min2) : d / (max3 + min2);
+    switch (max3) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+  return [h, s, l];
+}
+function hslToRgb(h, s, l) {
+  let r;
+  let g;
+  let b;
+  function hue2rgb(p2, q, t) {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p2 + (q - p2) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p2 + (q - p2) * (2 / 3 - t) * 6;
+    return p2;
+  }
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p2 = 2 * l - q;
+    r = hue2rgb(p2, q, h + 1 / 3);
+    g = hue2rgb(p2, q, h);
+    b = hue2rgb(p2, q, h - 1 / 3);
+  }
+  return [r * 255, g * 255, b * 255];
+}
+
+// node_modules/@vibrant/color/dist/esm/index.js
+var Swatch = class _Swatch {
+  static applyFilters(colors, filters) {
+    return filters.length > 0 ? colors.filter(({ r, g, b }) => {
+      var _a;
+      for (let j = 0; j < filters.length; j++) {
+        if (!((_a = filters[j]) == null ? void 0 : _a.call(filters, r, g, b, 255))) return false;
+      }
+      return true;
+    }) : colors;
+  }
+  /**
+   * Make a value copy of a swatch based on a previous one. Returns a new Swatch instance
+   * @param {Swatch} swatch
+   */
+  static clone(swatch) {
+    return new _Swatch(swatch._rgb, swatch._population);
+  }
+  /**
+   * The red value in the RGB value
+   */
+  get r() {
+    return this._rgb[0];
+  }
+  /**
+   * The green value in the RGB value
+   */
+  get g() {
+    return this._rgb[1];
+  }
+  /**
+   * The blue value in the RGB value
+   */
+  get b() {
+    return this._rgb[2];
+  }
+  /**
+   * The color value as a rgb value
+   */
+  get rgb() {
+    return this._rgb;
+  }
+  /**
+   * The color value as a hsl value
+   */
+  get hsl() {
+    if (!this._hsl) {
+      const [r, g, b] = this._rgb;
+      this._hsl = rgbToHsl(r, g, b);
+    }
+    return this._hsl;
+  }
+  /**
+   * The color value as a hex string
+   */
+  get hex() {
+    if (!this._hex) {
+      const [r, g, b] = this._rgb;
+      this._hex = rgbToHex(r, g, b);
+    }
+    return this._hex;
+  }
+  get population() {
+    return this._population;
+  }
+  /**
+   * Get the JSON object for the swatch
+   */
+  toJSON() {
+    return {
+      rgb: this.rgb,
+      population: this.population
+    };
+  }
+  getYiq() {
+    if (!this._yiq) {
+      const rgb = this._rgb;
+      this._yiq = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1e3;
+    }
+    return this._yiq;
+  }
+  /**
+   * Returns an appropriate color to use for any 'title' text which is displayed over this Swatch's color.
+   */
+  get titleTextColor() {
+    if (!this._titleTextColor) {
+      this._titleTextColor = this.getYiq() < 200 ? "#fff" : "#000";
+    }
+    return this._titleTextColor;
+  }
+  /**
+   * Returns an appropriate color to use for any 'body' text which is displayed over this Swatch's color.
+   */
+  get bodyTextColor() {
+    if (!this._bodyTextColor) {
+      this._bodyTextColor = this.getYiq() < 150 ? "#fff" : "#000";
+    }
+    return this._bodyTextColor;
+  }
+  /**
+   * Internal use.
+   * @param rgb `[r, g, b]`
+   * @param population Population of the color in an image
+   */
+  constructor(rgb, population) {
+    this._rgb = rgb;
+    this._population = population;
+  }
+};
+
+// node_modules/@vibrant/core/dist/esm/index.js
+var _Vibrant = class _Vibrant2 {
+  /**
+   *
+   * @param _src Path to image file (supports HTTP/HTTPs)
+   * @param opts Options (optional)
+   */
+  constructor(_src, opts) {
+    this._src = _src;
+    this.opts = assignDeep({}, _Vibrant2.DefaultOpts, opts);
+  }
+  static use(pipeline2) {
+    this._pipeline = pipeline2;
+  }
+  static from(src2) {
+    return new Builder(src2);
+  }
+  get result() {
+    return this._result;
+  }
+  _process(image, opts) {
+    image.scaleDown(this.opts);
+    const processOpts = buildProcessOptions(this.opts, opts);
+    return _Vibrant2._pipeline.process(image.getImageData(), processOpts);
+  }
+  async getPalette() {
+    const image = new this.opts.ImageClass();
+    try {
+      const image1 = await image.load(this._src);
+      const result1 = await this._process(image1, {
+        generators: ["default"]
+      });
+      this._result = result1;
+      const res = result1.palettes["default"];
+      if (!res) {
+        throw new Error(
+          `Something went wrong and a palette was not found, please file a bug against our GitHub repo: https://github.com/vibrant-Colors/node-vibrant/`
+        );
+      }
+      image.remove();
+      return res;
+    } catch (err) {
+      image.remove();
+      return Promise.reject(err);
+    }
+  }
+  async getPalettes() {
+    const image = new this.opts.ImageClass();
+    try {
+      const image1 = await image.load(this._src);
+      const result1 = await this._process(image1, {
+        generators: ["*"]
+      });
+      this._result = result1;
+      const res = result1.palettes;
+      image.remove();
+      return res;
+    } catch (err) {
+      image.remove();
+      return Promise.reject(err);
+    }
+  }
+};
+_Vibrant.DefaultOpts = {
+  colorCount: 64,
+  quality: 5,
+  filters: []
+};
+var Vibrant = _Vibrant;
+
+// node_modules/node-vibrant/dist/esm/configs/config.js
+Vibrant.DefaultOpts.quantizer = "mmcq";
+Vibrant.DefaultOpts.generators = ["default"];
+Vibrant.DefaultOpts.filters = ["default"];
+
+// node_modules/node-vibrant/dist/esm/configs/browser.js
+Vibrant.DefaultOpts.ImageClass = BrowserImage;
+
+// node_modules/@vibrant/quantizer-mmcq/dist/esm/vbox.js
+var SIGBITS = 5;
+var RSHIFT = 8 - SIGBITS;
+var VBox = class _VBox {
+  constructor(r1, r2, g1, g2, b1, b2, histogram) {
+    this.histogram = histogram;
+    this._volume = -1;
+    this._avg = null;
+    this._count = -1;
+    this.dimension = { r1, r2, g1, g2, b1, b2 };
+  }
+  static build(pixels) {
+    const h = new Histogram(pixels, { sigBits: SIGBITS });
+    const { rmin, rmax, gmin, gmax, bmin, bmax } = h;
+    return new _VBox(rmin, rmax, gmin, gmax, bmin, bmax, h);
+  }
+  invalidate() {
+    this._volume = this._count = -1;
+    this._avg = null;
+  }
+  volume() {
+    if (this._volume < 0) {
+      const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+      this._volume = (r2 - r1 + 1) * (g2 - g1 + 1) * (b2 - b1 + 1);
+    }
+    return this._volume;
+  }
+  count() {
+    if (this._count < 0) {
+      const { hist, getColorIndex } = this.histogram;
+      const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+      let c = 0;
+      for (let r = r1; r <= r2; r++) {
+        for (let g = g1; g <= g2; g++) {
+          for (let b = b1; b <= b2; b++) {
+            const index5 = getColorIndex(r, g, b);
+            if (!hist[index5]) {
+              continue;
+            }
+            c += hist[index5];
+          }
+        }
+      }
+      this._count = c;
+    }
+    return this._count;
+  }
+  clone() {
+    const { histogram } = this;
+    const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+    return new _VBox(r1, r2, g1, g2, b1, b2, histogram);
+  }
+  avg() {
+    if (!this._avg) {
+      const { hist, getColorIndex } = this.histogram;
+      const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+      let ntot = 0;
+      const mult = 1 << 8 - SIGBITS;
+      let rsum;
+      let gsum;
+      let bsum;
+      rsum = gsum = bsum = 0;
+      for (let r = r1; r <= r2; r++) {
+        for (let g = g1; g <= g2; g++) {
+          for (let b = b1; b <= b2; b++) {
+            const index5 = getColorIndex(r, g, b);
+            const h = hist[index5];
+            if (!h) continue;
+            ntot += h;
+            rsum += h * (r + 0.5) * mult;
+            gsum += h * (g + 0.5) * mult;
+            bsum += h * (b + 0.5) * mult;
+          }
+        }
+      }
+      if (ntot) {
+        this._avg = [~~(rsum / ntot), ~~(gsum / ntot), ~~(bsum / ntot)];
+      } else {
+        this._avg = [
+          ~~(mult * (r1 + r2 + 1) / 2),
+          ~~(mult * (g1 + g2 + 1) / 2),
+          ~~(mult * (b1 + b2 + 1) / 2)
+        ];
+      }
+    }
+    return this._avg;
+  }
+  contains(rgb) {
+    let [r, g, b] = rgb;
+    const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+    r >>= RSHIFT;
+    g >>= RSHIFT;
+    b >>= RSHIFT;
+    return r >= r1 && r <= r2 && g >= g1 && g <= g2 && b >= b1 && b <= b2;
+  }
+  split() {
+    const { hist, getColorIndex } = this.histogram;
+    const { r1, r2, g1, g2, b1, b2 } = this.dimension;
+    const count = this.count();
+    if (!count) return [];
+    if (count === 1) return [this.clone()];
+    const rw = r2 - r1 + 1;
+    const gw = g2 - g1 + 1;
+    const bw = b2 - b1 + 1;
+    const maxw = Math.max(rw, gw, bw);
+    let accSum = null;
+    let sum;
+    let total;
+    sum = total = 0;
+    let maxd = null;
+    if (maxw === rw) {
+      maxd = "r";
+      accSum = new Uint32Array(r2 + 1);
+      for (let r = r1; r <= r2; r++) {
+        sum = 0;
+        for (let g = g1; g <= g2; g++) {
+          for (let b = b1; b <= b2; b++) {
+            const index5 = getColorIndex(r, g, b);
+            if (!hist[index5]) continue;
+            sum += hist[index5];
+          }
+        }
+        total += sum;
+        accSum[r] = total;
+      }
+    } else if (maxw === gw) {
+      maxd = "g";
+      accSum = new Uint32Array(g2 + 1);
+      for (let g = g1; g <= g2; g++) {
+        sum = 0;
+        for (let r = r1; r <= r2; r++) {
+          for (let b = b1; b <= b2; b++) {
+            const index5 = getColorIndex(r, g, b);
+            if (!hist[index5]) continue;
+            sum += hist[index5];
+          }
+        }
+        total += sum;
+        accSum[g] = total;
+      }
+    } else {
+      maxd = "b";
+      accSum = new Uint32Array(b2 + 1);
+      for (let b = b1; b <= b2; b++) {
+        sum = 0;
+        for (let r = r1; r <= r2; r++) {
+          for (let g = g1; g <= g2; g++) {
+            const index5 = getColorIndex(r, g, b);
+            if (!hist[index5]) continue;
+            sum += hist[index5];
+          }
+        }
+        total += sum;
+        accSum[b] = total;
+      }
+    }
+    let splitPoint = -1;
+    const reverseSum = new Uint32Array(accSum.length);
+    for (let i2 = 0; i2 < accSum.length; i2++) {
+      const d = accSum[i2];
+      if (!d) continue;
+      if (splitPoint < 0 && d > total / 2) splitPoint = i2;
+      reverseSum[i2] = total - d;
+    }
+    const vbox = this;
+    function doCut(d) {
+      const dim1 = d + "1";
+      const dim2 = d + "2";
+      const d1 = vbox.dimension[dim1];
+      let d2 = vbox.dimension[dim2];
+      const vbox1 = vbox.clone();
+      const vbox2 = vbox.clone();
+      const left = splitPoint - d1;
+      const right = d2 - splitPoint;
+      if (left <= right) {
+        d2 = Math.min(d2 - 1, ~~(splitPoint + right / 2));
+        d2 = Math.max(0, d2);
+      } else {
+        d2 = Math.max(d1, ~~(splitPoint - 1 - left / 2));
+        d2 = Math.min(vbox.dimension[dim2], d2);
+      }
+      while (!accSum[d2]) d2++;
+      let c2 = reverseSum[d2];
+      while (!c2 && accSum[d2 - 1]) c2 = reverseSum[--d2];
+      vbox1.dimension[dim2] = d2;
+      vbox2.dimension[dim1] = d2 + 1;
+      return [vbox1, vbox2];
+    }
+    return doCut(maxd);
+  }
+};
+
+// node_modules/@vibrant/quantizer-mmcq/dist/esm/pqueue.js
+var PQueue = class {
+  _sort() {
+    if (!this._sorted) {
+      this.contents.sort(this._comparator);
+      this._sorted = true;
+    }
+  }
+  constructor(comparator) {
+    this._comparator = comparator;
+    this.contents = [];
+    this._sorted = false;
+  }
+  push(item) {
+    this.contents.push(item);
+    this._sorted = false;
+  }
+  peek(index5) {
+    this._sort();
+    index5 = typeof index5 === "number" ? index5 : this.contents.length - 1;
+    return this.contents[index5];
+  }
+  pop() {
+    this._sort();
+    return this.contents.pop();
+  }
+  size() {
+    return this.contents.length;
+  }
+  map(mapper) {
+    this._sort();
+    return this.contents.map(mapper);
+  }
+};
+
+// node_modules/@vibrant/quantizer-mmcq/dist/esm/index.js
+var fractByPopulations = 0.75;
+function _splitBoxes(pq, target2) {
+  let lastSize = pq.size();
+  while (pq.size() < target2) {
+    const vbox = pq.pop();
+    if (vbox && vbox.count() > 0) {
+      const [vbox1, vbox2] = vbox.split();
+      if (!vbox1) break;
+      pq.push(vbox1);
+      if (vbox2 && vbox2.count() > 0) pq.push(vbox2);
+      if (pq.size() === lastSize) {
+        break;
+      } else {
+        lastSize = pq.size();
+      }
+    } else {
+      break;
+    }
+  }
+}
+var MMCQ = (pixels, opts) => {
+  if (pixels.length === 0 || opts.colorCount < 2 || opts.colorCount > 256) {
+    throw new Error("Wrong MMCQ parameters");
+  }
+  const vbox = VBox.build(pixels);
+  vbox.histogram.colorCount;
+  const pq = new PQueue((a2, b) => a2.count() - b.count());
+  pq.push(vbox);
+  _splitBoxes(pq, fractByPopulations * opts.colorCount);
+  const pq2 = new PQueue(
+    (a2, b) => a2.count() * a2.volume() - b.count() * b.volume()
+  );
+  pq2.contents = pq.contents;
+  _splitBoxes(pq2, opts.colorCount - pq2.size());
+  return generateSwatches(pq2);
+};
+function generateSwatches(pq) {
+  const swatches = [];
+  while (pq.size()) {
+    const v = pq.pop();
+    const color = v.avg();
+    swatches.push(new Swatch(color, v.count()));
+  }
+  return swatches;
+}
+
+// node_modules/@vibrant/generator-default/dist/esm/index.js
+var DefaultOpts = {
+  targetDarkLuma: 0.26,
+  maxDarkLuma: 0.45,
+  minLightLuma: 0.55,
+  targetLightLuma: 0.74,
+  minNormalLuma: 0.3,
+  targetNormalLuma: 0.5,
+  maxNormalLuma: 0.7,
+  targetMutesSaturation: 0.3,
+  maxMutesSaturation: 0.4,
+  targetVibrantSaturation: 1,
+  minVibrantSaturation: 0.35,
+  weightSaturation: 3,
+  weightLuma: 6.5,
+  weightPopulation: 0.5
+};
+function _findMaxPopulation(swatches) {
+  let p2 = 0;
+  swatches.forEach((s) => {
+    p2 = Math.max(p2, s.population);
+  });
+  return p2;
+}
+function _isAlreadySelected(palette3, s) {
+  return palette3.Vibrant === s || palette3.DarkVibrant === s || palette3.LightVibrant === s || palette3.Muted === s || palette3.DarkMuted === s || palette3.LightMuted === s;
+}
+function _createComparisonValue(saturation, targetSaturation, luma, targetLuma, population, maxPopulation, opts) {
+  function weightedMean(...values3) {
+    let sum = 0;
+    let weightSum = 0;
+    for (let i2 = 0; i2 < values3.length; i2 += 2) {
+      const value3 = values3[i2];
+      const weight = values3[i2 + 1];
+      if (!value3 || !weight) continue;
+      sum += value3 * weight;
+      weightSum += weight;
+    }
+    return sum / weightSum;
+  }
+  function invertDiff(value3, targetValue) {
+    return 1 - Math.abs(value3 - targetValue);
+  }
+  return weightedMean(
+    invertDiff(saturation, targetSaturation),
+    opts.weightSaturation,
+    invertDiff(luma, targetLuma),
+    opts.weightLuma,
+    population / maxPopulation,
+    opts.weightPopulation
+  );
+}
+function _findColorVariation(palette3, swatches, maxPopulation, targetLuma, minLuma, maxLuma, targetSaturation, minSaturation, maxSaturation, opts) {
+  let max3 = null;
+  let maxValue = 0;
+  swatches.forEach((swatch) => {
+    const [, s, l] = swatch.hsl;
+    if (s >= minSaturation && s <= maxSaturation && l >= minLuma && l <= maxLuma && !_isAlreadySelected(palette3, swatch)) {
+      const value3 = _createComparisonValue(
+        s,
+        targetSaturation,
+        l,
+        targetLuma,
+        swatch.population,
+        maxPopulation,
+        opts
+      );
+      if (max3 === null || value3 > maxValue) {
+        max3 = swatch;
+        maxValue = value3;
+      }
+    }
+  });
+  return max3;
+}
+function _generateVariationColors(swatches, maxPopulation, opts) {
+  const palette3 = {
+    Vibrant: null,
+    DarkVibrant: null,
+    LightVibrant: null,
+    Muted: null,
+    DarkMuted: null,
+    LightMuted: null
+  };
+  palette3.Vibrant = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetNormalLuma,
+    opts.minNormalLuma,
+    opts.maxNormalLuma,
+    opts.targetVibrantSaturation,
+    opts.minVibrantSaturation,
+    1,
+    opts
+  );
+  palette3.LightVibrant = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetLightLuma,
+    opts.minLightLuma,
+    1,
+    opts.targetVibrantSaturation,
+    opts.minVibrantSaturation,
+    1,
+    opts
+  );
+  palette3.DarkVibrant = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetDarkLuma,
+    0,
+    opts.maxDarkLuma,
+    opts.targetVibrantSaturation,
+    opts.minVibrantSaturation,
+    1,
+    opts
+  );
+  palette3.Muted = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetNormalLuma,
+    opts.minNormalLuma,
+    opts.maxNormalLuma,
+    opts.targetMutesSaturation,
+    0,
+    opts.maxMutesSaturation,
+    opts
+  );
+  palette3.LightMuted = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetLightLuma,
+    opts.minLightLuma,
+    1,
+    opts.targetMutesSaturation,
+    0,
+    opts.maxMutesSaturation,
+    opts
+  );
+  palette3.DarkMuted = _findColorVariation(
+    palette3,
+    swatches,
+    maxPopulation,
+    opts.targetDarkLuma,
+    0,
+    opts.maxDarkLuma,
+    opts.targetMutesSaturation,
+    0,
+    opts.maxMutesSaturation,
+    opts
+  );
+  return palette3;
+}
+function _generateEmptySwatches(palette3, _maxPopulation, opts) {
+  if (!palette3.Vibrant && !palette3.DarkVibrant && !palette3.LightVibrant) {
+    if (!palette3.DarkVibrant && palette3.DarkMuted) {
+      let [h, s, l] = palette3.DarkMuted.hsl;
+      l = opts.targetDarkLuma;
+      palette3.DarkVibrant = new Swatch(hslToRgb(h, s, l), 0);
+    }
+    if (!palette3.LightVibrant && palette3.LightMuted) {
+      let [h, s, l] = palette3.LightMuted.hsl;
+      l = opts.targetDarkLuma;
+      palette3.DarkVibrant = new Swatch(hslToRgb(h, s, l), 0);
+    }
+  }
+  if (!palette3.Vibrant && palette3.DarkVibrant) {
+    let [h, s, l] = palette3.DarkVibrant.hsl;
+    l = opts.targetNormalLuma;
+    palette3.Vibrant = new Swatch(hslToRgb(h, s, l), 0);
+  } else if (!palette3.Vibrant && palette3.LightVibrant) {
+    let [h, s, l] = palette3.LightVibrant.hsl;
+    l = opts.targetNormalLuma;
+    palette3.Vibrant = new Swatch(hslToRgb(h, s, l), 0);
+  }
+  if (!palette3.DarkVibrant && palette3.Vibrant) {
+    let [h, s, l] = palette3.Vibrant.hsl;
+    l = opts.targetDarkLuma;
+    palette3.DarkVibrant = new Swatch(hslToRgb(h, s, l), 0);
+  }
+  if (!palette3.LightVibrant && palette3.Vibrant) {
+    let [h, s, l] = palette3.Vibrant.hsl;
+    l = opts.targetLightLuma;
+    palette3.LightVibrant = new Swatch(hslToRgb(h, s, l), 0);
+  }
+  if (!palette3.Muted && palette3.Vibrant) {
+    let [h, s, l] = palette3.Vibrant.hsl;
+    l = opts.targetMutesSaturation;
+    palette3.Muted = new Swatch(hslToRgb(h, s, l), 0);
+  }
+  if (!palette3.DarkMuted && palette3.DarkVibrant) {
+    let [h, s, l] = palette3.DarkVibrant.hsl;
+    l = opts.targetMutesSaturation;
+    palette3.DarkMuted = new Swatch(hslToRgb(h, s, l), 0);
+  }
+  if (!palette3.LightMuted && palette3.LightVibrant) {
+    let [h, s, l] = palette3.LightVibrant.hsl;
+    l = opts.targetMutesSaturation;
+    palette3.LightMuted = new Swatch(hslToRgb(h, s, l), 0);
+  }
+}
+var DefaultGenerator = (swatches, opts) => {
+  opts = Object.assign({}, DefaultOpts, opts);
+  const maxPopulation = _findMaxPopulation(swatches);
+  const palette3 = _generateVariationColors(swatches, maxPopulation, opts);
+  _generateEmptySwatches(palette3, maxPopulation, opts);
+  return palette3;
+};
+
+// node_modules/node-vibrant/dist/esm/pipeline/index.js
+var pipeline = new BasicPipeline().filter.register(
+  "default",
+  (r, g, b, a2) => a2 >= 125 && !(r > 250 && g > 250 && b > 250)
+).quantizer.register("mmcq", MMCQ).generator.register("default", DefaultGenerator);
+
+// node_modules/node-vibrant/dist/esm/browser.js
+Vibrant.use(pipeline);
+
+// build/dev/javascript/somachord/vibrant.ffi.mjs
+function palette(imageURL) {
+  return Vibrant.from(imageURL).getPalette();
+}
+function vibrant(palette3) {
+  return palette3.Vibrant;
+}
+function muted(palette3) {
+  return palette3.Muted;
+}
+function dark_muted(palette3) {
+  return palette3.DarkMuted;
+}
+function swatch_hex(swatch) {
+  return swatch.hex;
+}
+
+// build/dev/javascript/somachord/vibrant.mjs
+function palette2(image_url, on_palette) {
+  return from(
+    (dispatch) => {
+      let $ = then_await(
+        palette(image_url),
+        (res) => {
+          return resolve(dispatch(on_palette(new Ok(res))));
+        }
+      );
+      return void 0;
+    }
+  );
+}
+
 // build/dev/javascript/somachord/somachord/elements.mjs
 var FILEPATH8 = "src/somachord/elements.gleam";
 function waveform(attrs) {
@@ -12704,7 +13757,7 @@ function waveform(attrs) {
     "\n<svg width='32' height='32' viewBox='0 0 120 100' xmlns='http://www.w3.org/2000/svg'>\n  <rect x='20' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 60; 10; 40; 0' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>\n    <animate attributeName='y' values='90; 30; 80; 50; 90' dur='1.2s' repeatCount='indefinite' keyTimes='0; 0.3; 0.6; 0.8; 1'></animate>\n  </rect>\n\n  <rect x='40' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 45; 20; 70; 0' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>\n    <animate attributeName='y' values='90; 45; 70; 20; 90' dur='1.3s' repeatCount='indefinite' keyTimes='0; 0.2; 0.5; 0.85; 1'></animate>\n  </rect>\n\n  <rect x='60' y='90' width='5' height='0'>\n    <animate attributeName='height' values='0; 70; 30; 50; 0' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>\n    <animate attributeName='y' values='90; 20; 60; 40; 90' dur='1.1s' repeatCount='indefinite' keyTimes='0; 0.4; 0.7; 0.9; 1'></animate>\n  </rect>\n</svg>\n    "
   );
 }
-function song2(song3, index5, attrs, cover_art, playing, msg) {
+function song2(song3, attrs, cover_art, msg) {
   let _block;
   {
     let _block$1;
@@ -12719,10 +13772,10 @@ function song2(song3, index5, attrs, cover_art, playing, msg) {
         "let_assert",
         FILEPATH8,
         "somachord/elements",
-        33,
+        32,
         "song",
         "Pattern match failed, no pattern matched the value.",
-        { value: $, start: 877, end: 937, pattern_start: 888, pattern_end: 895 }
+        { value: $, start: 847, end: 907, pattern_start: 858, pattern_end: 865 }
       );
     }
     _block = stg.auth;
@@ -12731,55 +13784,56 @@ function song2(song3, index5, attrs, cover_art, playing, msg) {
   let layout2 = layout();
   return div(
     prepend(
-      class$(
-        "group hover:bg-zinc-800 rounded-md p-2 -mt-3 flex justify-between gap-2"
-      ),
-      prepend(on("dblclick", success(msg)), attrs)
+      (() => {
+        if (layout2 instanceof Desktop) {
+          return none();
+        } else {
+          return class$(
+            "duration-50 transition-all active:scale-[98%]"
+          );
+        }
+      })(),
+      prepend(
+        class$(
+          "before:-mr-4 before:content-[attr(data-index)] before:w-2 before:text-zinc-600 before:font-[Azeret_Mono] before:font-light before:text-sm before:text-right before:self-center hover:before:invisible data-playing:before:invisible"
+        ),
+        prepend(
+          class$(
+            "group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2"
+          ),
+          prepend(on("dblclick", success(msg)), attrs)
+        )
+      )
     ),
     toList([
       div(
-        toList([class$("flex gap-4 items-center")]),
+        toList([class$("flex flex-grow gap-4 items-center")]),
         toList([
-          (() => {
-            if (index5 === -1) {
-              return none3();
-            } else {
-              return div(
-                toList([class$("w-5 grid grid-rows-1 grid-cols-1")]),
+          div(
+            toList([
+              class$(
+                "group-data-[index=-1]:hidden not-group-data-index:hidden w-5 grid grid-rows-1 grid-cols-1"
+              )
+            ]),
+            toList([
+              waveform(
                 toList([
-                  (() => {
-                    if (playing) {
-                      return waveform(
-                        toList([
-                          class$(
-                            "col-start-1 row-start-1 group-hover:hidden fill-violet-400"
-                          )
-                        ])
-                      );
-                    } else {
-                      return span(
-                        toList([
-                          class$(
-                            "col-start-1 row-start-1 group-hover:hidden text-zinc-600 font-[Azeret_Mono] font-light text-sm text-right"
-                          )
-                        ]),
-                        toList([text2(to_string2(index5 + 1))])
-                      );
-                    }
-                  })(),
-                  i(
-                    toList([
-                      on_click(msg),
-                      class$(
-                        "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block"
-                      )
-                    ]),
-                    toList([])
+                  class$(
+                    "group-hover:hidden not-group-data-playing:hidden col-start-1 row-start-1 group-[.has-dynamic-color]:fill-(--dynamic-color)! fill-violet-400"
                   )
                 ])
-              );
-            }
-          })(),
+              ),
+              i(
+                toList([
+                  on_click(msg),
+                  class$(
+                    "text-sm col-start-1 row-start-1 ph-fill ph-play hidden group-hover:block"
+                  )
+                ]),
+                toList([])
+              )
+            ])
+          ),
           div(
             toList([class$("flex gap-2 items-center")]),
             toList([
@@ -12812,14 +13866,9 @@ function song2(song3, index5, attrs, cover_art, playing, msg) {
                   (() => {
                     let $ = span(
                       toList([
-                        class$("text-wrap text-sm hover:underline"),
-                        (() => {
-                          if (playing) {
-                            return class$("text-violet-400");
-                          } else {
-                            return class$("text-zinc-100");
-                          }
-                        })()
+                        class$(
+                          "group-[.has-dynamic-color]:group-data-playing:text-(--dynamic-color)! text-violet-400 not-group-data-playing:text-zinc-100 select-none text-wrap text-sm hover:underline"
+                        )
                       ]),
                       toList([text2(song3.title)])
                     );
@@ -12835,7 +13884,9 @@ function song2(song3, index5, attrs, cover_art, playing, msg) {
                   })(),
                   span(
                     toList([
-                      class$("text-sm text-zinc-500 font-light")
+                      class$(
+                        "select-none text-sm text-zinc-500 font-light"
+                      )
                     ]),
                     (() => {
                       let _pipe = map(
@@ -12929,15 +13980,15 @@ function album2(album3, handler) {
         "let_assert",
         FILEPATH8,
         "somachord/elements",
-        197,
+        195,
         "album",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6520,
-          end: 6580,
-          pattern_start: 6531,
-          pattern_end: 6538
+          start: 6691,
+          end: 6751,
+          pattern_start: 6702,
+          pattern_end: 6709
         }
       );
     }
@@ -13071,15 +14122,15 @@ function playlist2(playlist3, handler) {
         "let_assert",
         FILEPATH8,
         "somachord/elements",
-        303,
+        301,
         "playlist",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9718,
-          end: 9778,
-          pattern_start: 9729,
-          pattern_end: 9736
+          start: 9889,
+          end: 9949,
+          pattern_start: 9900,
+          pattern_end: 9907
         }
       );
     }
@@ -13293,15 +14344,28 @@ function nav_button(inactive, active2, name2, is_active, attrs) {
     ])
   );
 }
-function music_slider(m, attrs) {
+function music_slider(m, dynamic2, attrs) {
   return div(
     prepend(class$("grid grid-cols-1 grid-rows-1"), attrs),
     toList([
       div(
         toList([
-          class$(
-            "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5"
-          )
+          class$("col-start-1 row-start-1 rounded-full h-1.5"),
+          (() => {
+            let $ = m.current_palette.empty;
+            if (!$ && dynamic2) {
+              return style(
+                "background-color",
+                (() => {
+                  let _pipe = m.current_palette;
+                  let _pipe$1 = muted(_pipe);
+                  return swatch_hex(_pipe$1);
+                })()
+              );
+            } else {
+              return class$("bg-zinc-800");
+            }
+          })()
         ]),
         toList([
           div(
@@ -13354,15 +14418,15 @@ function music_slider(m, attrs) {
                     "let_assert",
                     FILEPATH8,
                     "somachord/elements",
-                    520,
+                    528,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15913,
-                      end: 15960,
-                      pattern_start: 15924,
-                      pattern_end: 15939
+                      start: 16350,
+                      end: 16397,
+                      pattern_start: 16361,
+                      pattern_end: 16376
                     }
                   );
                 }
@@ -13444,9 +14508,22 @@ function tab_element(m, tab) {
         if ($) {
           return div(
             toList([
-              class$(
-                "absolute top-9.25 w-full h-1 border-b border-violet-500"
-              )
+              class$("absolute top-9.25 w-full h-1 border-b"),
+              (() => {
+                let $1 = m.current_palette.empty;
+                if ($1) {
+                  return class$("border-violet-500");
+                } else {
+                  return style(
+                    "border-color",
+                    (() => {
+                      let _pipe = m.current_palette;
+                      let _pipe$1 = vibrant(_pipe);
+                      return swatch_hex(_pipe$1);
+                    })()
+                  );
+                }
+              })()
             ]),
             toList([])
           );
@@ -13472,10 +14549,16 @@ function view_desktop(m) {
         "let_assert",
         FILEPATH9,
         "somachord/components/fullscreen_player",
-        43,
+        85,
         "view_desktop",
         "Pattern match failed, no pattern matched the value.",
-        { value: $, start: 958, end: 1011, pattern_start: 969, pattern_end: 976 }
+        {
+          value: $,
+          start: 2112,
+          end: 2165,
+          pattern_start: 2123,
+          pattern_end: 2130
+        }
       );
     }
     _block = stg.auth;
@@ -13483,338 +14566,496 @@ function view_desktop(m) {
   let auth_details = _block;
   return div(
     toList([
+      (() => {
+        let $ = m.current_palette.empty;
+        if ($) {
+          return class$("bg-zinc-950");
+        } else {
+          return style(
+            "background",
+            "radial-gradient(circle at left," + (() => {
+              let _pipe = m.current_palette;
+              let _pipe$1 = muted(_pipe);
+              return swatch_hex(_pipe$1);
+            })() + " 0%, #000000 100%);"
+          );
+        }
+      })(),
       class$(
-        "bg-zinc-950 border-t border-zinc-800 flex flex-col gap-8 min-w-0 min-h-0 w-full h-full p-8"
+        "border-t border-zinc-800 flex flex-col gap-8 min-w-0 min-h-0 w-full h-full"
       )
     ]),
     toList([
       div(
-        toList([class$("flex gap-8")]),
         toList([
-          i(
-            toList([
-              class$("text-3xl ph ph-caret-down"),
-              on_click(new ToggleFullscreenPlayer())
-            ]),
-            toList([])
+          class$(
+            "backdrop-blur-lg bg-zinc-950/50 flex flex-col gap-8  min-w-0 min-h-0 w-full h-full p-8"
           )
-        ])
-      ),
-      div(
-        toList([class$("overflow-hidden flex-1 flex gap-8")]),
+        ]),
         toList([
           div(
+            toList([class$("flex gap-8")]),
             toList([
-              class$(
-                "w-1/2 flex flex-col items-center justify-center gap-8"
-              )
-            ]),
-            toList([
-              img(
+              i(
                 toList([
-                  src(
-                    (() => {
-                      let _pipe = create_uri(
-                        "/rest/getCoverArt.view",
-                        auth_details,
+                  class$("text-3xl ph ph-caret-down"),
+                  on_click(new ToggleFullscreenPlayer())
+                ]),
+                toList([])
+              )
+            ])
+          ),
+          div(
+            toList([class$("overflow-hidden flex-1 flex gap-8")]),
+            toList([
+              div(
+                toList([
+                  class$(
+                    "w-1/2 flex flex-col items-center justify-center gap-8"
+                  )
+                ]),
+                toList([
+                  (() => {
+                    let $ = m.current_song.cover_art_id === "";
+                    if ($) {
+                      return div(
                         toList([
-                          ["id", m.current_song.cover_art_id],
-                          ["size", "500"]
+                          class$(
+                            "bg-zinc-900 rounded-md w-120 h-120 flex justify-center items-center"
+                          )
+                        ]),
+                        toList([
+                          i(
+                            toList([
+                              class$(
+                                "text-zinc-500 self-center align-self-center text-[10em] ph ph-music-notes-simple"
+                              )
+                            ]),
+                            toList([])
+                          )
                         ])
                       );
-                      return to_string3(_pipe);
-                    })()
-                  ),
-                  class$(
-                    "max-w-120 max-h-120 self-center object-fit rounded-md"
-                  )
-                ])
-              ),
-              div(
-                toList([class$("w-full")]),
-                toList([
-                  div(
-                    toList([class$("flex justify-between min-w-0")]),
-                    toList([
-                      a(
+                    } else {
+                      return img(
                         toList([
-                          href("/song/" + m.current_song.id),
-                          on_click(new ToggleFullscreenPlayer()),
+                          src(
+                            (() => {
+                              let _pipe = create_uri(
+                                "/rest/getCoverArt.view",
+                                auth_details,
+                                toList([
+                                  ["id", m.current_song.cover_art_id],
+                                  ["size", "500"]
+                                ])
+                              );
+                              return to_string3(_pipe);
+                            })()
+                          ),
                           class$(
-                            "overflow-hidden text-nowrap text-ellipsis min-w-0"
+                            "max-w-120 max-h-120 self-center object-fit rounded-md"
+                          )
+                        ])
+                      );
+                    }
+                  })(),
+                  div(
+                    toList([class$("w-full")]),
+                    toList([
+                      div(
+                        toList([
+                          class$("flex justify-between min-w-0")
+                        ]),
+                        toList([
+                          a(
+                            toList([
+                              href("/song/" + m.current_song.id),
+                              on_click(new ToggleFullscreenPlayer()),
+                              class$(
+                                "overflow-hidden text-nowrap text-ellipsis min-w-0"
+                              )
+                            ]),
+                            toList([
+                              span(
+                                toList([
+                                  class$(
+                                    "hover:underline font-bold text-2xl"
+                                  )
+                                ]),
+                                toList([text2(m.current_song.title)])
+                              )
+                            ])
+                          ),
+                          div(
+                            toList([class$("flex gap-2")]),
+                            toList([
+                              i(
+                                prepend(
+                                  class$(
+                                    "text-3xl ph-heart-straight"
+                                  ),
+                                  prepend(
+                                    on_click(new Like()),
+                                    (() => {
+                                      let $ = m.current_song.starred;
+                                      if ($) {
+                                        let $1 = m.current_palette.empty;
+                                        if ($1) {
+                                          return toList([
+                                            class$(
+                                              "ph-fill text-violet-500"
+                                            )
+                                          ]);
+                                        } else {
+                                          return toList([
+                                            class$("ph-fill"),
+                                            style(
+                                              "color",
+                                              (() => {
+                                                let _pipe = m.current_palette;
+                                                let _pipe$1 = vibrant(
+                                                  _pipe
+                                                );
+                                                return swatch_hex(_pipe$1);
+                                              })()
+                                            )
+                                          ]);
+                                        }
+                                      } else {
+                                        return toList([class$("ph")]);
+                                      }
+                                    })()
+                                  )
+                                ),
+                                toList([])
+                              )
+                            ])
+                          )
+                        ])
+                      ),
+                      span(
+                        toList([
+                          class$(
+                            "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0"
+                          )
+                        ]),
+                        (() => {
+                          let _pipe = map(
+                            m.current_song.artists,
+                            (artist2) => {
+                              return a(
+                                toList([
+                                  href("/artist/" + artist2.id),
+                                  on_click(
+                                    new ToggleFullscreenPlayer()
+                                  )
+                                ]),
+                                toList([
+                                  span(
+                                    toList([
+                                      class$("hover:underline")
+                                    ]),
+                                    toList([text2(artist2.name)])
+                                  )
+                                ])
+                              );
+                            }
+                          );
+                          return intersperse(_pipe, text2(", "));
+                        })()
+                      )
+                    ])
+                  ),
+                  div(
+                    toList([class$("space-y-1 w-full")]),
+                    toList([
+                      div(
+                        toList([
+                          class$(
+                            "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]"
                           )
                         ]),
                         toList([
                           span(
+                            toList([]),
                             toList([
-                              class$(
-                                "hover:underline font-bold text-2xl"
+                              text2(
+                                (() => {
+                                  let minutes2 = globalThis.Math.trunc(
+                                    round2(
+                                      (() => {
+                                        let _pipe = m.player;
+                                        return time(_pipe);
+                                      })()
+                                    ) / 60
+                                  );
+                                  let seconds3 = round2(
+                                    (() => {
+                                      let _pipe = m.player;
+                                      return time(_pipe);
+                                    })()
+                                  ) % 60;
+                                  return to_string2(minutes2) + ":" + (() => {
+                                    let _pipe = to_string2(seconds3);
+                                    return pad_start(_pipe, 2, "0");
+                                  })();
+                                })()
                               )
-                            ]),
-                            toList([text2(m.current_song.title)])
+                            ])
+                          ),
+                          music_slider(
+                            m,
+                            true,
+                            toList([class$("w-full")])
+                          ),
+                          span(
+                            toList([]),
+                            toList([
+                              text2(
+                                (() => {
+                                  let minutes2 = globalThis.Math.trunc(
+                                    m.current_song.duration / 60
+                                  );
+                                  let seconds3 = m.current_song.duration % 60;
+                                  return to_string2(minutes2) + ":" + (() => {
+                                    let _pipe = to_string2(seconds3);
+                                    return pad_start(_pipe, 2, "0");
+                                  })();
+                                })()
+                              )
+                            ])
                           )
                         ])
                       ),
                       div(
-                        toList([class$("flex gap-2")]),
+                        toList([
+                          class$(
+                            "flex gap-4 justify-center items-center"
+                          )
+                        ]),
                         toList([
                           i(
+                            prepend(
+                              class$("text-2xl ph ph-shuffle-simple"),
+                              prepend(
+                                on_click(new PlayerShuffle()),
+                                (() => {
+                                  let $ = m.shuffled;
+                                  if ($) {
+                                    let $1 = m.current_palette.empty;
+                                    if ($1) {
+                                      return toList([
+                                        class$(
+                                          "text-violet-500 underline underline-offset-4 decoration-dotted"
+                                        )
+                                      ]);
+                                    } else {
+                                      return toList([
+                                        class$(
+                                          "underline underline-offset-4 decoration-dotted"
+                                        ),
+                                        style(
+                                          "color",
+                                          (() => {
+                                            let _pipe = m.current_palette;
+                                            let _pipe$1 = vibrant(
+                                              _pipe
+                                            );
+                                            return swatch_hex(_pipe$1);
+                                          })()
+                                        )
+                                      ]);
+                                    }
+                                  } else {
+                                    return toList([none()]);
+                                  }
+                                })()
+                              )
+                            ),
+                            toList([])
+                          ),
+                          i(
                             toList([
-                              (() => {
-                                let $ = m.current_song.starred;
-                                if ($) {
-                                  return class$(
-                                    "ph-fill text-violet-500"
-                                  );
-                                } else {
-                                  return class$("ph");
-                                }
-                              })(),
-                              class$("text-3xl ph-heart-straight"),
-                              on_click(new Like())
+                              class$("text-2xl ph-fill ph-skip-back"),
+                              on_click(new PlayerPrevious())
                             ]),
                             toList([])
                           ),
                           i(
                             toList([
-                              class$("text-3xl ph ph-plus-circle")
+                              class$("text-5xl ph-fill"),
+                              (() => {
+                                let $ = (() => {
+                                  let _pipe = m.player;
+                                  return is_paused(_pipe);
+                                })();
+                                if ($) {
+                                  return class$("ph-play-circle");
+                                } else {
+                                  return class$("ph-pause-circle");
+                                }
+                              })(),
+                              on_click(new PlayerPausePlay())
                             ]),
+                            toList([])
+                          ),
+                          i(
+                            toList([
+                              class$(
+                                "text-2xl ph-fill ph-skip-forward"
+                              ),
+                              on_click(new PlayerNext())
+                            ]),
+                            toList([])
+                          ),
+                          i(
+                            prepend(
+                              class$("text-2xl ph ph-repeat-once"),
+                              prepend(
+                                on_click(new PlayerLoop()),
+                                (() => {
+                                  let $ = m.looping;
+                                  if ($) {
+                                    let $1 = m.current_palette.empty;
+                                    if ($1) {
+                                      return toList([
+                                        class$(
+                                          "text-violet-500 underline underline-offset-4 decoration-dotted"
+                                        )
+                                      ]);
+                                    } else {
+                                      return toList([
+                                        class$(
+                                          "underline underline-offset-4 decoration-dotted"
+                                        ),
+                                        style(
+                                          "color",
+                                          (() => {
+                                            let _pipe = m.current_palette;
+                                            let _pipe$1 = vibrant(
+                                              _pipe
+                                            );
+                                            return swatch_hex(_pipe$1);
+                                          })()
+                                        )
+                                      ]);
+                                    }
+                                  } else {
+                                    return toList([none()]);
+                                  }
+                                })()
+                              )
+                            ),
                             toList([])
                           )
                         ])
                       )
                     ])
-                  ),
-                  span(
-                    toList([
-                      class$(
-                        "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0"
-                      )
-                    ]),
-                    (() => {
-                      let _pipe = map(
-                        m.current_song.artists,
-                        (artist2) => {
-                          return a(
-                            toList([
-                              href("/artist/" + artist2.id),
-                              on_click(new ToggleFullscreenPlayer())
-                            ]),
-                            toList([
-                              span(
-                                toList([class$("hover:underline")]),
-                                toList([text2(artist2.name)])
-                              )
-                            ])
-                          );
-                        }
-                      );
-                      return intersperse(_pipe, text2(", "));
-                    })()
                   )
                 ])
               ),
               div(
-                toList([class$("space-y-1 w-full")]),
+                toList([class$("w-1/2 flex flex-col")]),
                 toList([
                   div(
                     toList([
                       class$(
-                        "flex gap-2 items-center font-[Azeret_Mono] text-zinc-400 text-[0.6rem]"
+                        "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 mb-2"
                       )
                     ]),
                     toList([
-                      span(
-                        toList([]),
-                        toList([
-                          text2(
-                            (() => {
-                              let minutes2 = globalThis.Math.trunc(
-                                round2(
-                                  (() => {
-                                    let _pipe = m.player;
-                                    return time(_pipe);
-                                  })()
-                                ) / 60
-                              );
-                              let seconds3 = round2(
-                                (() => {
-                                  let _pipe = m.player;
-                                  return time(_pipe);
-                                })()
-                              ) % 60;
-                              return to_string2(minutes2) + ":" + (() => {
-                                let _pipe = to_string2(seconds3);
-                                return pad_start(_pipe, 2, "0");
-                              })();
-                            })()
-                          )
-                        ])
-                      ),
-                      music_slider(
-                        m,
-                        toList([class$("w-full")])
-                      ),
-                      span(
-                        toList([]),
-                        toList([
-                          text2(
-                            (() => {
-                              let minutes2 = globalThis.Math.trunc(
-                                m.current_song.duration / 60
-                              );
-                              let seconds3 = m.current_song.duration % 60;
-                              return to_string2(minutes2) + ":" + (() => {
-                                let _pipe = to_string2(seconds3);
-                                return pad_start(_pipe, 2, "0");
-                              })();
-                            })()
-                          )
-                        ])
-                      )
+                      tab_element(m, new Default()),
+                      tab_element(m, new Lyrics())
                     ])
                   ),
-                  div(
-                    toList([
-                      class$(
-                        "flex gap-4 justify-center items-center"
-                      )
-                    ]),
-                    toList([
-                      i(
+                  (() => {
+                    let $ = m.fullscreen_player_display;
+                    if ($ instanceof Default) {
+                      return div(
                         toList([
-                          class$("text-2xl ph ph-shuffle-simple"),
-                          (() => {
-                            let $ = m.shuffled;
-                            if ($) {
-                              return class$(
-                                "text-violet-400 underline underline-offset-4 decoration-dotted"
-                              );
-                            } else {
-                              return none();
-                            }
-                          })(),
-                          on_click(new PlayerShuffle())
+                          class$("overflow-y-auto"),
+                          class$(scrollbar_class),
+                          class$("flex flex-col gap-2 pt-2")
                         ]),
-                        toList([])
-                      ),
-                      i(
+                        map(
+                          list4(m.queue),
+                          (queue_entry) => {
+                            return song2(
+                              queue_entry[1],
+                              prepend(
+                                attribute2(
+                                  "data-index",
+                                  (() => {
+                                    let _pipe = queue_entry[0] + 1;
+                                    return to_string2(_pipe);
+                                  })()
+                                ),
+                                prepend(
+                                  (() => {
+                                    let $1 = m.current_song.id === queue_entry[1].id;
+                                    if ($1) {
+                                      return attribute2(
+                                        "data-playing",
+                                        ""
+                                      );
+                                    } else {
+                                      return none();
+                                    }
+                                  })(),
+                                  (() => {
+                                    let $1 = m.current_palette.empty;
+                                    if ($1) {
+                                      return toList([none()]);
+                                    } else {
+                                      return toList([
+                                        style(
+                                          "--dynamic-color",
+                                          (() => {
+                                            let _pipe = m.current_palette;
+                                            let _pipe$1 = vibrant(
+                                              _pipe
+                                            );
+                                            return swatch_hex(_pipe$1);
+                                          })()
+                                        ),
+                                        class$("has-dynamic-color")
+                                      ]);
+                                    }
+                                  })()
+                                )
+                              ),
+                              true,
+                              new QueueJumpTo(queue_entry[0])
+                            );
+                          }
+                        )
+                      );
+                    } else {
+                      return element4(
                         toList([
-                          class$("text-2xl ph-fill ph-skip-back"),
-                          on_click(new PlayerPrevious())
-                        ]),
-                        toList([])
-                      ),
-                      i(
-                        toList([
-                          class$("text-5xl ph-fill"),
-                          (() => {
-                            let $ = (() => {
+                          class$("overflow-y-auto"),
+                          class$(scrollbar_class),
+                          id2(m.current_song.id),
+                          song_time(
+                            (() => {
                               let _pipe = m.player;
-                              return is_paused(_pipe);
-                            })();
-                            if ($) {
-                              return class$("ph-play-circle");
-                            } else {
-                              return class$("ph-pause-circle");
-                            }
-                          })(),
-                          on_click(new PlayerPausePlay())
-                        ]),
-                        toList([])
-                      ),
-                      i(
-                        toList([
-                          class$("text-2xl ph-fill ph-skip-forward"),
-                          on_click(new PlayerNext())
-                        ]),
-                        toList([])
-                      ),
-                      i(
-                        toList([
-                          class$("text-2xl ph ph-repeat-once"),
+                              return time(_pipe);
+                            })()
+                          ),
+                          size2(new Large()),
                           (() => {
-                            let $ = m.looping;
-                            if ($) {
-                              return class$(
-                                "text-violet-400 underline underline-offset-4 decoration-dotted"
-                              );
+                            let $1 = m.fullscreen_player_open;
+                            if ($1) {
+                              return auto_scroll(true);
                             } else {
-                              return none();
+                              return auto_scroll(false);
                             }
-                          })(),
-                          on_click(new PlayerLoop())
-                        ]),
-                        toList([])
-                      )
-                    ])
-                  )
+                          })()
+                        ])
+                      );
+                    }
+                  })()
                 ])
               )
-            ])
-          ),
-          div(
-            toList([class$("w-1/2 flex flex-col")]),
-            toList([
-              div(
-                toList([
-                  class$(
-                    "border-b border-zinc-800 py-4 px-8 relative flex gap-8 text-zinc-400 bg-zinc-950 mb-2"
-                  )
-                ]),
-                toList([
-                  tab_element(m, new Default()),
-                  tab_element(m, new Lyrics())
-                ])
-              ),
-              (() => {
-                let $ = m.fullscreen_player_display;
-                if ($ instanceof Default) {
-                  return div(
-                    toList([
-                      class$("overflow-y-auto"),
-                      class$(scrollbar_class),
-                      class$("flex flex-col gap-2 pt-2")
-                    ]),
-                    map(
-                      list4(m.queue),
-                      (queue_entry) => {
-                        return song2(
-                          queue_entry[1],
-                          queue_entry[0],
-                          toList([]),
-                          true,
-                          m.current_song.id === queue_entry[1].id,
-                          new QueueJumpTo(queue_entry[0])
-                        );
-                      }
-                    )
-                  );
-                } else {
-                  return element4(
-                    toList([
-                      class$("overflow-y-auto"),
-                      class$(scrollbar_class),
-                      id2(m.current_song.id),
-                      song_time(
-                        (() => {
-                          let _pipe = m.player;
-                          return time(_pipe);
-                        })()
-                      ),
-                      size2(new Large()),
-                      (() => {
-                        let $1 = m.fullscreen_player_open;
-                        if ($1) {
-                          return auto_scroll(true);
-                        } else {
-                          return auto_scroll(false);
-                        }
-                      })()
-                    ])
-                  );
-                }
-              })()
             ])
           )
         ])
@@ -13837,15 +15078,15 @@ function view_info(m) {
         "let_assert",
         FILEPATH9,
         "somachord/components/fullscreen_player",
-        518,
+        696,
         "view_info",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 16672,
-          end: 16725,
-          pattern_start: 16683,
-          pattern_end: 16690
+          start: 24645,
+          end: 24698,
+          pattern_start: 24656,
+          pattern_end: 24663
         }
       );
     }
@@ -13879,7 +15120,7 @@ function view_info(m) {
       toList([]),
       toList([
         div(
-          toList([class$("flex justify-between min-w-0")]),
+          toList([class$("flex gap-2 justify-between min-w-0")]),
           toList([
             a(
               toList([
@@ -13902,22 +15143,37 @@ function view_info(m) {
               toList([class$("flex gap-2")]),
               toList([
                 i(
-                  toList([
-                    (() => {
-                      let $ = m.current_song.starred;
-                      if ($) {
-                        return class$("ph-fill text-violet-500");
-                      } else {
-                        return class$("ph");
-                      }
-                    })(),
+                  prepend(
                     class$("text-3xl ph-heart-straight"),
-                    on_click(new Like())
-                  ]),
-                  toList([])
-                ),
-                i(
-                  toList([class$("text-3xl ph ph-plus-circle")]),
+                    prepend(
+                      on_click(new Like()),
+                      (() => {
+                        let $ = m.current_song.starred;
+                        if ($) {
+                          let $1 = m.current_palette.empty;
+                          if ($1) {
+                            return toList([
+                              class$("ph-fill text-violet-500")
+                            ]);
+                          } else {
+                            return toList([
+                              class$("ph-fill"),
+                              style(
+                                "color",
+                                (() => {
+                                  let _pipe = m.current_palette;
+                                  let _pipe$1 = vibrant(_pipe);
+                                  return swatch_hex(_pipe$1);
+                                })()
+                              )
+                            ]);
+                          }
+                        } else {
+                          return toList([class$("ph")]);
+                        }
+                      })()
+                    )
+                  ),
                   toList([])
                 )
               ])
@@ -13958,8 +15214,23 @@ function view_info(m) {
 function view_mobile(m) {
   return div(
     toList([
+      (() => {
+        let $ = m.current_palette.empty;
+        if ($) {
+          return class$("bg-zinc-900");
+        } else {
+          return style(
+            "background",
+            "linear-gradient(180deg," + (() => {
+              let _pipe = m.current_palette;
+              let _pipe$1 = dark_muted(_pipe);
+              return swatch_hex(_pipe$1);
+            })() + " 0%, oklch(21% 0.006 285.885) 75%);"
+          );
+        }
+      })(),
       class$(
-        "bg-zinc-900 w-full h-full flex flex-col [@media(max-height:700px)]:gap-2 gap-8 px-8 [@media(max-height:700px)]:py-4 py-16"
+        "w-full h-full flex flex-col [@media(max-height:700px)]:gap-2 gap-8 px-8 [@media(max-height:700px)]:py-4 py-16"
       )
     ]),
     toList([
@@ -13990,7 +15261,23 @@ function view_mobile(m) {
                 ]),
                 toList([
                   waveform(
-                    toList([class$("fill-violet-500")])
+                    toList([
+                      (() => {
+                        let $1 = m.current_palette.empty;
+                        if ($1) {
+                          return class$("fill-violet-500");
+                        } else {
+                          return style(
+                            "fill",
+                            (() => {
+                              let _pipe = m.current_palette;
+                              let _pipe$1 = vibrant(_pipe);
+                              return swatch_hex(_pipe$1);
+                            })()
+                          );
+                        }
+                      })()
+                    ])
                   ),
                   text2(m.current_song.title)
                 ])
@@ -14046,7 +15333,11 @@ function view_mobile(m) {
           div(
             toList([class$("space-y-2")]),
             toList([
-              music_slider(m, toList([class$("w-full")])),
+              music_slider(
+                m,
+                false,
+                toList([class$("w-full")])
+              ),
               div(
                 toList([
                   class$(
@@ -14108,20 +15399,41 @@ function view_mobile(m) {
             ]),
             toList([
               i(
-                toList([
+                prepend(
                   class$("text-2xl ph ph-shuffle-simple"),
-                  (() => {
-                    let $ = m.shuffled;
-                    if ($) {
-                      return class$(
-                        "text-violet-400 underline underline-offset-4 decoration-dotted"
-                      );
-                    } else {
-                      return none();
-                    }
-                  })(),
-                  on_click(new PlayerShuffle())
-                ]),
+                  prepend(
+                    on_click(new PlayerShuffle()),
+                    (() => {
+                      let $ = m.shuffled;
+                      if ($) {
+                        let $1 = m.current_palette.empty;
+                        if ($1) {
+                          return toList([
+                            class$(
+                              "text-violet-500 underline underline-offset-4 decoration-dotted"
+                            )
+                          ]);
+                        } else {
+                          return toList([
+                            class$(
+                              "underline underline-offset-4 decoration-dotted"
+                            ),
+                            style(
+                              "color",
+                              (() => {
+                                let _pipe = m.current_palette;
+                                let _pipe$1 = vibrant(_pipe);
+                                return swatch_hex(_pipe$1);
+                              })()
+                            )
+                          ]);
+                        }
+                      } else {
+                        return toList([none()]);
+                      }
+                    })()
+                  )
+                ),
                 toList([])
               ),
               i(
@@ -14157,20 +15469,41 @@ function view_mobile(m) {
                 toList([])
               ),
               i(
-                toList([
+                prepend(
                   class$("text-2xl ph ph-repeat-once"),
-                  (() => {
-                    let $ = m.looping;
-                    if ($) {
-                      return class$(
-                        "text-violet-400 underline underline-offset-4 decoration-dotted"
-                      );
-                    } else {
-                      return none();
-                    }
-                  })(),
-                  on_click(new PlayerLoop())
-                ]),
+                  prepend(
+                    on_click(new PlayerLoop()),
+                    (() => {
+                      let $ = m.looping;
+                      if ($) {
+                        let $1 = m.current_palette.empty;
+                        if ($1) {
+                          return toList([
+                            class$(
+                              "text-violet-500 underline underline-offset-4 decoration-dotted"
+                            )
+                          ]);
+                        } else {
+                          return toList([
+                            class$(
+                              "underline underline-offset-4 decoration-dotted"
+                            ),
+                            style(
+                              "color",
+                              (() => {
+                                let _pipe = m.current_palette;
+                                let _pipe$1 = vibrant(_pipe);
+                                return swatch_hex(_pipe$1);
+                              })()
+                            )
+                          ]);
+                        }
+                      } else {
+                        return toList([none()]);
+                      }
+                    })()
+                  )
+                ),
                 toList([])
               )
             ])
@@ -14640,7 +15973,7 @@ function update3(m, message2) {
               (() => {
                 let $4 = am_i_electron();
                 if ($4) {
-                  return location();
+                  return location2();
                 } else {
                   return "/";
                 }
@@ -14705,7 +16038,7 @@ function update3(m, message2) {
       }
     } else {
       let e = $[0];
-      echo5(e, void 0, "src/somachord/components/login.gleam", 109);
+      echo4(e, void 0, "src/somachord/components/login.gleam", 109);
       throw makeError(
         "panic",
         FILEPATH10,
@@ -15005,11 +16338,11 @@ function register2() {
   let component2 = component(init3, update3, view4, toList([]));
   return make_component(component2, "login-page");
 }
-function echo5(value3, message2, file, line) {
+function echo4(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector5();
+  const inspector = new Echo$Inspector4();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -15029,7 +16362,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector5 = class {
+var Echo$Inspector4 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -15556,12 +16889,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistWithSongs2) {
@@ -15584,12 +16917,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
       return [m, none2()];
     }
   } else if (msg instanceof CreatePlaylist) {
@@ -15612,12 +16945,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo6(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
       return [m, none2()];
     }
   } else {
@@ -15808,11 +17141,11 @@ function register3() {
   );
   return make_component(component2, "playlist-menu");
 }
-function echo6(value3, message2, file, line) {
+function echo5(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector6();
+  const inspector = new Echo$Inspector5();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -15832,7 +17165,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector6 = class {
+var Echo$Inspector5 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -16315,24 +17648,16 @@ function desktop_page(m, id3) {
                         (song3, index5) => {
                           return song2(
                             song3,
-                            index5,
-                            (() => {
-                              let $ = m.layout;
-                              if ($ instanceof Desktop) {
-                                return toList([none()]);
-                              } else {
-                                return toList([
-                                  on_click(
-                                    new StreamAlbum(album3, index5)
-                                  ),
-                                  class$(
-                                    "duration-50 transition-all active:scale-[98%] active:bg-zinc-900"
-                                  )
-                                ]);
-                              }
-                            })(),
+                            toList([
+                              attribute2(
+                                "data-index",
+                                (() => {
+                                  let _pipe3 = index5 + 1;
+                                  return to_string2(_pipe3);
+                                })()
+                              )
+                            ]),
                             false,
-                            m.current_song.id === song3.id,
                             new StreamAlbum(album3, index5)
                           );
                         }
@@ -16580,15 +17905,15 @@ function update5(m, msg) {
             "let_assert",
             FILEPATH13,
             "somachord/pages/artist",
-            116,
+            117,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 2530,
-              end: 2583,
-              pattern_start: 2541,
-              pattern_end: 2566
+              start: 2547,
+              end: 2600,
+              pattern_start: 2558,
+              pattern_end: 2583
             }
           );
         }
@@ -16614,7 +17939,7 @@ function update5(m, msg) {
           "panic",
           FILEPATH13,
           "somachord/pages/artist",
-          122,
+          123,
           "update",
           "idk this guy",
           {}
@@ -16708,22 +18033,17 @@ function view_home(m) {
             (song3, index5) => {
               return song2(
                 song3,
-                index5,
-                (() => {
-                  let $ = m.layout;
-                  if ($ instanceof Desktop) {
-                    return toList([none()]);
-                  } else {
-                    return toList([
-                      on_click(new PlaySong(song3.id)),
-                      class$(
-                        "transition-all active:scale-[98%] active:bg-zinc-900"
-                      )
-                    ]);
-                  }
-                })(),
+                toList([
+                  attribute2(
+                    "data-index",
+                    (() => {
+                      let _pipe = index5 + 1;
+                      return to_string2(_pipe);
+                    })()
+                  ),
+                  on_click(new PlaySong(song3.id))
+                ]),
                 true,
-                false,
                 new PlaySong(song3.id)
               );
             }
@@ -17198,14 +18518,14 @@ function update6(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo7("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
-        echo7(e, void 0, "src/somachord/pages/home.gleam", 99);
+        echo6("subsonic error", void 0, "src/somachord/pages/home.gleam", 98);
+        echo6(e, void 0, "src/somachord/pages/home.gleam", 99);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo7("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
-      echo7(e, void 0, "src/somachord/pages/home.gleam", 104);
+      echo6("rsvp error", void 0, "src/somachord/pages/home.gleam", 103);
+      echo6(e, void 0, "src/somachord/pages/home.gleam", 104);
       return [m, none2()];
     }
   } else if (msg instanceof Play2) {
@@ -17312,11 +18632,11 @@ function register5() {
   );
   return make_component(app, "home-page");
 }
-function echo7(value3, message2, file, line) {
+function echo6(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector7();
+  const inspector = new Echo$Inspector6();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -17336,7 +18656,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector7 = class {
+var Echo$Inspector6 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -18163,12 +19483,12 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 162);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 162);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 162);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 162);
       return [m, none2()];
     }
   } else if (msg instanceof LikedSongsResponse) {
@@ -18206,17 +19526,17 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 154);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 154);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 154);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 154);
       return [m, none2()];
     }
   } else if (msg instanceof PlayPlaylist2) {
     let index5 = msg.index;
-    echo8(
+    echo7(
       "playing playlist",
       void 0,
       "src/somachord/pages/playlist.gleam",
@@ -18299,7 +19619,7 @@ function update8(m, msg) {
         )
       ];
     } else {
-      echo8("form error!", void 0, "src/somachord/pages/playlist.gleam", 198);
+      echo7("form error!", void 0, "src/somachord/pages/playlist.gleam", 198);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistUpdateResponse) {
@@ -18346,12 +19666,12 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo8(e, void 0, "src/somachord/pages/playlist.gleam", 220);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 220);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo8(e, void 0, "src/somachord/pages/playlist.gleam", 220);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 220);
       return [m, none2()];
     }
   } else {
@@ -18727,22 +20047,16 @@ function page4(m) {
               (song3, index5) => {
                 return song2(
                   song3,
-                  index5,
-                  (() => {
-                    let $ = m.layout;
-                    if ($ instanceof Desktop) {
-                      return toList([none()]);
-                    } else {
-                      return toList([
-                        on_click(new PlayPlaylist2(index5)),
-                        class$(
-                          "transition-all active:scale-[98%] active:bg-zinc-900"
-                        )
-                      ]);
-                    }
-                  })(),
+                  toList([
+                    attribute2(
+                      "data-index",
+                      (() => {
+                        let _pipe = index5 + 1;
+                        return to_string2(_pipe);
+                      })()
+                    )
+                  ]),
                   true,
-                  song3.id === m.current_song_id,
                   new PlayPlaylist2(index5)
                 );
               }
@@ -18880,11 +20194,11 @@ function register8() {
   );
   return make_component(app, "playlist-page");
 }
-function echo8(value3, message2, file, line) {
+function echo7(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector8();
+  const inspector = new Echo$Inspector7();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -18904,7 +20218,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector8 = class {
+var Echo$Inspector7 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -19190,7 +20504,7 @@ function update9(m, msg) {
         ];
       } else {
         let e = $1[0];
-        echo9(e, void 0, "src/somachord/pages/search.gleam", 87);
+        echo8(e, void 0, "src/somachord/pages/search.gleam", 87);
         throw makeError(
           "panic",
           FILEPATH16,
@@ -19203,7 +20517,7 @@ function update9(m, msg) {
       }
     } else {
       let e = $[0];
-      echo9(e, void 0, "src/somachord/pages/search.gleam", 91);
+      echo8(e, void 0, "src/somachord/pages/search.gleam", 91);
       throw makeError(
         "panic",
         FILEPATH16,
@@ -19291,11 +20605,11 @@ function register9() {
   );
   return make_component(app, "search-page");
 }
-function echo9(value3, message2, file, line) {
+function echo8(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector9();
+  const inspector = new Echo$Inspector8();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -19315,7 +20629,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector9 = class {
+var Echo$Inspector8 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
@@ -20384,7 +21698,7 @@ function playing_bar(m) {
   return div(
     toList([
       class$(
-        "h-20 rounded-lg p-4 border border-zinc-800 flex items-center justify-between"
+        "h-20 rounded-lg p-4 border border-zinc-800 flex gap-2 items-center justify-between"
       )
     ]),
     toList([
@@ -20394,7 +21708,7 @@ function playing_bar(m) {
           div(
             toList([
               class$(
-                "w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center"
+                "flex-none w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center"
               )
             ]),
             toList([
@@ -20442,39 +21756,30 @@ function playing_bar(m) {
             ])
           ),
           div(
-            toList([class$("flex flex-col")]),
+            toList([class$("flex flex-col min-w-0")]),
             toList([
               a(
-                toList([href("/song/" + m.current_song.id)]),
                 toList([
-                  span(
-                    toList([
-                      class$(
-                        "hover:underline font-normal text-nowrap"
-                      )
-                    ]),
-                    toList([text2(m.current_song.title)])
+                  href("/song/" + m.current_song.id),
+                  class$(
+                    "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
                   )
-                ])
+                ]),
+                toList([text2(m.current_song.title)])
               ),
               span(
-                toList([]),
+                toList([
+                  class$(
+                    "hover:underline text-sm font-light overflow-hidden text-nowrap text-ellipsis min-w-0"
+                  )
+                ]),
                 (() => {
                   let _pipe = map(
                     m.current_song.artists,
                     (artist2) => {
-                      return a(
-                        toList([href("/artist/" + artist2.id)]),
-                        toList([
-                          span(
-                            toList([
-                              class$(
-                                "hover:underline font-light text-sm"
-                              )
-                            ]),
-                            toList([text2(artist2.name)])
-                          )
-                        ])
+                      return span(
+                        toList([class$("hover:underline")]),
+                        toList([text2(artist2.name)])
                       );
                     }
                   );
@@ -20593,7 +21898,11 @@ function playing_bar(m) {
                   )
                 ])
               ),
-              music_slider(m, toList([class$("w-96")])),
+              music_slider(
+                m,
+                false,
+                toList([class$("w-96")])
+              ),
               span(
                 toList([]),
                 toList([
@@ -20666,10 +21975,17 @@ function playing_bar(m) {
                       (queue_entry) => {
                         return song2(
                           queue_entry[1],
-                          -1,
-                          toList([]),
+                          toList([
+                            (() => {
+                              let $ = m.current_song.id === queue_entry[1].id;
+                              if ($) {
+                                return attribute2("data-playing", "");
+                              } else {
+                                return none();
+                              }
+                            })()
+                          ]),
                           true,
-                          m.current_song.id === queue_entry[1].id,
                           new QueueJumpTo(queue_entry[0])
                         );
                       }
@@ -21083,7 +22399,8 @@ function init11(_) {
     false,
     new_map(),
     false,
-    new Default()
+    new Default(),
+    new Palette(true)
   );
   let $ = (() => {
     let _pipe$1 = m.storage;
@@ -21110,21 +22427,22 @@ function init11(_) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       ping(stg.auth, (var0) => {
         return new Ping(var0);
       })
     ];
   } else {
-    let $1 = echo10(
+    let $1 = echo9(
       (() => {
         let _pipe$1 = get_route();
         return uri_to_route(_pipe$1);
       })(),
       void 0,
       "src/somachord.gleam",
-      104
+      106
     );
     if ($1 instanceof Login) {
       return [
@@ -21146,7 +22464,8 @@ function init11(_) {
           m.looping,
           m.playlists,
           m.fullscreen_player_open,
-          m.fullscreen_player_display
+          m.fullscreen_player_display,
+          m.current_palette
         ),
         init(on_url_change)
       ];
@@ -21170,7 +22489,8 @@ function init11(_) {
           m.looping,
           m.playlists,
           m.fullscreen_player_open,
-          m.fullscreen_player_display
+          m.fullscreen_player_display,
+          m.current_palette
         ),
         none2()
       ];
@@ -21194,15 +22514,15 @@ function route_effect(m, route) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          128,
+          130,
           "route_effect",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 3170,
-            end: 3223,
-            pattern_start: 3181,
-            pattern_end: 3188
+            start: 3229,
+            end: 3282,
+            pattern_start: 3240,
+            pattern_end: 3247
           }
         );
       }
@@ -21250,15 +22570,15 @@ function check_scrobble(m) {
             "let_assert",
             FILEPATH20,
             "somachord",
-            647,
+            731,
             "check_scrobble",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 18216,
-              end: 18269,
-              pattern_start: 18227,
-              pattern_end: 18234
+              start: 20907,
+              end: 20960,
+              pattern_start: 20918,
+              pattern_end: 20925
             }
           );
         }
@@ -21278,6 +22598,14 @@ function play() {
   return from(
     (dispatch) => {
       let _pipe = new StreamCurrent();
+      return dispatch(_pipe);
+    }
+  );
+}
+function load2() {
+  return from(
+    (dispatch) => {
+      let _pipe = new LoadSong();
       return dispatch(_pipe);
     }
   );
@@ -21304,12 +22632,12 @@ function player_event_handler(event4, player) {
   } else if (event4 === "ended") {
     return new MusicEnded();
   } else {
-    echo10(event4, void 0, "src/somachord.gleam", 674);
+    echo9(event4, void 0, "src/somachord.gleam", 762);
     throw makeError(
       "panic",
       FILEPATH20,
       "somachord",
-      675,
+      763,
       "player_event_handler",
       "shouldnt happen",
       {}
@@ -21338,7 +22666,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       route_effect(m, route)
     ];
@@ -21366,7 +22695,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           batch(
             toList([
@@ -21387,15 +22717,15 @@ function update11(m, msg) {
                       "let_assert",
                       FILEPATH20,
                       "somachord",
-                      162,
+                      164,
                       "update",
                       "Pattern match failed, no pattern matched the value.",
                       {
                         value: $2,
-                        start: 3994,
-                        end: 4047,
-                        pattern_start: 4005,
-                        pattern_end: 4012
+                        start: 4053,
+                        end: 4106,
+                        pattern_start: 4064,
+                        pattern_end: 4071
                       }
                     );
                   }
@@ -21429,7 +22759,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           none2()
         ];
@@ -21454,7 +22785,8 @@ function update11(m, msg) {
           m.looping,
           m.playlists,
           m.fullscreen_player_open,
-          m.fullscreen_player_display
+          m.fullscreen_player_display,
+          m.current_palette
         ),
         none2()
       ];
@@ -21479,15 +22811,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              321,
+              323,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 9034,
-                end: 9087,
-                pattern_start: 9045,
-                pattern_end: 9052
+                start: 9093,
+                end: 9146,
+                pattern_start: 9104,
+                pattern_end: 9111
               }
             );
           }
@@ -21523,16 +22855,17 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
-          none2()
+          play()
         ];
       } else {
         throw makeError(
           "todo",
           FILEPATH20,
           "somachord",
-          339,
+          341,
           "update",
           "handle stream error",
           {}
@@ -21543,7 +22876,7 @@ function update11(m, msg) {
         "todo",
         FILEPATH20,
         "somachord",
-        339,
+        341,
         "update",
         "handle stream error",
         {}
@@ -21575,7 +22908,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           (() => {
             let $2 = (() => {
@@ -21597,15 +22931,15 @@ function update11(m, msg) {
                       "let_assert",
                       FILEPATH20,
                       "somachord",
-                      189,
+                      191,
                       "update",
                       "Pattern match failed, no pattern matched the value.",
                       {
                         value: $3,
-                        start: 4908,
-                        end: 4961,
-                        pattern_start: 4919,
-                        pattern_end: 4926
+                        start: 4967,
+                        end: 5020,
+                        pattern_start: 4978,
+                        pattern_end: 4985
                       }
                     );
                   }
@@ -21619,7 +22953,7 @@ function update11(m, msg) {
             } else {
               let _pipe = m.player;
               seek(_pipe, queue2.song_position);
-              return play();
+              return load2();
             }
           })()
         ];
@@ -21657,7 +22991,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           none2()
         ];
@@ -21666,7 +23001,7 @@ function update11(m, msg) {
           "todo",
           FILEPATH20,
           "somachord",
-          178,
+          180,
           "update",
           "album not found",
           {}
@@ -21677,7 +23012,7 @@ function update11(m, msg) {
         "todo",
         FILEPATH20,
         "somachord",
-        179,
+        181,
         "update",
         "album not found: rsvp",
         {}
@@ -21705,15 +23040,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              425,
+              427,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 11865,
-                end: 11918,
-                pattern_start: 11876,
-                pattern_end: 11883
+                start: 11917,
+                end: 11970,
+                pattern_start: 11928,
+                pattern_end: 11935
               }
             );
           }
@@ -21753,7 +23088,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           (() => {
             let $2 = m.queue.position + 1 === (() => {
@@ -21773,15 +23109,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  443,
+                  445,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 12470,
-                    end: 12536,
-                    pattern_start: 12481,
-                    pattern_end: 12497
+                    start: 12522,
+                    end: 12588,
+                    pattern_start: 12533,
+                    pattern_end: 12549
                   }
                 );
               }
@@ -21812,15 +23148,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              455,
+              457,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $22,
-                start: 12797,
-                end: 12850,
-                pattern_start: 12808,
-                pattern_end: 12815
+                start: 12849,
+                end: 12902,
+                pattern_start: 12860,
+                pattern_end: 12867
               }
             );
           }
@@ -21839,15 +23175,15 @@ function update11(m, msg) {
             "let_assert",
             FILEPATH20,
             "somachord",
-            458,
+            460,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 12882,
-              end: 12948,
-              pattern_start: 12893,
-              pattern_end: 12909
+              start: 12934,
+              end: 13e3,
+              pattern_start: 12945,
+              pattern_end: 12961
             }
           );
         }
@@ -21885,15 +23221,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              425,
+              427,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 11865,
-                end: 11918,
-                pattern_start: 11876,
-                pattern_end: 11883
+                start: 11917,
+                end: 11970,
+                pattern_start: 11928,
+                pattern_end: 11935
               }
             );
           }
@@ -21933,7 +23269,8 @@ function update11(m, msg) {
             m.looping,
             m.playlists,
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           (() => {
             let $2 = m.queue.position + 1 === (() => {
@@ -21953,15 +23290,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  443,
+                  445,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 12470,
-                    end: 12536,
-                    pattern_start: 12481,
-                    pattern_end: 12497
+                    start: 12522,
+                    end: 12588,
+                    pattern_start: 12533,
+                    pattern_end: 12549
                   }
                 );
               }
@@ -21989,9 +23326,9 @@ function update11(m, msg) {
       let $1 = $[0];
       if ($1 instanceof Ok) {
         let playlist3 = $1[0];
-        echo10(playlist3.name, void 0, "src/somachord.gleam", 608);
-        echo10(playlist3.songs, void 0, "src/somachord.gleam", 609);
-        echo10(m.current_song, void 0, "src/somachord.gleam", 610);
+        echo9(playlist3.name, void 0, "src/somachord.gleam", 688);
+        echo9(playlist3.songs, void 0, "src/somachord.gleam", 689);
+        echo9(m.current_song, void 0, "src/somachord.gleam", 690);
         return [
           new Model(
             m.route,
@@ -22014,18 +23351,19 @@ function update11(m, msg) {
               return insert(_pipe, playlist3.id, playlist3);
             })(),
             m.fullscreen_player_open,
-            m.fullscreen_player_display
+            m.fullscreen_player_display,
+            m.current_palette
           ),
           none2()
         ];
       } else {
         let e = $;
-        echo10(e, void 0, "src/somachord.gleam", 620);
+        echo9(e, void 0, "src/somachord.gleam", 700);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo10(e, void 0, "src/somachord.gleam", 620);
+      echo9(e, void 0, "src/somachord.gleam", 700);
       return [m, none2()];
     }
   } else if (msg instanceof ToggleFullscreenPlayer) {
@@ -22048,7 +23386,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         negate(m.fullscreen_player_open),
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       none2()
     ];
@@ -22073,23 +23412,24 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        view$1
+        view$1,
+        m.current_palette
       ),
       none2()
     ];
   } else if (msg instanceof Play) {
     let req = msg[0];
-    echo10(
+    echo9(
       "!!! play request id: " + req.id,
       void 0,
       "src/somachord.gleam",
-      218
+      220
     );
-    echo10(
+    echo9(
       "play request type: " + req.type_,
       void 0,
       "src/somachord.gleam",
-      219
+      221
     );
     let _block;
     {
@@ -22105,15 +23445,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          221,
+          223,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 5725,
-            end: 5778,
-            pattern_start: 5736,
-            pattern_end: 5743
+            start: 5784,
+            end: 5837,
+            pattern_start: 5795,
+            pattern_end: 5802
           }
         );
       }
@@ -22143,15 +23483,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  229,
+                  231,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 5981,
-                    end: 6032,
-                    pattern_start: 5992,
-                    pattern_end: 6001
+                    start: 6040,
+                    end: 6091,
+                    pattern_start: 6051,
+                    pattern_end: 6060
                   }
                 );
               }
@@ -22183,12 +23523,12 @@ function update11(m, msg) {
                         return new StreamAlbum(album3, 0);
                       } else {
                         let e = $2[0];
-                        echo10(e, void 0, "src/somachord.gleam", 240);
+                        echo9(e, void 0, "src/somachord.gleam", 242);
                         throw makeError(
                           "panic",
                           FILEPATH20,
                           "somachord",
-                          241,
+                          243,
                           "update",
                           "album subsonic err",
                           {}
@@ -22196,12 +23536,12 @@ function update11(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo10(e, void 0, "src/somachord.gleam", 244);
+                      echo9(e, void 0, "src/somachord.gleam", 246);
                       throw makeError(
                         "panic",
                         FILEPATH20,
                         "somachord",
-                        245,
+                        247,
                         "update",
                         "album req fetch failed",
                         {}
@@ -22212,7 +23552,7 @@ function update11(m, msg) {
                       "panic",
                       FILEPATH20,
                       "somachord",
-                      247,
+                      249,
                       "update",
                       "unreachable",
                       {}
@@ -22246,15 +23586,15 @@ function update11(m, msg) {
                   "let_assert",
                   FILEPATH20,
                   "somachord",
-                  256,
+                  258,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 6932,
-                    end: 6989,
-                    pattern_start: 6943,
-                    pattern_end: 6955
+                    start: 6991,
+                    end: 7048,
+                    pattern_start: 7002,
+                    pattern_end: 7014
                   }
                 );
               }
@@ -22286,12 +23626,12 @@ function update11(m, msg) {
                         return new StreamPlaylist(playlist3, req.index);
                       } else {
                         let e = $2[0];
-                        echo10(e, void 0, "src/somachord.gleam", 268);
+                        echo9(e, void 0, "src/somachord.gleam", 270);
                         throw makeError(
                           "panic",
                           FILEPATH20,
                           "somachord",
-                          269,
+                          271,
                           "update",
                           "playlist subsonic err",
                           {}
@@ -22299,12 +23639,12 @@ function update11(m, msg) {
                       }
                     } else {
                       let e = $1[0];
-                      echo10(e, void 0, "src/somachord.gleam", 272);
+                      echo9(e, void 0, "src/somachord.gleam", 274);
                       throw makeError(
                         "panic",
                         FILEPATH20,
                         "somachord",
-                        273,
+                        275,
                         "update",
                         "playlist req fetch failed",
                         {}
@@ -22315,7 +23655,7 @@ function update11(m, msg) {
                       "panic",
                       FILEPATH20,
                       "somachord",
-                      275,
+                      277,
                       "update",
                       "unreachable",
                       {}
@@ -22341,6 +23681,32 @@ function update11(m, msg) {
     } else {
       return [m, none2()];
     }
+  } else if (msg instanceof CurrentSongPalette) {
+    let palette3 = msg[0];
+    return [
+      new Model(
+        m.route,
+        m.success,
+        m.layout,
+        m.storage,
+        m.auth,
+        m.confirmed,
+        m.albums,
+        m.player,
+        m.queue,
+        m.current_song,
+        m.seeking,
+        m.seek_amount,
+        m.played_seconds,
+        m.shuffled,
+        m.looping,
+        m.playlists,
+        m.fullscreen_player_open,
+        m.fullscreen_player_display,
+        echo9(palette3, void 0, "src/somachord.gleam", 719)
+      ),
+      none2()
+    ];
   } else if (msg instanceof Search3) {
     let query2 = msg.query;
     return [
@@ -22383,14 +23749,15 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       play()
     ];
   } else if (msg instanceof StreamPlaylist) {
     let playlist3 = msg[0];
     let index5 = msg[1];
-    echo10(playlist3.name, void 0, "src/somachord.gleam", 300);
+    echo9(playlist3.name, void 0, "src/somachord.gleam", 302);
     let _block;
     let _block$1;
     let $ = m.shuffled;
@@ -22424,7 +23791,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       play()
     ];
@@ -22455,7 +23823,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       play()
     ];
@@ -22475,15 +23844,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          321,
+          323,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 9034,
-            end: 9087,
-            pattern_start: 9045,
-            pattern_end: 9052
+            start: 9093,
+            end: 9146,
+            pattern_start: 9104,
+            pattern_end: 9111
           }
         );
       }
@@ -22519,9 +23888,10 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
-      none2()
+      play()
     ];
   } else if (msg instanceof StreamFromQueue) {
     let position = msg.queue_position;
@@ -22539,15 +23909,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          523,
+          603,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 14819,
-            end: 14872,
-            pattern_start: 14830,
-            pattern_end: 14837
+            start: 17386,
+            end: 17439,
+            pattern_start: 17397,
+            pattern_end: 17404
           }
         );
       }
@@ -22567,15 +23937,15 @@ function update11(m, msg) {
         "let_assert",
         FILEPATH20,
         "somachord",
-        527,
+        607,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 14954,
-          end: 15010,
-          pattern_start: 14965,
-          pattern_end: 14982
+          start: 17521,
+          end: 17577,
+          pattern_start: 17532,
+          pattern_end: 17549
         }
       );
     }
@@ -22608,7 +23978,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       save_queue(
         auth_details,
@@ -22632,16 +24003,101 @@ function update11(m, msg) {
       let stream_uri = _block;
       let _pipe$1 = m.player;
       load_song(_pipe$1, stream_uri, song3);
-      return [
-        m,
-        save_queue(
-          m.auth,
-          new Some(m.queue),
-          (var0) => {
-            return new DisgardedResponse(var0);
-          }
-        )
-      ];
+      let _pipe$2 = m.player;
+      pause_play(_pipe$2);
+      let save_queue2 = save_queue(
+        m.auth,
+        new Some(m.queue),
+        (var0) => {
+          return new DisgardedResponse(var0);
+        }
+      );
+      let $1 = song3.cover_art_id;
+      if ($1 === "") {
+        return [
+          new Model(
+            m.route,
+            m.success,
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            m.current_song,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            m.playlists,
+            m.fullscreen_player_open,
+            m.fullscreen_player_display,
+            new Palette(true)
+          ),
+          save_queue2
+        ];
+      } else {
+        return [
+          m,
+          batch(
+            toList([
+              save_queue2,
+              palette2(
+                (() => {
+                  let _pipe$3 = create_uri(
+                    "/rest/getCoverArt.view",
+                    (() => {
+                      let _block$1;
+                      let _pipe$32 = m.storage;
+                      _block$1 = get2(_pipe$32, "auth");
+                      let $2 = _block$1;
+                      let stg;
+                      if ($2 instanceof Ok) {
+                        stg = $2[0];
+                      } else {
+                        throw makeError(
+                          "let_assert",
+                          FILEPATH20,
+                          "somachord",
+                          573,
+                          "update",
+                          "Pattern match failed, no pattern matched the value.",
+                          {
+                            value: $2,
+                            start: 16509,
+                            end: 16562,
+                            pattern_start: 16520,
+                            pattern_end: 16527
+                          }
+                        );
+                      }
+                      return stg.auth;
+                    })(),
+                    toList([["id", song3.cover_art_id], ["size", "500"]])
+                  );
+                  return to_string3(_pipe$3);
+                })(),
+                (res) => {
+                  if (res instanceof Ok) {
+                    let palette3 = res[0];
+                    return new CurrentSongPalette(palette3);
+                  } else {
+                    let e = res[0];
+                    return echo9(
+                      new DisgardedResponse(new Ok(new Ok(void 0))),
+                      void 0,
+                      "src/somachord.gleam",
+                      586
+                    );
+                  }
+                }
+              )
+            ])
+          )
+        ];
+      }
     } else {
       return [m, none2()];
     }
@@ -22650,11 +24106,129 @@ function update11(m, msg) {
       "todo",
       FILEPATH20,
       "somachord",
-      339,
+      341,
       "update",
       "handle stream error",
       {}
     );
+  } else if (msg instanceof LoadSong) {
+    let $ = current_song(m.queue);
+    if ($ instanceof Some) {
+      let song3 = $[0];
+      let _block;
+      let _pipe = create_uri(
+        "/rest/stream.view",
+        m.auth,
+        toList([["id", song3.id]])
+      );
+      _block = to_string3(_pipe);
+      let stream_uri = _block;
+      let _pipe$1 = m.player;
+      load_song(_pipe$1, stream_uri, song3);
+      let $1 = song3.cover_art_id;
+      if ($1 === "") {
+        return [
+          new Model(
+            m.route,
+            m.success,
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            m.current_song,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            m.playlists,
+            m.fullscreen_player_open,
+            m.fullscreen_player_display,
+            new Palette(true)
+          ),
+          none2()
+        ];
+      } else {
+        return [
+          new Model(
+            m.route,
+            m.success,
+            m.layout,
+            m.storage,
+            m.auth,
+            m.confirmed,
+            m.albums,
+            m.player,
+            m.queue,
+            song3,
+            m.seeking,
+            m.seek_amount,
+            m.played_seconds,
+            m.shuffled,
+            m.looping,
+            m.playlists,
+            m.fullscreen_player_open,
+            m.fullscreen_player_display,
+            m.current_palette
+          ),
+          palette2(
+            (() => {
+              let _pipe$2 = create_uri(
+                "/rest/getCoverArt.view",
+                (() => {
+                  let _block$1;
+                  let _pipe$22 = m.storage;
+                  _block$1 = get2(_pipe$22, "auth");
+                  let $2 = _block$1;
+                  let stg;
+                  if ($2 instanceof Ok) {
+                    stg = $2[0];
+                  } else {
+                    throw makeError(
+                      "let_assert",
+                      FILEPATH20,
+                      "somachord",
+                      523,
+                      "update",
+                      "Pattern match failed, no pattern matched the value.",
+                      {
+                        value: $2,
+                        start: 14929,
+                        end: 14982,
+                        pattern_start: 14940,
+                        pattern_end: 14947
+                      }
+                    );
+                  }
+                  return stg.auth;
+                })(),
+                toList([["id", song3.cover_art_id], ["size", "500"]])
+              );
+              return to_string3(_pipe$2);
+            })(),
+            (res) => {
+              if (res instanceof Ok) {
+                let palette3 = res[0];
+                return new CurrentSongPalette(palette3);
+              } else {
+                let e = res[0];
+                return echo9(
+                  new DisgardedResponse(new Ok(new Ok(void 0))),
+                  void 0,
+                  "src/somachord.gleam",
+                  536
+                );
+              }
+            }
+          )
+        ];
+      }
+    } else {
+      return [m, none2()];
+    }
   } else if (msg instanceof ProgressDrag) {
     let amount = msg[0];
     return [
@@ -22676,7 +24250,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       none2()
     ];
@@ -22703,7 +24278,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       none2()
     ];
@@ -22728,7 +24304,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       scrobble(
         (() => {
@@ -22744,15 +24321,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              361,
+              363,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 10165,
-                end: 10218,
-                pattern_start: 10176,
-                pattern_end: 10183
+                start: 10217,
+                end: 10270,
+                pattern_start: 10228,
+                pattern_end: 10235
               }
             );
           }
@@ -22799,7 +24376,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       (() => {
         if (playtime === 0) {
@@ -22824,15 +24402,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          397,
+          399,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 11102,
-            end: 11155,
-            pattern_start: 11113,
-            pattern_end: 11120
+            start: 11154,
+            end: 11207,
+            pattern_start: 11165,
+            pattern_end: 11172
           }
         );
       }
@@ -22858,7 +24436,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       batch(
         toList([
@@ -22916,7 +24495,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       none2()
     ];
@@ -22950,7 +24530,8 @@ function update11(m, msg) {
           m.looping,
           m.playlists,
           m.fullscreen_player_open,
-          m.fullscreen_player_display
+          m.fullscreen_player_display,
+          m.current_palette
         ),
         play()
       ];
@@ -22976,15 +24557,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              545,
+              625,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 15492,
-                end: 15545,
-                pattern_start: 15503,
-                pattern_end: 15510
+                start: 18059,
+                end: 18112,
+                pattern_start: 18070,
+                pattern_end: 18077
               }
             );
           }
@@ -23025,15 +24606,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          397,
+          399,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 11102,
-            end: 11155,
-            pattern_start: 11113,
-            pattern_end: 11120
+            start: 11154,
+            end: 11207,
+            pattern_start: 11165,
+            pattern_end: 11172
           }
         );
       }
@@ -23059,7 +24640,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       batch(
         toList([
@@ -23112,7 +24694,8 @@ function update11(m, msg) {
         negate(m.looping),
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       none2()
     ];
@@ -23131,15 +24714,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          569,
+          649,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 16216,
-            end: 16269,
-            pattern_start: 16227,
-            pattern_end: 16234
+            start: 18783,
+            end: 18836,
+            pattern_start: 18794,
+            pattern_end: 18801
           }
         );
       }
@@ -23211,7 +24794,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       (() => {
         let $ = m.current_song.starred;
@@ -23258,7 +24842,8 @@ function update11(m, msg) {
         m.looping,
         m.playlists,
         m.fullscreen_player_open,
-        m.fullscreen_player_display
+        m.fullscreen_player_display,
+        m.current_palette
       ),
       play()
     ];
@@ -23279,15 +24864,15 @@ function update11(m, msg) {
               "let_assert",
               FILEPATH20,
               "somachord",
-              208,
+              210,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 5340,
-                end: 5393,
-                pattern_start: 5351,
-                pattern_end: 5358
+                start: 5399,
+                end: 5452,
+                pattern_start: 5410,
+                pattern_end: 5417
               }
             );
           }
@@ -23472,15 +25057,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      52,
+      53,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1256,
-        end: 1299,
-        pattern_start: 1267,
-        pattern_end: 1272
+        start: 1271,
+        end: 1314,
+        pattern_start: 1282,
+        pattern_end: 1287
       }
     );
   }
@@ -23490,15 +25075,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      53,
+      54,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $1,
-        start: 1302,
-        end: 1338,
-        pattern_start: 1313,
-        pattern_end: 1318
+        start: 1317,
+        end: 1353,
+        pattern_start: 1328,
+        pattern_end: 1333
       }
     );
   }
@@ -23508,15 +25093,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      55,
+      56,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $2,
-        start: 1342,
-        end: 1377,
-        pattern_start: 1353,
-        pattern_end: 1358
+        start: 1357,
+        end: 1392,
+        pattern_start: 1368,
+        pattern_end: 1373
       }
     );
   }
@@ -23526,15 +25111,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      56,
+      57,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $3,
-        start: 1380,
-        end: 1414,
-        pattern_start: 1391,
-        pattern_end: 1396
+        start: 1395,
+        end: 1429,
+        pattern_start: 1406,
+        pattern_end: 1411
       }
     );
   }
@@ -23544,15 +25129,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      57,
+      58,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $4,
-        start: 1417,
-        end: 1453,
-        pattern_start: 1428,
-        pattern_end: 1433
+        start: 1432,
+        end: 1468,
+        pattern_start: 1443,
+        pattern_end: 1448
       }
     );
   }
@@ -23562,15 +25147,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      58,
+      59,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $5,
-        start: 1456,
-        end: 1490,
-        pattern_start: 1467,
-        pattern_end: 1472
+        start: 1471,
+        end: 1505,
+        pattern_start: 1482,
+        pattern_end: 1487
       }
     );
   }
@@ -23580,15 +25165,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      59,
+      60,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $6,
-        start: 1493,
-        end: 1529,
-        pattern_start: 1504,
-        pattern_end: 1509
+        start: 1508,
+        end: 1544,
+        pattern_start: 1519,
+        pattern_end: 1524
       }
     );
   }
@@ -23598,15 +25183,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      60,
+      61,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $7,
-        start: 1532,
-        end: 1570,
-        pattern_start: 1543,
-        pattern_end: 1548
+        start: 1547,
+        end: 1585,
+        pattern_start: 1558,
+        pattern_end: 1563
       }
     );
   }
@@ -23616,15 +25201,15 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      61,
+      62,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $8,
-        start: 1573,
-        end: 1610,
-        pattern_start: 1584,
-        pattern_end: 1589
+        start: 1588,
+        end: 1625,
+        pattern_start: 1599,
+        pattern_end: 1604
       }
     );
   }
@@ -23634,25 +25219,25 @@ function main() {
       "let_assert",
       FILEPATH20,
       "somachord",
-      62,
+      63,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $9,
-        start: 1613,
-        end: 1660,
-        pattern_start: 1624,
-        pattern_end: 1629
+        start: 1628,
+        end: 1675,
+        pattern_start: 1639,
+        pattern_end: 1644
       }
     );
   }
   return $9;
 }
-function echo10(value3, message2, file, line) {
+function echo9(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
   const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector10();
+  const inspector = new Echo$Inspector9();
   const string_value = inspector.inspect(value3);
   const string_message = message2 === void 0 ? "" : " " + message2;
   if (globalThis.process?.stderr?.write) {
@@ -23672,7 +25257,7 @@ ${string_value}`;
   }
   return value3;
 }
-var Echo$Inspector10 = class {
+var Echo$Inspector9 = class {
   #references = /* @__PURE__ */ new Set();
   #isDict(value3) {
     try {
