@@ -10,6 +10,10 @@ import somachord/router
 
 pub type Player
 
+pub type Palette {
+  Palette(empty: Bool)
+}
+
 pub type Model {
   Model(
     route: router.Route,
@@ -30,6 +34,7 @@ pub type Model {
     playlists: dict.Dict(String, api_models.Playlist),
     fullscreen_player_open: Bool,
     fullscreen_player_display: FullscreenPlayerDisplay,
+    current_palette: Palette,
   )
 }
 

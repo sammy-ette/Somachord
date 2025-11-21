@@ -9,10 +9,11 @@
   "dependencies": {
     "discord-rpc": "github:sKiLdUsT/RPC",
     "is-electron": "^2.2.2",
-    "js-md5": "^0.8.3"
+    "js-md5": "^0.8.3",
+    "node-vibrant": "^4.0.3"
   },
   "devDependencies": {
-    "electron": "^37.4.0",
+    "electron": "^37.10.2",
     "electron-builder": "^26.0.12"
   },
   "scripts": {

@@ -78,7 +78,6 @@ export function load_song(player, link, info) {
 	if (player.ctx.state == "suspended") {
 		player.ctx.resume()
 	}
-	player.element.play()
 
 	let auth = JSON.parse(localStorage.getItem("auth")).auth
 	let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`

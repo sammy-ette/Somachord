@@ -157,7 +157,7 @@ fn playing_bar(m: model.Model) {
   html.div(
     [
       attribute.class(
-        "h-20 rounded-lg p-4 border border-zinc-800 flex items-center justify-between",
+        "h-20 rounded-lg p-4 border border-zinc-800 flex gap-2 items-center justify-between",
       ),
     ],
     [
@@ -165,7 +165,7 @@ fn playing_bar(m: model.Model) {
         html.div(
           [
             attribute.class(
-              "w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center",
+              "flex-none w-14 h-14 bg-zinc-900 rounded-md flex items-center justify-center",
             ),
           ],
           [
@@ -201,26 +201,31 @@ fn playing_bar(m: model.Model) {
             },
           ],
         ),
-        html.div([attribute.class("flex flex-col")], [
-          html.a([attribute.href("/song/" <> m.current_song.id)], [
-            html.span(
-              [attribute.class("hover:underline font-normal text-nowrap")],
-              [
-                element.text(m.current_song.title),
-              ],
-            ),
-          ]),
+        html.div([attribute.class("flex flex-col min-w-0")], [
+          html.a(
+            [
+              attribute.href("/song/" <> m.current_song.id),
+              attribute.class(
+                "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0",
+              ),
+            ],
+            [
+              element.text(m.current_song.title),
+            ],
+          ),
           html.span(
-            [],
+            [
+              attribute.class(
+                "hover:underline text-sm font-light overflow-hidden text-nowrap text-ellipsis min-w-0",
+              ),
+            ],
             list.map(m.current_song.artists, fn(artist: api_models.SmallArtist) {
-              html.a([attribute.href("/artist/" <> artist.id)], [
-                html.span(
-                  [
-                    attribute.class("hover:underline font-light text-sm"),
-                  ],
-                  [element.text(artist.name)],
-                ),
-              ])
+              html.span(
+                [
+                  attribute.class("hover:underline"),
+                ],
+                [element.text(artist.name)],
+              )
             })
               |> list.intersperse(element.text(", ")),
           ),
@@ -299,7 +304,7 @@ fn playing_bar(m: model.Model) {
                 <> int.to_string(seconds) |> string.pad_start(2, "0")
               }),
             ]),
-            elements.music_slider(m, [attribute.class("w-96")]),
+            elements.music_slider(m, False, [attribute.class("w-96")]),
             html.span([], [
               element.text({
                 let minutes = m.current_song.duration / 60
@@ -349,10 +354,13 @@ fn playing_bar(m: model.Model) {
                 list.map(queue.list(m.queue), fn(queue_entry) {
                   elements.song(
                     queue_entry.1,
-                    -1,
-                    [],
+                    [
+                      case m.current_song.id == { queue_entry.1 }.id {
+                        True -> attribute.attribute("data-playing", "")
+                        False -> attribute.none()
+                      },
+                    ],
                     cover_art: True,
-                    playing: m.current_song.id == { queue_entry.1 }.id,
                     msg: { msg.QueueJumpTo(queue_entry.0) },
                   )
                 }),

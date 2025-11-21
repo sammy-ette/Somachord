@@ -83,7 +83,11 @@ pub fn register() -> Result(Nil, lustre.Error) {
 }
 
 pub fn element(attrs: List(attribute.Attribute(msg))) -> element.Element(msg) {
-  element.element("song-lyrics", attrs, [])
+  element.element(
+    "song-lyrics",
+    [attribute.style("--unplayed-color", "var(--color-zinc-600)"), ..attrs],
+    [],
+  )
 }
 
 pub fn id(id: String) -> attribute.Attribute(msg) {
@@ -316,7 +320,7 @@ fn view(m: Model) {
                   { current_time +. lyrics.offset } >. { lyric.time -. 0.5 }
                 {
                   True -> attribute.class("text-zinc-300")
-                  False -> attribute.class("text-zinc-600 off-time")
+                  False -> attribute.class("text-(--unplayed-color) off-time")
                 }
             },
           ],
