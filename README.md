@@ -39,6 +39,8 @@ services:
   somachord:
     container_name: somachord
     image: ghcr.io/sammy-ette/somachord:master
+    environment:
+      - SERVER_URL=https://example.com # optional
     ports:
      - 8000:8000
     restart: unless-stopped

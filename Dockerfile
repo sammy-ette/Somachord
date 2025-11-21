@@ -1,5 +1,5 @@
 FROM erlang:28-alpine AS build
-COPY --from=ghcr.io/gleam-lang/gleam:v1.11.0-erlang-alpine /bin/gleam /bin/gleam
+COPY --from=ghcr.io/gleam-lang/gleam:v1.13.0-erlang-alpine /bin/gleam /bin/gleam
 COPY . /app/
 RUN apk add git
 RUN cd /app/server && gleam export erlang-shipment

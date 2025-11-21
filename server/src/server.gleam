@@ -1,4 +1,6 @@
+import envoy
 import gleam/erlang/process
+import gleam/result
 
 import lustre/attribute.{attribute}
 import lustre/element
@@ -90,6 +92,9 @@ pub fn handle_request(req: wisp.Request) -> wisp.Response {
   ",
           ),
           html.title([], "Somachord"),
+          html.script([], "window.somachordConfig = {
+          SERVER_URL: '" <> result.unwrap(envoy.get("SERVER_URL"), "") <> "'
+          }"),
         ]),
         html.body(
           [attribute.class("w-screen h-screen flex"), attribute.id("app")],

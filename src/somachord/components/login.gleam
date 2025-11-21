@@ -5,6 +5,7 @@ import gleam/uri
 import modem
 import plinth/browser/window
 import rsvp
+import somachord/config
 
 import formal/form
 import lustre
@@ -137,7 +138,11 @@ fn login_form() -> form.Form(Login) {
 
 pub fn view(m: Model) {
   let submitted = fn(fields) {
-    m.login_form |> form.add_values(fields) |> form.run |> LoginSubmitted
+    m.login_form
+    |> form.set_values([#("serverURL", config.get("SERVER_URL"))])
+    |> form.add_values(fields)
+    |> form.run
+    |> LoginSubmitted
   }
 
   html.div(
@@ -191,9 +196,18 @@ pub fn view(m: Model) {
                       html.input([
                         attribute.type_("input"),
                         attribute.name("serverURL"),
+                        attribute.required(True),
                         attribute.class(
                           "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
                         ),
+                        attribute.value(config.get("SERVER_URL")),
+                        ..case config.get("SERVER_URL") {
+                          "" -> [attribute.none()]
+                          _ -> [
+                            attribute.disabled(True),
+                            attribute.class("cursor-not-allowed text-zinc-400"),
+                          ]
+                        }
                       ]),
                       ..list.map(
                         form.field_error_messages(m.login_form, "serverURL"),
