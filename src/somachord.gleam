@@ -16,9 +16,11 @@ import somachord/components/playlist_menu
 import somachord/constants
 import somachord/models/auth
 import somachord/pages/library
+import somachord/pages/loading
 import somachord/pages/not_found
 import somachord/pages/playlist
 import somachord/pages/search
+import somachord/pages/server_down
 import somachord/queue
 
 import lustre
@@ -76,6 +78,7 @@ fn init(_) {
     model.Model(
       route:,
       layout:,
+      success: option.None,
       storage: storage.create(),
       auth: auth.Auth("", auth.Credentials("", ""), ""),
       confirmed: False,
@@ -95,13 +98,7 @@ fn init(_) {
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
       model.Model(..m, confirmed: True, auth: stg.auth),
-      effect.batch([
-        modem.init(msg.on_url_change),
-        route_effect(m, route),
-        player.listen_events(m.player, player_event_handler),
-        api.queue(stg.auth, msg.Queue),
-        unload_event(),
-      ]),
+      api.ping(stg.auth, msg.Ping),
     )
     Error(_) ->
       case echo router.get_route() |> router.uri_to_route {
@@ -111,7 +108,12 @@ fn init(_) {
         )
         _ -> {
           #(
-            model.Model(..m, confirmed: True, route: router.Login),
+            model.Model(
+              ..m,
+              confirmed: True,
+              success: option.Some(True),
+              route: router.Login,
+            ),
             effect.none(),
           )
         }
@@ -148,6 +150,26 @@ fn update(
     msg.Router(router.ChangeRoute(route)) -> #(
       model.Model(..m, route:),
       route_effect(m, route),
+    )
+    msg.Ping(Ok(Ok(Nil))) -> #(
+      model.Model(..m, success: option.Some(True)),
+      effect.batch([
+        modem.init(msg.on_url_change),
+        route_effect(m, m.route),
+        player.listen_events(m.player, player_event_handler),
+        api.queue(
+          {
+            let assert Ok(stg) = m.storage |> varasto.get("auth")
+            stg.auth
+          },
+          msg.Queue,
+        ),
+        unload_event(),
+      ]),
+    )
+    msg.Ping(_) -> #(
+      model.Model(..m, success: option.Some(False)),
+      effect.none(),
     )
     msg.AlbumRetrieved(Ok(Ok(album))) -> #(
       model.Model(..m, albums: m.albums |> dict.insert(album.id, album)),
@@ -656,9 +678,11 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
 }
 
 fn view(m: model.Model) {
-  case m.confirmed {
-    False -> element.none()
-    True -> {
+  use <- bool.guard(bool.negate(m.confirmed), loading.page())
+  case m.success {
+    option.Some(False) -> server_down.page()
+    option.Some(True) -> {
+      use <- bool.guard(m.route == router.Login, login.element())
       let page = case m.route {
         router.Home -> home.element([msg.on_play(msg.Play)])
         router.Search(query) ->
@@ -713,14 +737,11 @@ fn view(m: model.Model) {
         _ -> not_found.page()
       }
 
-      case m.route {
-        router.Login -> login.element()
-        _ ->
-          case m.layout {
-            model.Mobile -> mobile.view(m, page)
-            model.Desktop -> desktop.view(m, page)
-          }
+      case m.layout {
+        model.Mobile -> mobile.view(m, page)
+        model.Desktop -> desktop.view(m, page)
       }
     }
+    option.None -> loading.page()
   }
 }

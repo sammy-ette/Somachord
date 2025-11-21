@@ -223,7 +223,7 @@ pub fn view(m: Model) {
                         element.text("Username"),
                       ]),
                       html.input([
-                        attribute.autocomplete("text"),
+                        attribute.autocomplete("username"),
                         attribute.type_("input"),
                         attribute.name("username"),
                         attribute.class(

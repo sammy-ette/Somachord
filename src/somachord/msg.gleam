@@ -13,6 +13,7 @@ import somachord/router
 
 pub type Msg {
   Router(router.Msg)
+  Ping(Result(Result(Nil, api.SubsonicError), rsvp.Error))
   SongRetrieval(Result(Result(api_models.Child, api.SubsonicError), rsvp.Error))
   Queue(Result(Result(queue.Queue, api.SubsonicError), rsvp.Error))
   AlbumRetrieved(
