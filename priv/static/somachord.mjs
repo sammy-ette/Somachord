@@ -911,12 +911,12 @@ function isEqual(x, y) {
       } catch {
       }
     }
-    let [keys2, get3] = getters(a2);
+    let [keys2, get4] = getters(a2);
     const ka = keys2(a2);
     const kb = keys2(b);
     if (ka.length !== kb.length) return false;
     for (let k of ka) {
-      values3.push(get3(a2, k), get3(b, k));
+      values3.push(get4(a2, k), get4(b, k));
     }
   }
   return true;
@@ -4780,6 +4780,9 @@ function autocomplete(value3) {
 function checked(is_checked) {
   return boolean_attribute("checked", is_checked);
 }
+function disabled(is_disabled) {
+  return boolean_attribute("disabled", is_disabled);
+}
 function max2(value3) {
   return attribute2("max", value3);
 }
@@ -4788,6 +4791,9 @@ function name(element_name) {
 }
 function placeholder(text3) {
   return attribute2("placeholder", text3);
+}
+function required(is_required) {
+  return boolean_attribute("required", is_required);
 }
 function step(value3) {
   return attribute2("step", value3);
@@ -14539,6 +14545,14 @@ var parse_checkbox = /* @__PURE__ */ new Parser(checkbox_parser);
 var parse_string = /* @__PURE__ */ new Parser(string_parser);
 var parse_url = /* @__PURE__ */ new Parser(url_parser);
 
+// build/dev/javascript/somachord/somachord/config.ffi.mjs
+function get3(key3) {
+  if (!window.somachordConfig) {
+    return "";
+  }
+  return window.somachordConfig[key3] || "";
+}
+
 // build/dev/javascript/somachord/somachord/components/login.mjs
 var FILEPATH10 = "src/somachord/components/login.gleam";
 var Model3 = class extends CustomType {
@@ -14633,15 +14647,15 @@ function update3(m, message2) {
                 "let_assert",
                 FILEPATH10,
                 "somachord/components/login",
-                80,
+                81,
                 "update",
                 "Pattern match failed, no pattern matched the value.",
                 {
                   value: $3,
-                  start: 1705,
-                  end: 1854,
-                  pattern_start: 1716,
-                  pattern_end: 1724
+                  start: 1729,
+                  end: 1878,
+                  pattern_start: 1740,
+                  pattern_end: 1748
                 }
               );
             }
@@ -14659,7 +14673,7 @@ function update3(m, message2) {
             "panic",
             FILEPATH10,
             "somachord/components/login",
-            92,
+            93,
             "update",
             "should be unreachable",
             {}
@@ -14684,12 +14698,12 @@ function update3(m, message2) {
       }
     } else {
       let e = $[0];
-      echo5(e, void 0, "src/somachord/components/login.gleam", 108);
+      echo5(e, void 0, "src/somachord/components/login.gleam", 109);
       throw makeError(
         "panic",
         FILEPATH10,
         "somachord/components/login",
-        109,
+        110,
         "update",
         "`panic` expression evaluated.",
         {}
@@ -14748,9 +14762,13 @@ function init3(_) {
 function view4(m) {
   let submitted = (fields) => {
     let _pipe = m.login_form;
-    let _pipe$1 = add_values(_pipe, fields);
-    let _pipe$2 = run2(_pipe$1);
-    return new LoginSubmitted(_pipe$2);
+    let _pipe$1 = set_values(
+      _pipe,
+      toList([["serverURL", get3("SERVER_URL")]])
+    );
+    let _pipe$2 = add_values(_pipe$1, fields);
+    let _pipe$3 = run2(_pipe$2);
+    return new LoginSubmitted(_pipe$3);
   };
   return div(
     toList([
@@ -14805,15 +14823,15 @@ function view4(m) {
                           "let_assert",
                           FILEPATH10,
                           "somachord/components/login",
-                          174,
+                          179,
                           "view",
                           "Pattern match failed, no pattern matched the value.",
                           {
                             value: $,
-                            start: 4078,
-                            end: 4206,
-                            pattern_start: 4089,
-                            pattern_end: 4096
+                            start: 4181,
+                            end: 4309,
+                            pattern_start: 4192,
+                            pattern_end: 4199
                           }
                         );
                       }
@@ -14838,13 +14856,38 @@ function view4(m) {
                           ),
                           prepend(
                             input(
-                              toList([
+                              prepend(
                                 type_("input"),
-                                name("serverURL"),
-                                class$(
-                                  "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
+                                prepend(
+                                  name("serverURL"),
+                                  prepend(
+                                    required(true),
+                                    prepend(
+                                      class$(
+                                        "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
+                                      ),
+                                      prepend(
+                                        value(
+                                          get3("SERVER_URL")
+                                        ),
+                                        (() => {
+                                          let $ = get3("SERVER_URL");
+                                          if ($ === "") {
+                                            return toList([none()]);
+                                          } else {
+                                            return toList([
+                                              disabled(true),
+                                              class$(
+                                                "cursor-not-allowed text-zinc-400"
+                                              )
+                                            ]);
+                                          }
+                                        })()
+                                      )
+                                    )
+                                  )
                                 )
-                              ])
+                              )
                             ),
                             map(
                               field_error_messages(
