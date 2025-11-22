@@ -7,8 +7,9 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/api
+import somachord/api/models as api_models
+
 import somachord/components
 import somachord/elements
 import somachord/model
@@ -177,13 +178,7 @@ pub fn desktop_page(m: model.Model, id) {
     ),
     html.div([attribute.class("flex flex-col gap-8")], [
       html.img([
-        attribute.src(
-          api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-            #("id", album.cover_art_id),
-            #("size", "500"),
-          ])
-          |> uri.to_string,
-        ),
+        attribute.src(api.cover_url(auth_details, album.cover_art_id, 500)),
         attribute.class(
           "self-center w-52 h-52 md:w-80 md:h-80 object-scale rounded-md",
         ),

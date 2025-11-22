@@ -13,8 +13,8 @@ import lustre/element/html
 import lustre/event
 import rsvp
 import somachord/api/api
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/models as api_models
+
 import somachord/storage
 import varasto
 
@@ -265,21 +265,15 @@ fn view(m: Model) {
               ],
               [
                 html.img([
-                  attribute.src(
-                    api_helper.create_uri(
-                      "/rest/getCoverArt.view",
-                      {
-                        let assert Ok(stg) =
-                          storage.create() |> varasto.get("auth")
-                        stg.auth
-                      },
-                      [
-                        #("id", playlist.0),
-                        #("size", "500"),
-                      ],
-                    )
-                    |> uri.to_string,
-                  ),
+                  attribute.src(api.cover_url(
+                    {
+                      let assert Ok(stg) =
+                        storage.create() |> varasto.get("auth")
+                      stg.auth
+                    },
+                    playlist.0,
+                    500,
+                  )),
                   attribute.class("w-12 h-12 rounded object-cover inline-block"),
                 ]),
                 html.span(

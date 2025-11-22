@@ -10,7 +10,8 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import player
-import somachord/api_helper
+import somachord/api/api
+
 import somachord/components
 import somachord/model
 import somachord/msg
@@ -18,7 +19,7 @@ import somachord/storage
 import varasto
 import vibrant
 
-import somachord/api_models
+import somachord/api/models as api_models
 
 pub const scrollbar_class = "[&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-950 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-700"
 
@@ -83,13 +84,11 @@ pub fn song(
             True ->
               html.img([
                 attribute.class("w-12 h-12 rounded-sm"),
-                attribute.src(
-                  api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                    #("id", song.cover_art_id),
-                    #("size", "500"),
-                  ])
-                  |> uri.to_string,
-                ),
+                attribute.src(api.cover_url(
+                  auth_details,
+                  song.cover_art_id,
+                  500,
+                )),
               ])
             False -> element.none()
           },
@@ -220,13 +219,7 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
           ),
           html.a([attribute.href("/album/" <> album.id)], [
             html.img([
-              attribute.src(
-                api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                  #("id", album.cover_art_id),
-                  #("size", "500"),
-                ])
-                |> uri.to_string,
-              ),
+              attribute.src(api.cover_url(auth_details, album.cover_art_id, 500)),
               attribute.class(
                 "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute",
               ),
@@ -352,17 +345,7 @@ pub fn playlist(
                 )
               cover_art_id, classes ->
                 html.img([
-                  attribute.src(
-                    api_helper.create_uri(
-                      "/rest/getCoverArt.view",
-                      auth_details,
-                      [
-                        #("id", cover_art_id),
-                        #("size", "500"),
-                      ],
-                    )
-                    |> uri.to_string,
-                  ),
+                  attribute.src(api.cover_url(auth_details, cover_art_id, 500)),
                   classes,
                 ])
             },

@@ -12,8 +12,8 @@ import lustre/event
 import plinth/browser/service_worker
 import rsvp
 import somachord/api/api
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/models as api_models
+
 import somachord/components
 import somachord/elements
 import somachord/model
@@ -186,17 +186,11 @@ fn view(m: Model) {
                         False ->
                           html.a([attribute.href("/album/" <> playlist.id)], [
                             html.img([
-                              attribute.src(
-                                api_helper.create_uri(
-                                  "/rest/getCoverArt.view",
-                                  auth_details,
-                                  [
-                                    #("id", playlist.cover_art_id),
-                                    #("size", "500"),
-                                  ],
-                                )
-                                |> uri.to_string,
-                              ),
+                              attribute.src(api.cover_url(
+                                auth_details,
+                                playlist.cover_art_id,
+                                500,
+                              )),
                               attribute.class(
                                 "hover:opacity-50 transition-all duration-200 rounded-md object-cover",
                               ),

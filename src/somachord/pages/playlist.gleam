@@ -14,8 +14,8 @@ import lustre/event
 import player
 import rsvp
 import somachord/api/api
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/models as api_models
+
 import somachord/components
 import somachord/constants
 import somachord/elements
@@ -520,17 +520,11 @@ fn page(m: Model) {
                   )
                 _ ->
                   html.img([
-                    attribute.src(
-                      api_helper.create_uri(
-                        "/rest/getCoverArt.view",
-                        auth_details,
-                        [
-                          #("id", m.playlist.cover_art_id),
-                          #("size", "500"),
-                        ],
-                      )
-                      |> uri.to_string,
-                    ),
+                    attribute.src(api.cover_url(
+                      auth_details,
+                      m.playlist.cover_art_id,
+                      500,
+                    )),
                     attribute.class("object-scale"),
                   ])
               }

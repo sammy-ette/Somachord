@@ -8,8 +8,9 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import player
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/api
+import somachord/api/models as api_models
+
 import somachord/components
 import somachord/components/lyrics
 import somachord/elements
@@ -155,17 +156,11 @@ fn view_desktop(m: model.Model) {
                     )
                   False ->
                     html.img([
-                      attribute.src(
-                        api_helper.create_uri(
-                          "/rest/getCoverArt.view",
-                          auth_details,
-                          [
-                            #("id", m.current_song.cover_art_id),
-                            #("size", "500"),
-                          ],
-                        )
-                        |> uri.to_string,
-                      ),
+                      attribute.src(api.cover_url(
+                        m.auth,
+                        m.current_song.cover_art_id,
+                        500,
+                      )),
                       attribute.class(
                         "max-w-120 max-h-120 self-center object-fit rounded-md",
                       ),
@@ -702,13 +697,7 @@ fn view_info(m: model.Model) {
       [attribute.class("flex-1 space-y-4 flex flex-col justify-center")],
       [
         html.img([
-          attribute.src(
-            api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-              #("id", m.current_song.cover_art_id),
-              #("size", "500"),
-            ])
-            |> uri.to_string,
-          ),
+          attribute.src(api.cover_url(m.auth, m.current_song.cover_art_id, 500)),
           attribute.class("self-center object-scale rounded-md"),
         ]),
       ],

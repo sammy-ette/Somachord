@@ -9,7 +9,7 @@ import lustre/element/html
 import lustre/event
 import rsvp
 import somachord/api/api
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/components
 import somachord/elements
 import somachord/model
