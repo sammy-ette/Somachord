@@ -55,6 +55,37 @@ self.addEventListener("fetch", (event) => {
 		return
 	}
 
+	// Source: https://samdutton.github.io/samples/service-worker/prefetch-video/
+	if (event.request.headers.get('range')) {
+		let pos = Number(/^bytes\=(\d+)\-$/g.exec(event.request.headers.get('range'))[1]);
+		console.log('Range request for', event.request.url, ', starting position:', pos);
+
+		let response = caches.open("music")
+		.then((cache) => {
+			return cache.match(event.request.url);
+		})
+		.then((res) => {
+			if (!res) {
+				return fetch(event.request).then(res => {
+					return res.arrayBuffer()
+				})
+			}
+			return res.arrayBuffer()
+		})
+		.then((ab)=> {
+			return new Response(ab.slice(pos), {
+				status: 206,
+				statusText: 'Partial Content',
+				headers: [
+				// ['Content-Type', 'video/webm'],
+				['Content-Range', 'bytes ' + pos + '-' + (ab.byteLength - 1) + '/' + ab.byteLength]]
+			})
+		})
+
+		event.respondWith(response)
+		return;
+	}
+
 	if(isCacheFirst) {
 		event.respondWith(
 			cacheFirst({

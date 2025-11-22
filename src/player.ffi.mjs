@@ -2,8 +2,19 @@ class Player {
 	constructor() {
 		this.ctx = new AudioContext()
 		this.element = new Audio()
-
 		this.element.crossOrigin = true
+		this.element.addEventListener('error', (event) => {
+			console.log('retrying song fetch')
+			let time = this.element.currentTime
+			let paused = this.element.paused
+
+			load_song(this, this.element.currentSrc, this.current)
+			this.element.currentTime = time
+			if(!paused) {
+				this.element.play()
+			}
+		})
+
 		this.node = this.ctx.createMediaElementSource(this.element)
 		this.node.connect(this.ctx.destination)
 		this.current = null // current song playing
