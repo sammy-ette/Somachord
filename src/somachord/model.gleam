@@ -18,6 +18,7 @@ pub type Model {
   Model(
     route: router.Route,
     success: option.Option(Bool),
+    online: Bool,
     layout: Layout,
     storage: varasto.TypedStorage(storage.Storage),
     auth: auth.Auth,

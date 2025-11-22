@@ -79,6 +79,7 @@ fn init(_) {
     model.Model(
       route:,
       layout:,
+      online: True,
       success: option.None,
       storage: storage.create(),
       auth: auth.Auth("", auth.Credentials("", ""), ""),
@@ -144,6 +145,22 @@ fn unload_event() {
   })
 }
 
+fn offline_event() {
+  effect.from(fn(dispatch) {
+    window.add_event_listener("offline", fn(_event) {
+      msg.Connectivity(False) |> dispatch
+    })
+  })
+}
+
+fn online_event() {
+  effect.from(fn(dispatch) {
+    window.add_event_listener("online", fn(_event) {
+      msg.Connectivity(True) |> dispatch
+    })
+  })
+}
+
 fn update(
   m: model.Model,
   msg: msg.Msg,
@@ -153,6 +170,7 @@ fn update(
       model.Model(..m, route:),
       route_effect(m, route),
     )
+    msg.Connectivity(online) -> #(model.Model(..m, online:), effect.none())
     msg.Ping(Ok(Ok(Nil))) -> #(
       model.Model(..m, success: option.Some(True)),
       effect.batch([
@@ -167,6 +185,8 @@ fn update(
           msg.Queue,
         ),
         unload_event(),
+        online_event(),
+        offline_event(),
       ]),
     )
     msg.Ping(_) -> #(

@@ -45,52 +45,69 @@ pub fn view(m: model.Model, page) {
 }
 
 fn top_bar(m: model.Model) {
-  html.div([attribute.class("flex gap-4")], [
-    html.a([attribute.href("/library")], [
-      elements.button(
-        html.i([attribute.class("text-3xl ph ph-cards-three")], []),
-        "Library",
-        [attribute.class("w-42")],
-      ),
+  html.div([attribute.class("flex justify-between")], [
+    html.div([attribute.class("flex gap-4")], [
+      html.a([attribute.href("/library")], [
+        elements.button(
+          html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+          "Library",
+          [attribute.class("w-42")],
+        ),
+      ]),
+      html.a([attribute.href("/")], [
+        elements.nav_button(
+          html.i([attribute.class("text-3xl ph ph-house")], []),
+          html.i([attribute.class("text-3xl ph-fill ph-house")], []),
+          "Home",
+          m.route == router.Home,
+          [attribute.class("w-42")],
+        ),
+      ]),
+      // elements.button(
+      //   html.i([attribute.class("text-3xl ph ph-sparkle")], []),
+      //   "Discover",
+      //   [attribute.class("w-42")],
+      // ),
+      case m.route {
+        router.Search(query) ->
+          html.div(
+            [
+              attribute.class(
+                "bg-zinc-900 flex text-zinc-500 items-center px-4 py-2 rounded-lg font-normal gap-2",
+              ),
+            ],
+            [
+              html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
+              html.input([
+                attribute.class("w-80 focus:outline-none outline-none ring-0"),
+                attribute.placeholder("Search"),
+                attribute.value(query),
+                attribute.autofocus(True),
+                event.on_input(msg.Search),
+              ]),
+            ],
+          )
+        _ ->
+          elements.button(
+            html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
+            "Search",
+            [event.on_click({ msg.Search("") }), attribute.class("w-42")],
+          )
+      },
     ]),
-    html.a([attribute.href("/")], [
-      elements.nav_button(
-        html.i([attribute.class("text-3xl ph ph-house")], []),
-        html.i([attribute.class("text-3xl ph-fill ph-house")], []),
-        "Home",
-        m.route == router.Home,
-        [attribute.class("w-42")],
-      ),
-    ]),
-    // elements.button(
-    //   html.i([attribute.class("text-3xl ph ph-sparkle")], []),
-    //   "Discover",
-    //   [attribute.class("w-42")],
-    // ),
-    case m.route {
-      router.Search(query) ->
+    case m.online {
+      True -> element.none()
+      False ->
         html.div(
           [
             attribute.class(
-              "bg-zinc-900 flex text-zinc-500 items-center px-4 py-2 rounded-lg font-normal gap-2",
+              "flex px-2 my-1 rounded-full bg-white gap-1 text-black items-center justify-center",
             ),
           ],
           [
-            html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-            html.input([
-              attribute.class("w-80 focus:outline-none outline-none ring-0"),
-              attribute.placeholder("Search"),
-              attribute.value(query),
-              attribute.autofocus(True),
-              event.on_input(msg.Search),
-            ]),
+            html.i([attribute.class("text-3xl ph ph-globe-x")], []),
+            html.span([], [element.text("Offline")]),
           ],
-        )
-      _ ->
-        elements.button(
-          html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
-          "Search",
-          [event.on_click({ msg.Search("") }), attribute.class("w-42")],
         )
     },
   ])

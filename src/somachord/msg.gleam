@@ -30,6 +30,7 @@ pub type Msg {
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
 
+  Connectivity(Bool)
   ToggleFullscreenPlayer
   ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
 
