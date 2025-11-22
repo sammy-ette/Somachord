@@ -34,8 +34,8 @@ import varasto
 
 import player
 import somachord/api/api
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/models as api_models
+
 import somachord/components/login
 import somachord/model
 import somachord/msg
@@ -323,11 +323,7 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let stream_uri =
-        api_helper.create_uri("/rest/stream.view", auth_details, [
-          #("id", song.id),
-        ])
-        |> uri.to_string
+      let stream_uri = api.stream(auth_details, song)
 
       m.player |> player.load_song(stream_uri, song)
       #(
@@ -468,46 +464,11 @@ fn update(
       )
     }
     msg.SimilarSongs(_) | msg.SimilarSongsArtist(_) -> #(m, effect.none())
-    // msg.SubsonicResponse(Ok(api_helper.SubsonicError(
-    //   code,
-    //   message,
-    //   attempted_path,
-    // ))) -> {
-    //   let auth_details = {
-    //     let assert Ok(stg) = m.storage |> varasto.get("auth")
-    //     stg.auth
-    //   }
-    //   echo attempted_path
-    //   echo code
-    //   echo message
-    //   case attempted_path {
-    //     "/rest/getSimilarSongs.rest" -> {
-    //       let assert Ok(first_artist) = m.current_song.artists |> list.first
-    //       #(
-    //         m,
-    //         api.similar_songs_artist(
-    //           auth_details,
-    //           first_artist.id,
-    //           msg: msg.SimilarSongs,
-    //         ),
-    //       )
-    //     }
-    //     "/rest/getSimilarSongs2.rest" -> #(
-    //       m,
-    //       api.save_queue(auth_details, option.None, msg.DisgardedResponse),
-    //     )
-    //     _ -> #(m, effect.none())
-    //   }
-    // }
     msg.LoadSong -> {
       case queue.current_song(m.queue) {
         option.None -> #(m, effect.none())
         option.Some(song) -> {
-          let stream_uri =
-            api_helper.create_uri("/rest/stream.view", m.auth, [
-              #("id", song.id),
-            ])
-            |> uri.to_string
+          let stream_uri = api.stream(m.auth, song)
           m.player |> player.load_song(stream_uri, song)
           case song.cover_art_id {
             "" -> #(
@@ -517,18 +478,7 @@ fn update(
             _ -> #(
               model.Model(..m, current_song: song),
               vibrant.palette(
-                api_helper.create_uri(
-                  "/rest/getCoverArt.view",
-                  {
-                    let assert Ok(stg) = m.storage |> varasto.get("auth")
-                    stg.auth
-                  },
-                  [
-                    #("id", song.cover_art_id),
-                    #("size", "500"),
-                  ],
-                )
-                  |> uri.to_string,
+                api.cover_url(m.auth, song.cover_art_id, 500),
                 fn(res) {
                   case res {
                     Ok(palette) -> msg.CurrentSongPalette(palette)
@@ -547,11 +497,7 @@ fn update(
       case queue.current_song(m.queue) {
         option.None -> #(m, effect.none())
         option.Some(song) -> {
-          let stream_uri =
-            api_helper.create_uri("/rest/stream.view", m.auth, [
-              #("id", song.id),
-            ])
-            |> uri.to_string
+          let stream_uri = api.stream(m.auth, song)
           m.player |> player.load_song(stream_uri, song)
           m.player |> player.toggle_play()
 
@@ -567,18 +513,7 @@ fn update(
               effect.batch([
                 save_queue,
                 vibrant.palette(
-                  api_helper.create_uri(
-                    "/rest/getCoverArt.view",
-                    {
-                      let assert Ok(stg) = m.storage |> varasto.get("auth")
-                      stg.auth
-                    },
-                    [
-                      #("id", song.cover_art_id),
-                      #("size", "500"),
-                    ],
-                  )
-                    |> uri.to_string,
+                  api.cover_url(m.auth, song.cover_art_id, 500),
                   fn(res) {
                     case res {
                       Ok(palette) -> msg.CurrentSongPalette(palette)
@@ -605,11 +540,7 @@ fn update(
       }
       let queue = m.queue |> queue.jump(position)
       let assert option.Some(song) = queue.current_song(queue)
-      let stream_uri =
-        api_helper.create_uri("/rest/stream.view", auth_details, [
-          #("id", song.id),
-        ])
-        |> uri.to_string
+      let stream_uri = api.stream(m.auth, song)
       m.player |> player.load_song(stream_uri, song)
       #(
         model.Model(..m, queue:),

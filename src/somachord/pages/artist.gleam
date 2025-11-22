@@ -7,7 +7,7 @@ import gleam/result
 import gleam/uri
 import rsvp
 import somachord/api/api
-import somachord/api_helper
+
 import somachord/components
 import somachord/model
 import somachord/models/auth
@@ -22,7 +22,7 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/elements
 
 type Model {
@@ -152,12 +152,7 @@ fn view(m: Model) {
               attribute.style(
                 "background-image",
                 "url('"
-                  <> api_helper.create_uri(
-                  "/rest/getCoverArt.view",
-                  auth_details,
-                  [#("id", artist.cover_art_id), #("size", "500")],
-                )
-                |> uri.to_string
+                  <> api.cover_url(auth_details, artist.cover_art_id, 500)
                   <> "')",
               )
             Error(_) -> attribute.none()

@@ -4,7 +4,7 @@ import somachord/models/auth
 import somachord/storage
 import varasto
 
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/queue
 import somachord/router
 

@@ -17,7 +17,7 @@ import plinth/browser/document
 import plinth/browser/shadow
 import rsvp
 import somachord/api/api
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/components
 import somachord/model
 import somachord/storage

@@ -1,6 +1,6 @@
 import lustre/effect
 
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/model
 
 @external(javascript, "./player.ffi.mjs", "new_")

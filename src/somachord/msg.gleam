@@ -7,7 +7,7 @@ import rsvp
 import somachord/api/api
 import somachord/queue
 
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/model
 import somachord/router
 

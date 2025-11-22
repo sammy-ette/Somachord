@@ -14,8 +14,8 @@ import lustre/element/html
 import lustre/event
 import rsvp
 import somachord/api/api
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/models as api_models
+
 import somachord/components
 import somachord/components/lyrics
 import somachord/components/playlist_menu
@@ -185,13 +185,7 @@ fn view(m: Model) {
           html.div([attribute.class("w-80 h-80 rounded-md bg-zinc-800")], [])
         _ ->
           html.img([
-            attribute.src(
-              api_helper.create_uri("/rest/getCoverArt.view", auth_details, [
-                #("id", song.cover_art_id),
-                #("size", "500"),
-              ])
-              |> uri.to_string,
-            ),
+            attribute.src(api.cover_url(auth_details, song.cover_art_id, 500)),
             attribute.class("w-80 h-80 object-cover rounded-md"),
           ])
       },

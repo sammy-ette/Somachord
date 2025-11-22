@@ -11,7 +11,7 @@ import gleam/string
 import gleam/uri
 import plinth/javascript/date
 import rsvp
-import somachord/api_models
+import somachord/api/models as api_models
 import somachord/models/auth
 import somachord/queue
 import somachord/router
@@ -36,32 +36,36 @@ pub type Search {
   Search(List(api_models.SmallArtist), List(api_models.Album))
 }
 
+fn create_uri(
+  auth_details: auth.Auth,
+  path: String,
+  query: List(#(String, String)),
+) {
+  let assert Ok(root) = auth_details.server_url |> uri.parse
+  let assert Ok(original_uri) = uri.parse(router.direct(root, path))
+  uri.Uri(
+    ..original_uri,
+    query: option.Some(
+      uri.query_to_string([
+        #("f", "json"),
+        #("u", auth_details.username),
+        #("s", auth_details.credentials.salt),
+        #("t", auth_details.credentials.token),
+        #("c", "somachord"),
+        #("v", "1.16.0"),
+        ..query
+      ]),
+    ),
+  )
+  |> uri.to_string
+}
+
 fn get_request(
   auth_details auth_details: auth.Auth,
   path path: String,
   query query: List(#(String, String)),
 ) {
-  let assert Ok(root) = auth_details.server_url |> uri.parse
-  let assert Ok(original_uri) = uri.parse(router.direct(root, path))
-
-  let assert Ok(req) =
-    request.to(
-      uri.Uri(
-        ..original_uri,
-        query: option.Some(
-          uri.query_to_string([
-            #("f", "json"),
-            #("u", auth_details.username),
-            #("s", auth_details.credentials.salt),
-            #("t", auth_details.credentials.token),
-            #("c", "somachord"),
-            #("v", "1.16.0"),
-            ..query
-          ]),
-        ),
-      )
-      |> uri.to_string,
-    )
+  let assert Ok(req) = request.to(create_uri(auth_details, path, query))
   req
 }
 
@@ -94,6 +98,21 @@ fn subsonic_response_decoder(
     }
     _ -> panic as "no"
   }
+}
+
+pub fn cover_url(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  size size: Int,
+) {
+  create_uri(auth_details, "/rest/getCoverArt.view", [
+    #("id", id),
+    #("size", size |> int.to_string),
+  ])
+}
+
+pub fn stream(auth_details auth_details: auth.Auth, song song: api_models.Child) {
+  create_uri(auth_details, "/rest/stream.view", [#("id", song.id)])
 }
 
 pub fn album_list(

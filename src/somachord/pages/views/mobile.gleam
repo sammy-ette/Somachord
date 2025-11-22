@@ -7,8 +7,9 @@ import lustre/element
 import lustre/element/html
 import lustre/event
 import player
-import somachord/api_helper
-import somachord/api_models
+import somachord/api/api
+import somachord/api/models as api_models
+
 import somachord/components/fullscreen_player
 import somachord/model
 import somachord/msg
@@ -111,17 +112,11 @@ fn playing_bar(m: model.Model) {
                     )
                   False ->
                     html.img([
-                      attribute.src(
-                        api_helper.create_uri(
-                          "/rest/getCoverArt.view",
-                          auth_details,
-                          [
-                            #("id", m.current_song.cover_art_id),
-                            #("size", "500"),
-                          ],
-                        )
-                        |> uri.to_string,
-                      ),
+                      attribute.src(api.cover_url(
+                        auth_details,
+                        m.current_song.cover_art_id,
+                        500,
+                      )),
                       attribute.class(
                         "w-12 h-12 transition-all duration-200 rounded-md object-cover",
                       ),

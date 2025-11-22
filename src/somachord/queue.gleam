@@ -5,7 +5,7 @@ import gleam/option
 import gleam/order
 import gleam/pair
 import plinth/javascript/date
-import somachord/api_models
+import somachord/api/models as api_models
 
 pub type Queue {
   Queue(
