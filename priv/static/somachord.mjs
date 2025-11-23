@@ -16140,24 +16140,22 @@ function view4(m) {
                                       class$(
                                         "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
                                       ),
-                                      prepend(
-                                        value(
-                                          get3("SERVER_URL")
-                                        ),
-                                        (() => {
-                                          let $ = get3("SERVER_URL");
-                                          if ($ === "") {
-                                            return toList([none()]);
-                                          } else {
-                                            return toList([
-                                              disabled(true),
-                                              class$(
-                                                "cursor-not-allowed text-zinc-400"
-                                              )
-                                            ]);
-                                          }
-                                        })()
-                                      )
+                                      (() => {
+                                        let $ = get3("SERVER_URL");
+                                        if ($ === "") {
+                                          return toList([none()]);
+                                        } else {
+                                          return toList([
+                                            value(
+                                              get3("SERVER_URL")
+                                            ),
+                                            disabled(true),
+                                            class$(
+                                              "cursor-not-allowed text-zinc-400"
+                                            )
+                                          ]);
+                                        }
+                                      })()
                                     )
                                   )
                                 )
