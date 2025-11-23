@@ -68,6 +68,14 @@ export function time(player) {
 	return player.element.currentTime
 }
 
+function coverURL(player) {
+	let info = player.current
+	let link = player.element.src
+
+	let auth = JSON.parse(localStorage.getItem("auth")).auth
+	return `${URL.parse(link).origin}/rest/getCoverArt.view?f=json&u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`
+}
+
 /**
  * 
  * @param {Player} player
@@ -79,33 +87,30 @@ export function load_song(player, link, info) {
 		player.ctx.resume()
 	}
 
-	let auth = JSON.parse(localStorage.getItem("auth")).auth
-	let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`
+	player.current = info
 	if ('mediaSession' in navigator) {
 		navigator.mediaSession.metadata = new MediaMetadata({
 			title: info.title,
 			artist: info.artists.toArray().map(artist => artist.name).join(', '),
 			album: info.album_name,
 			artwork: [{
-				src: album_art_url
+				src: coverURL(player)
 			}],
 		})
 	}
-	player.current = info
 }
 
 function updatePresence(player) {
 	let info = player.current
-	if (!info) {return;}
-	let link = player.element.src
-	let auth = JSON.parse(localStorage.getItem("auth")).auth
-	let album_art_url = `${URL.parse(link).origin}/rest/getCoverArt.view?u=${auth.username}&s=${auth.salt}&t=${auth.token}&c=somachord&v=1.16.0&id=${info.cover_art_id}&size=500`
+	if (!info) {
+		return;
+	}
 
 	if (window.electronAPI) {
 		window.electronAPI.updatePresence({
 			details: info.title,
 			state: info.artists.toArray().map(artist => artist.name).join(', '),
-			largeImageKey: album_art_url,
+			largeImageKey: coverURL(player),
 			largeImageText: info.album_name,
 			startTimestamp: player.element.paused ? Date.now() : new Date(Date.now() - (player.element.currentTime * 1000)),
 			endTimestamp: player.element.paused ? Date.now() : new Date(Date.now() + (info.duration * 1000) - (player.element.currentTime * 1000)),
