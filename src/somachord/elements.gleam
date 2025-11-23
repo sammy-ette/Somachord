@@ -52,6 +52,10 @@ pub fn song(
         "group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2",
       ),
       event.on("dblclick", { decode.success(msg) }),
+      case layout {
+        model.Mobile -> event.on_click(msg)
+        model.Desktop -> attribute.none()
+      },
       ..attrs
     ],
     [
