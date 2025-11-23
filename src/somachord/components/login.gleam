@@ -200,10 +200,10 @@ pub fn view(m: Model) {
                         attribute.class(
                           "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
                         ),
-                        attribute.value(config.get("SERVER_URL")),
                         ..case config.get("SERVER_URL") {
                           "" -> [attribute.none()]
                           _ -> [
+                            attribute.value(config.get("SERVER_URL")),
                             attribute.disabled(True),
                             attribute.class("cursor-not-allowed text-zinc-400"),
                           ]
