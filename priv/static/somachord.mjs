@@ -19969,7 +19969,15 @@ function page4(m) {
                         let _pipe = index5 + 1;
                         return to_string2(_pipe);
                       })()
-                    )
+                    ),
+                    (() => {
+                      let $ = song3.id === m.current_song_id;
+                      if ($) {
+                        return attribute2("data-playing", "");
+                      } else {
+                        return none();
+                      }
+                    })()
                   ]),
                   true,
                   new PlayPlaylist2(index5)
