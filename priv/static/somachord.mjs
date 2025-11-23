@@ -13757,7 +13757,19 @@ function song2(song3, attrs, cover_art, msg) {
           class$(
             "group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2"
           ),
-          prepend(on("dblclick", success(msg)), attrs)
+          prepend(
+            on("dblclick", success(msg)),
+            prepend(
+              (() => {
+                if (layout2 instanceof Desktop) {
+                  return none();
+                } else {
+                  return on_click(msg);
+                }
+              })(),
+              attrs
+            )
+          )
         )
       )
     ),
@@ -13929,15 +13941,15 @@ function album2(album3, handler) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        194,
+        198,
         "album",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6585,
-          end: 6645,
-          pattern_start: 6596,
-          pattern_end: 6603
+          start: 6700,
+          end: 6760,
+          pattern_start: 6711,
+          pattern_end: 6718
         }
       );
     }
@@ -14064,15 +14076,15 @@ function playlist2(playlist3, handler) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        294,
+        298,
         "playlist",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9604,
-          end: 9664,
-          pattern_start: 9615,
-          pattern_end: 9622
+          start: 9719,
+          end: 9779,
+          pattern_start: 9730,
+          pattern_end: 9737
         }
       );
     }
@@ -14353,15 +14365,15 @@ function music_slider(m, dynamic2, attrs) {
                     "let_assert",
                     FILEPATH7,
                     "somachord/elements",
-                    511,
+                    515,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15767,
-                      end: 15814,
-                      pattern_start: 15778,
-                      pattern_end: 15793
+                      start: 15882,
+                      end: 15929,
+                      pattern_start: 15893,
+                      pattern_end: 15908
                     }
                   );
                 }
