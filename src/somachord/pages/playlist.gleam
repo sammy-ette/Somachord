@@ -444,6 +444,10 @@ fn page(m: Model) {
                 song,
                 attrs: [
                   attribute.attribute("data-index", index + 1 |> int.to_string),
+                  case song.id == m.current_song_id {
+                    True -> attribute.attribute("data-playing", "")
+                    False -> attribute.none()
+                  },
                 ],
                 cover_art: True,
                 msg: { PlayPlaylist(index) },
