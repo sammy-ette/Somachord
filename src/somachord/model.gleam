@@ -14,6 +14,10 @@ pub type Palette {
   Palette(empty: Bool)
 }
 
+pub type Toast {
+  Toast(message: String, icon: String)
+}
+
 pub type Model {
   Model(
     route: router.Route,
@@ -36,6 +40,7 @@ pub type Model {
     fullscreen_player_open: Bool,
     fullscreen_player_display: FullscreenPlayerDisplay,
     current_palette: Palette,
+    toast_display: option.Option(Toast),
   )
 }
 

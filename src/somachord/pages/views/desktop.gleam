@@ -1,6 +1,7 @@
 import gleam/float
 import gleam/int
 import gleam/list
+import gleam/option
 import gleam/string
 import gleam/uri
 import lustre/attribute
@@ -35,7 +36,28 @@ pub fn view(m: model.Model, page) {
           [attribute.class("flex flex-col gap-2 min-w-0 min-h-0 w-full h-full")],
           [
             page,
-            playing_bar(m),
+            html.div([attribute.class("relative")], [
+              case m.toast_display {
+                option.None -> element.none()
+                option.Some(toast) ->
+                  html.div(
+                    [
+                      attribute.class(
+                        "cursor-pointer absolute -top-20 bg-white text-black flex items-center gap-1 rounded-lg p-2 justify-self-center",
+                      ),
+                      event.on_click(msg.ClearToast),
+                    ],
+                    [
+                      html.i(
+                        [attribute.class("text-3xl ph-fill ph-" <> toast.icon)],
+                        [],
+                      ),
+                      element.text(toast.message),
+                    ],
+                  )
+              },
+              playing_bar(m),
+            ]),
           ],
         ),
       ]),

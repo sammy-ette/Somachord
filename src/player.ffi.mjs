@@ -3,16 +3,20 @@ class Player {
 		this.ctx = new AudioContext()
 		this.element = new Audio()
 		this.element.crossOrigin = true
+		this.retryTime = 0
 		this.element.addEventListener('error', (event) => {
-			console.log('retrying song fetch')
-			let time = this.element.currentTime
-			let paused = this.element.paused
-
-			load_song(this, this.element.currentSrc, this.current)
-			this.element.currentTime = time
-			if(!paused) {
-				this.element.play()
-			}
+			this.retryTime = Math.min(Math.max(this.retryTime + 1000, 0), 14000)
+			console.log('retrying in ' + this.retryTime)
+			setTimeout(() => {
+				let time = this.element.currentTime
+				let paused = this.element.paused
+				
+				load_song(this, this.element.currentSrc, this.current)
+				this.element.currentTime = time
+				if(!paused) {
+					this.element.play()
+				}
+			}, this.retryTime)
 		})
 
 		this.node = this.ctx.createMediaElementSource(this.element)

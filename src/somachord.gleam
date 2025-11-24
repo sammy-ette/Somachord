@@ -9,18 +9,18 @@ import gleam/pair
 import gleam/result
 import gleam/uri
 import plinth/javascript/date
+import plinth/javascript/global
 import somachord/components
 import somachord/components/fullscreen_player
 import somachord/components/lyrics
 import somachord/components/playlist_menu
 import somachord/constants
 import somachord/models/auth
+import somachord/pages/error
 import somachord/pages/library
 import somachord/pages/loading
-import somachord/pages/not_found
 import somachord/pages/playlist
 import somachord/pages/search
-import somachord/pages/server_down
 import somachord/queue
 import vibrant
 
@@ -97,6 +97,7 @@ fn init(_) {
       fullscreen_player_open: False,
       fullscreen_player_display: model.Default,
       current_palette: model.Palette(True),
+      toast_display: option.None,
     )
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
@@ -161,6 +162,13 @@ fn online_event() {
   })
 }
 
+fn clear_toast_timeout() {
+  effect.from(fn(dispatch) {
+    global.set_timeout(5000, fn() { msg.ClearToast |> dispatch })
+    Nil
+  })
+}
+
 fn update(
   m: model.Model,
   msg: msg.Msg,
@@ -171,6 +179,14 @@ fn update(
       route_effect(m, route),
     )
     msg.Connectivity(online) -> #(model.Model(..m, online:), effect.none())
+    msg.DisplayToast(toast) -> #(
+      model.Model(..m, toast_display: option.Some(toast)),
+      clear_toast_timeout(),
+    )
+    msg.ClearToast -> #(
+      model.Model(..m, toast_display: option.None),
+      effect.none(),
+    )
     msg.Ping(Ok(Ok(Nil))) -> #(
       model.Model(..m, success: option.Some(True)),
       effect.batch([
@@ -264,7 +280,10 @@ fn update(
                   }
                   msg.AlbumRetrieved(Error(e)) -> {
                     echo e
-                    panic as "album req fetch failed"
+                    msg.DisplayToast(model.Toast(
+                      "Unable to request album",
+                      "warning",
+                    ))
                   }
                   _ -> panic as "unreachable"
                 }
@@ -719,7 +738,7 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
 fn view(m: model.Model) {
   use <- bool.guard(bool.negate(m.confirmed), loading.page())
   case m.success {
-    option.Some(False) -> server_down.page()
+    option.Some(False) -> error.page(error.ServerDown, attribute.none())
     option.Some(True) -> {
       use <- bool.guard(m.route == router.Login, login.element())
       let page = case m.route {
@@ -773,7 +792,7 @@ fn view(m: model.Model) {
             ),
             attribute.attribute("song-id", m.current_song.id),
           ])
-        _ -> not_found.page()
+        _ -> error.page(error.NotFound, attribute.none())
       }
 
       case m.layout {

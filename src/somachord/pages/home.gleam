@@ -132,7 +132,7 @@ fn view(m: Model) {
       ..list.map(m.albumlists, fn(album_list) {
         use <- bool.guard(album_list.albums |> list.is_empty, element.none())
         html.div([], [
-          html.h1([attribute.class("ml-2 text-2xl font-medium")], [
+          html.h1([attribute.class("sticky ml-2 text-2xl font-medium")], [
             element.text(case album_list.type_ {
               "newest" -> "New Additions"
               "frequent" -> "Most Played"
