@@ -30,15 +30,13 @@
         mask: calc(50% + var(--s)*0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*-0.189) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*-0.189) var(--g),radial-gradient(calc(var(--s)*0.452),#000 99%,#0000 101%) subtract,calc(50% + var(--s)*0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*-0.138) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.516) calc(50% + var(--s)*-0.138) var(--g);
       }
   </style>
-  <script>
+  <script type="module">
+    import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
+
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(registration => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
-      });
+      const wb = new Workbox('/sw.js');
+
+      wb.register();
     }
   </script>
   <title>Somachord</title>
