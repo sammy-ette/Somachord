@@ -87,7 +87,7 @@ pub fn song(
           case cover_art {
             True ->
               html.img([
-                attribute.class("w-12 h-12 rounded-sm"),
+                attribute.class("w-12 h-12 rounded-sm select-none"),
                 attribute.src(api.cover_url(
                   auth_details,
                   song.cover_art_id,

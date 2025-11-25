@@ -25,49 +25,58 @@ pub fn view(m: model.Model, page) {
     ],
     [
       page,
-      case m.current_song.id == "" {
-        True -> element.none()
-        False -> playing_bar(m)
-      },
-      html.div([attribute.class("h-16 flex justify-evenly")], [
-        html.a([attribute.href("/"), attribute.class("h-fit w-fit")], [
-          mobile_nav_button(
-            html.i([attribute.class("text-2xl ph ph-house")], []),
-            html.i([attribute.class("text-2xl ph-fill ph-house")], []),
-            "Home",
-            m.route == router.Home,
-            [],
-          ),
-        ]),
-        // mobile_nav_button(
-        //   html.i([attribute.class("text-3xl ph ph-sparkles")], []),
-        //   html.i([attribute.class("text-3xl ph-fill ph-sparkles")], []),
-        //   "Discover",
-        //   False,
-        //   [],
-        // ),
-        html.a([attribute.href("/search"), attribute.class("h-fit w-fit")], [
-          mobile_nav_button(
-            html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
-            html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
-            "Search",
-            case m.route {
-              router.Search(_) -> True
-              _ -> False
-            },
-            [],
-          ),
-        ]),
-        html.a([attribute.href("/library"), attribute.class("h-fit w-fit")], [
-          mobile_nav_button(
-            html.i([attribute.class("text-2xl ph ph-cards-three")], []),
-            html.i([attribute.class("text-2xl ph ph-cards-three")], []),
-            "Library",
-            False,
-            [],
-          ),
+      html.div([attribute.class("relative")], [
+        case m.current_song.id == "" {
+          True -> element.none()
+          False -> playing_bar(m)
+        },
+        html.div([attribute.class("h-16 flex justify-evenly")], [
+          html.a([attribute.href("/"), attribute.class("h-fit w-fit")], [
+            mobile_nav_button(
+              html.i([attribute.class("text-2xl ph ph-house")], []),
+              html.i([attribute.class("text-2xl ph-fill ph-house")], []),
+              "Home",
+              m.route == router.Home,
+              [],
+            ),
+          ]),
+          // mobile_nav_button(
+          //   html.i([attribute.class("text-3xl ph ph-sparkles")], []),
+          //   html.i([attribute.class("text-3xl ph-fill ph-sparkles")], []),
+          //   "Discover",
+          //   False,
+          //   [],
+          // ),
+          html.a([attribute.href("/search"), attribute.class("h-fit w-fit")], [
+            mobile_nav_button(
+              html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
+              html.i([attribute.class("text-2xl ph ph-magnifying-glass")], []),
+              "Search",
+              case m.route {
+                router.Search(_) -> True
+                _ -> False
+              },
+              [],
+            ),
+          ]),
+          html.a([attribute.href("/library"), attribute.class("h-fit w-fit")], [
+            mobile_nav_button(
+              html.i([attribute.class("text-2xl ph ph-cards-three")], []),
+              html.i([attribute.class("text-2xl ph ph-cards-three")], []),
+              "Library",
+              False,
+              [],
+            ),
+          ]),
         ]),
       ]),
+      case m.online {
+        True -> element.none()
+        False ->
+          html.div([attribute.class("text-black bg-sky-500 text-center py-1")], [
+            element.text("You're now offline"),
+          ])
+      },
       fullscreen_player.view(m),
     ],
   )
@@ -82,7 +91,7 @@ fn playing_bar(m: model.Model) {
   html.div(
     [
       attribute.class(
-        "self-center absolute bottom-20 p-2 pb-1 rounded-md flex flex-col gap-2 bg-zinc-900 w-[96%]",
+        "justify-self-center absolute bottom-20 p-2 pb-1 rounded-md flex flex-col gap-2 bg-zinc-900 w-[95%]",
       ),
     ],
     [

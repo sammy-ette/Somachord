@@ -2,6 +2,7 @@ import gleam/bool
 import gleam/int
 import gleam/json
 import gleam/list
+import gleam/string
 import lustre
 import lustre/attribute
 import lustre/component
@@ -15,6 +16,7 @@ import somachord/api/models as api_models
 import somachord/elements
 import somachord/model
 import somachord/msg
+import somachord/pages/error
 import somachord/storage
 import varasto
 
@@ -25,7 +27,7 @@ pub type AlbumList {
 }
 
 pub type Model {
-  Model(albumlists: List(AlbumList))
+  Model(albumlists: List(AlbumList), failed: Bool)
 }
 
 pub type Msg {
@@ -33,6 +35,7 @@ pub type Msg {
     Result(Result(api.AlbumList, api.SubsonicError), rsvp.Error),
   )
   Play(model.PlayRequest)
+  Retry
   ComponentClick
 }
 
@@ -62,7 +65,7 @@ pub fn element(attrs: List(attribute.Attribute(msg.Msg))) {
 fn init(_) {
   let storage = storage.create()
 
-  #(Model(albumlists: []), case storage |> varasto.get("auth") {
+  #(Model(albumlists: [], failed: False), case storage |> varasto.get("auth") {
     Ok(stg) ->
       effect.batch([
         api.album_list(stg.auth, "frequent", 0, 11, AlbumListRetrieved),
@@ -78,21 +81,48 @@ fn update(m: Model, msg: Msg) {
     AlbumListRetrieved(Ok(Ok(api.AlbumList(type_, list)))) -> {
       #(
         Model(
+          ..m,
           albumlists: [AlbumList(type_:, albums: list), ..m.albumlists]
-          |> list.sort(fn(list1: AlbumList, list2: AlbumList) {
-            let list_order = fn(type_: String) -> Int {
-              case type_ {
-                "frequent" -> 4
-                "newest" -> 3
-                "random" -> 2
-                _ -> 1
+            |> list.sort(fn(list1: AlbumList, list2: AlbumList) {
+              let list_order = fn(type_: String) -> Int {
+                case type_ {
+                  "frequent" -> 4
+                  "newest" -> 3
+                  "random" -> 2
+                  _ -> 1
+                }
               }
-            }
-            int.compare(list_order(list1.type_), list_order(list2.type_))
-          }),
+              int.compare(list_order(list1.type_), list_order(list2.type_))
+            }),
         ),
         effect.none(),
       )
+    }
+    Retry -> {
+      let list_types = ["frequent", "newest", "random"]
+      let retrieved = m.albumlists |> list.map(fn(al) { al.type_ })
+
+      let failed =
+        list_types
+        |> list.filter(fn(entry) {
+          retrieved |> list.contains(entry) |> bool.negate
+        })
+
+      let reqs =
+        list.map(failed, fn(type_) {
+          api.album_list(
+            {
+              let assert Ok(stg) = storage.create() |> varasto.get("auth")
+              stg.auth
+            },
+            type_,
+            0,
+            11,
+            AlbumListRetrieved,
+          )
+        })
+
+      #(m, effect.batch(reqs))
     }
     AlbumListRetrieved(Ok(Error(e))) -> {
       echo "subsonic error"
@@ -102,7 +132,7 @@ fn update(m: Model, msg: Msg) {
     AlbumListRetrieved(Error(e)) -> {
       echo "rsvp error"
       echo e
-      #(m, effect.none())
+      #(Model(..m, failed: True), effect.none())
     }
     Play(req) -> #(
       m,
@@ -119,6 +149,12 @@ fn update(m: Model, msg: Msg) {
 }
 
 fn view(m: Model) {
+  use <- bool.lazy_guard(m.failed, fn() {
+    error.page(error.NoConnection, event.on_click(Retry))
+  })
+  use <- bool.lazy_guard(m.albumlists |> list.length > 3, fn() {
+    element.none()
+  })
   html.div(
     [
       components.redirect_click(ComponentClick),
@@ -132,11 +168,11 @@ fn view(m: Model) {
       ..list.map(m.albumlists, fn(album_list) {
         use <- bool.guard(album_list.albums |> list.is_empty, element.none())
         html.div([], [
-          html.h1([attribute.class("ml-2 text-2xl font-medium")], [
+          html.h1([attribute.class("sticky ml-2 text-2xl font-medium")], [
             element.text(case album_list.type_ {
               "newest" -> "New Additions"
               "frequent" -> "Most Played"
-              typ -> typ
+              typ -> string.capitalise(typ)
             }),
           ]),
           html.div(

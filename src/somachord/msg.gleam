@@ -13,7 +13,6 @@ import somachord/router
 
 pub type Msg {
   Router(router.Msg)
-  Ping(Result(Result(Nil, api.SubsonicError), rsvp.Error))
   SongRetrieval(Result(Result(api_models.Child, api.SubsonicError), rsvp.Error))
   Queue(Result(Result(queue.Queue, api.SubsonicError), rsvp.Error))
   AlbumRetrieved(
@@ -30,6 +29,9 @@ pub type Msg {
     Result(Result(api_models.Playlist, api.SubsonicError), rsvp.Error),
   )
 
+  DisplayToast(model.Toast)
+  ClearToast
+  Connectivity(Bool)
   ToggleFullscreenPlayer
   ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
 

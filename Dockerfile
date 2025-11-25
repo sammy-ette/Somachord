@@ -8,6 +8,7 @@ RUN cd /app && gleam run -m lustre/dev build --minify
 FROM erlang:alpine
 COPY --from=build /app/server/build/erlang-shipment /app/server
 COPY --from=build /app/priv /app/priv
+COPY --from=build /app/sw.js /app/priv/static/sw/sw.js
 WORKDIR /app/server
 ENTRYPOINT ["/app/server/entrypoint.sh"]
 CMD ["run"]

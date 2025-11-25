@@ -7,6 +7,7 @@ import gleam/result
 import gleam/uri
 import rsvp
 import somachord/api/api
+import somachord/pages/error
 
 import somachord/components
 import somachord/model
@@ -33,6 +34,7 @@ type Model {
     top_songs: List(api_models.Child),
     auth_details: option.Option(auth.Auth),
     layout: model.Layout,
+    page_error: option.Option(error.ErrorType),
   )
 }
 
@@ -102,6 +104,7 @@ fn init(_) {
         Error(_) -> option.None
       },
       layout: components.layout(),
+      page_error: option.None,
     ),
     effect.none(),
   )
@@ -109,10 +112,13 @@ fn init(_) {
 
 fn update(m: Model, msg: Msg) {
   case msg {
-    ArtistID(id) -> #(Model(..m, artist_id: id), case m.auth_details {
-      option.Some(auth) -> api.artist(auth, id, ArtistRetrieved)
-      option.None -> effect.none()
-    })
+    ArtistID(id) -> #(
+      Model(..m, artist_id: id, page_error: option.None),
+      case m.auth_details {
+        option.Some(auth) -> api.artist(auth, id, ArtistRetrieved)
+        option.None -> effect.none()
+      },
+    )
     ArtistRetrieved(Ok(Ok(artist))) -> {
       let assert option.Some(auth_details) = m.auth_details
       #(
@@ -121,6 +127,10 @@ fn update(m: Model, msg: Msg) {
       )
     }
     ArtistRetrieved(Ok(Error(_))) -> panic as "idk this guy"
+    ArtistRetrieved(Error(e)) -> #(
+      Model(..m, page_error: option.Some(error.from_rsvp(e))),
+      effect.none(),
+    )
     TopSongsRetrieved(Ok(Ok(songs))) -> #(
       Model(..m, top_songs: songs),
       effect.none(),
@@ -138,6 +148,13 @@ fn play_json(id: String, type_: String) {
 }
 
 fn view(m: Model) {
+  case m.page_error {
+    option.None -> view_real(m)
+    option.Some(e) -> error.page(e, event.on_click(ArtistID(m.artist_id)))
+  }
+}
+
+fn view_real(m: Model) {
   {
     use auth_details <- result.try(
       m.auth_details |> option.to_result(element.none()),

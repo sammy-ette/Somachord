@@ -15,6 +15,7 @@ import player
 import rsvp
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/pages/error
 
 import somachord/components
 import somachord/constants
@@ -45,10 +46,12 @@ pub type Msg {
 pub type Model {
   Model(
     playlist: api_models.Playlist,
+    id: String,
     layout: model.Layout,
     show_editor: Bool,
     playlist_form: form.Form(PlaylistForm),
     current_song_id: String,
+    page_error: option.Option(error.ErrorType),
   )
 }
 
@@ -86,6 +89,7 @@ fn init(_) {
   #(
     Model(
       playlist: api_models.new_playlist(),
+      id: "",
       layout: components.layout(),
       show_editor: False,
       playlist_form: form.new({
@@ -106,6 +110,7 @@ fn init(_) {
         ))
       }),
       current_song_id: "",
+      page_error: option.None,
     ),
     effect.none(),
   )
@@ -115,25 +120,28 @@ fn update(m: Model, msg: Msg) {
   case msg {
     CurrentSongID(id) -> #(Model(..m, current_song_id: id), effect.none())
     PlaylistID(id) -> {
-      #(m, case id == constants.somachord_likes_playlist_id {
-        True ->
-          api.likes(
-            auth_details: {
-              let assert Ok(stg) = storage.create() |> varasto.get("auth")
-              stg.auth
-            },
-            msg: LikedSongsResponse,
-          )
-        False ->
-          api.playlist(
-            auth_details: {
-              let assert Ok(stg) = storage.create() |> varasto.get("auth")
-              stg.auth
-            },
-            id:,
-            msg: PlaylistResponse,
-          )
-      })
+      #(
+        Model(..m, id:, page_error: option.None),
+        case id == constants.somachord_likes_playlist_id {
+          True ->
+            api.likes(
+              auth_details: {
+                let assert Ok(stg) = storage.create() |> varasto.get("auth")
+                stg.auth
+              },
+              msg: LikedSongsResponse,
+            )
+          False ->
+            api.playlist(
+              auth_details: {
+                let assert Ok(stg) = storage.create() |> varasto.get("auth")
+                stg.auth
+              },
+              id:,
+              msg: PlaylistResponse,
+            )
+        },
+      )
     }
     LikedSongsResponse(Ok(Ok(songs))) -> {
       let playlist =
@@ -150,14 +158,22 @@ fn update(m: Model, msg: Msg) {
         )
       #(Model(..m, playlist:), effect.none())
     }
-    LikedSongsResponse(e) -> {
-      echo e
+    LikedSongsResponse(Ok(res)) -> {
+      echo res
       #(m, effect.none())
+    }
+    LikedSongsResponse(Error(e)) -> {
+      echo e
+      #(Model(..m, page_error: option.Some(error.from_rsvp(e))), effect.none())
     }
     PlaylistResponse(Ok(Ok(playlist))) -> #(
       Model(..m, playlist:),
       effect.none(),
     )
+    PlaylistResponse(Error(e)) -> {
+      echo e
+      #(Model(..m, page_error: option.Some(error.from_rsvp(e))), effect.none())
+    }
     PlaylistResponse(e) -> {
       echo e
       #(m, effect.none())
@@ -232,22 +248,26 @@ fn playlist_json(playlist: api_models.Playlist, index: Int) {
 }
 
 fn view(m: Model) {
-  html.div(
-    [
-      attribute.class("flex-1 flex gap-4"),
-      case m.layout {
-        model.Desktop -> attribute.class("overflow-hidden")
-        model.Mobile -> attribute.class("flex-col overflow-y-auto")
-      },
-    ],
-    [
-      editor(m),
-      ..case m.layout, page(m) {
-        model.Desktop, elems -> elems
-        model.Mobile, elems -> elems |> list.reverse
-      }
-    ],
-  )
+  case m.page_error {
+    option.Some(e) -> error.page(e, event.on_click(PlaylistID(m.id)))
+    option.None ->
+      html.div(
+        [
+          attribute.class("flex-1 flex gap-4"),
+          case m.layout {
+            model.Desktop -> attribute.class("overflow-hidden")
+            model.Mobile -> attribute.class("flex-col overflow-y-auto")
+          },
+        ],
+        [
+          editor(m),
+          ..case m.layout, page(m) {
+            model.Desktop, elems -> elems
+            model.Mobile, elems -> elems |> list.reverse
+          }
+        ],
+      )
+  }
 }
 
 fn editor(m: Model) {

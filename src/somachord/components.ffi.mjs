@@ -26,3 +26,7 @@ export function scroll_into_view(element) {
 export function elems_to_array(nl) {
     return [...nl]
 }
+
+export function online() {
+    return navigator.onLine
+}

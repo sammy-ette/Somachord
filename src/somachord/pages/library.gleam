@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/json
 import gleam/list
+import gleam/option
 import gleam/string
 import gleam/uri
 import lustre
@@ -13,6 +14,7 @@ import plinth/browser/service_worker
 import rsvp
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/pages/error
 
 import somachord/components
 import somachord/elements
@@ -30,6 +32,7 @@ type Model {
     playlists: List(api_models.Playlist),
     display: Display,
     search_query: String,
+    page_error: option.Option(error.ErrorType),
   )
 }
 
@@ -41,6 +44,7 @@ pub type Msg {
     Result(Result(List(api_models.Playlist), api.SubsonicError), rsvp.Error),
   )
   PlayPlaylist(id: String)
+  RetryPlaylists
 
   Nothing
 }
@@ -68,10 +72,15 @@ fn init(_) {
   let storage = storage.create()
 
   #(
-    Model(playlists: [], search_query: "", display: case components.layout() {
-      model.Mobile -> List
-      model.Desktop -> Grid
-    }),
+    Model(
+      playlists: [],
+      search_query: "",
+      display: case components.layout() {
+        model.Mobile -> List
+        model.Desktop -> Grid
+      },
+      page_error: option.None,
+    ),
     case storage |> varasto.get("auth") {
       Ok(stg) -> api.playlists(stg.auth, Playlists)
       Error(_) -> effect.none()
@@ -82,10 +91,23 @@ fn init(_) {
 fn update(m: Model, msg: Msg) {
   case msg {
     ChangeDisplay(display) -> #(Model(..m, display: display), effect.none())
-
     Playlists(Ok(Ok(playlists))) -> #(
       Model(..m, playlists: playlists),
       effect.none(),
+    )
+    Playlists(Error(e)) -> #(
+      Model(..m, page_error: option.Some(error.from_rsvp(e))),
+      effect.none(),
+    )
+    RetryPlaylists -> #(
+      Model(..m, page_error: option.None),
+      api.playlists(
+        {
+          let assert Ok(stg) = storage.create() |> varasto.get("auto")
+          stg.auth
+        },
+        Playlists,
+      ),
     )
     PlayPlaylist(id) -> #(m, event.emit("play", play_json(id, 0)))
     _ -> #(m, effect.none())
@@ -101,6 +123,13 @@ fn play_json(id: String, index: Int) {
 }
 
 fn view(m: Model) {
+  case m.page_error {
+    option.None -> real_view(m)
+    option.Some(e) -> error.page(e, event.on_click(RetryPlaylists))
+  }
+}
+
+fn real_view(m: Model) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
     stg.auth
