@@ -361,10 +361,10 @@ fn update(
     }
     msg.StreamError | msg.SongRetrieval(_) -> todo as "handle stream error"
     msg.PlayerTick(time) -> {
-      let playtime = case time {
-        0.0 -> 0
-        time ->
-          case
+      let playtime = case time <. 1.0 {
+        True -> 0
+        False ->
+          echo case
             float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
           {
             True -> m.played_seconds + 1
