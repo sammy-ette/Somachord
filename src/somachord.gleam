@@ -544,11 +544,15 @@ fn update(
             api.save_queue(m.auth, option.Some(m.queue), msg.DisgardedResponse)
           case song.cover_art_id {
             "" -> #(
-              model.Model(..m, current_palette: model.Palette(empty: True)),
+              model.Model(
+                ..m,
+                current_song: song,
+                current_palette: model.Palette(empty: True),
+              ),
               save_queue,
             )
             _ -> #(
-              m,
+              model.Model(..m, current_song: song),
               effect.batch([
                 save_queue,
                 vibrant.palette(
