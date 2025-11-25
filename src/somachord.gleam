@@ -80,7 +80,6 @@ fn init(_) {
       route:,
       layout:,
       online: True,
-      success: option.None,
       storage: storage.create(),
       auth: auth.Auth("", auth.Credentials("", ""), ""),
       confirmed: False,
@@ -102,7 +101,21 @@ fn init(_) {
   case m.storage |> varasto.get("auth") {
     Ok(stg) -> #(
       model.Model(..m, confirmed: True, auth: stg.auth),
-      api.ping(stg.auth, msg.Ping),
+      effect.batch([
+        modem.init(msg.on_url_change),
+        route_effect(m, m.route),
+        player.listen_events(m.player, player_event_handler),
+        api.queue(
+          {
+            let assert Ok(stg) = m.storage |> varasto.get("auth")
+            stg.auth
+          },
+          msg.Queue,
+        ),
+        unload_event(),
+        online_event(),
+        offline_event(),
+      ]),
     )
     Error(_) ->
       case echo router.get_route() |> router.uri_to_route {
@@ -112,12 +125,7 @@ fn init(_) {
         )
         _ -> {
           #(
-            model.Model(
-              ..m,
-              confirmed: True,
-              success: option.Some(True),
-              route: router.Login,
-            ),
+            model.Model(..m, confirmed: True, route: router.Login),
             effect.none(),
           )
         }
@@ -185,28 +193,6 @@ fn update(
     )
     msg.ClearToast -> #(
       model.Model(..m, toast_display: option.None),
-      effect.none(),
-    )
-    msg.Ping(Ok(Ok(Nil))) -> #(
-      model.Model(..m, success: option.Some(True)),
-      effect.batch([
-        modem.init(msg.on_url_change),
-        route_effect(m, m.route),
-        player.listen_events(m.player, player_event_handler),
-        api.queue(
-          {
-            let assert Ok(stg) = m.storage |> varasto.get("auth")
-            stg.auth
-          },
-          msg.Queue,
-        ),
-        unload_event(),
-        online_event(),
-        offline_event(),
-      ]),
-    )
-    msg.Ping(_) -> #(
-      model.Model(..m, success: option.Some(False)),
       effect.none(),
     )
     msg.AlbumRetrieved(Ok(Ok(album))) -> #(
@@ -741,69 +727,57 @@ fn player_event_handler(event: String, player: model.Player) -> msg.Msg {
 
 fn view(m: model.Model) {
   use <- bool.guard(bool.negate(m.confirmed), loading.page())
-  case m.success {
-    option.Some(False) -> error.page(error.ServerDown, attribute.none())
-    option.Some(True) -> {
-      use <- bool.guard(m.route == router.Login, login.element())
-      let page = case m.route {
-        router.Home -> home.element([msg.on_play(msg.Play)])
-        router.Search(query) ->
-          search.element([msg.on_play(msg.Play), search.query(query)])
-        router.Artist(id) ->
-          artist.element([
-            msg.on_play(msg.Play),
-            attribute.attribute("artist-id", id),
-            case m.layout {
-              model.Desktop ->
-                attribute.class("rounded-md border border-zinc-800")
-              model.Mobile -> attribute.none()
-            },
-          ])
-        router.Album(id) -> album.page(m, id)
-        router.Song(id) ->
-          song.element([
-            msg.on_play(msg.Play),
-            attribute.attribute("song-id", id),
-            case id == m.current_song.id {
-              True -> song.song_time(player.time(m.player))
-              False -> song.song_time(-1.0)
-            },
-            case m.layout {
-              model.Desktop ->
-                attribute.class("rounded-md border border-zinc-800")
-              model.Mobile -> attribute.none()
-            },
-          ])
-        router.Playlist(id) ->
-          playlist.element([
-            msg.on_playlist(fn(req) {
-              msg.StreamPlaylist(req.playlist, req.index)
-            }),
-            msg.on_play(msg.Play),
-            attribute.attribute("playlist-id", id),
-            attribute.attribute("song-id", m.current_song.id),
-          ])
-        router.Library -> library.element([msg.on_play(msg.Play)])
-        router.Likes ->
-          playlist.element([
-            msg.on_playlist(fn(req) {
-              msg.StreamPlaylist(req.playlist, req.index)
-            }),
-            msg.on_play(msg.Play),
-            attribute.attribute(
-              "playlist-id",
-              constants.somachord_likes_playlist_id,
-            ),
-            attribute.attribute("song-id", m.current_song.id),
-          ])
-        _ -> error.page(error.NotFound, attribute.none())
-      }
+  use <- bool.guard(m.route == router.Login, login.element())
+  let page = case m.route {
+    router.Home -> home.element([msg.on_play(msg.Play)])
+    router.Search(query) ->
+      search.element([msg.on_play(msg.Play), search.query(query)])
+    router.Artist(id) ->
+      artist.element([
+        msg.on_play(msg.Play),
+        attribute.attribute("artist-id", id),
+        case m.layout {
+          model.Desktop -> attribute.class("rounded-md border border-zinc-800")
+          model.Mobile -> attribute.none()
+        },
+      ])
+    router.Album(id) -> album.page(m, id)
+    router.Song(id) ->
+      song.element([
+        msg.on_play(msg.Play),
+        attribute.attribute("song-id", id),
+        case id == m.current_song.id {
+          True -> song.song_time(player.time(m.player))
+          False -> song.song_time(-1.0)
+        },
+        case m.layout {
+          model.Desktop -> attribute.class("rounded-md border border-zinc-800")
+          model.Mobile -> attribute.none()
+        },
+      ])
+    router.Playlist(id) ->
+      playlist.element([
+        msg.on_playlist(fn(req) { msg.StreamPlaylist(req.playlist, req.index) }),
+        msg.on_play(msg.Play),
+        attribute.attribute("playlist-id", id),
+        attribute.attribute("song-id", m.current_song.id),
+      ])
+    router.Library -> library.element([msg.on_play(msg.Play)])
+    router.Likes ->
+      playlist.element([
+        msg.on_playlist(fn(req) { msg.StreamPlaylist(req.playlist, req.index) }),
+        msg.on_play(msg.Play),
+        attribute.attribute(
+          "playlist-id",
+          constants.somachord_likes_playlist_id,
+        ),
+        attribute.attribute("song-id", m.current_song.id),
+      ])
+    _ -> error.page(error.NotFound, attribute.none())
+  }
 
-      case m.layout {
-        model.Mobile -> mobile.view(m, page)
-        model.Desktop -> desktop.view(m, page)
-      }
-    }
-    option.None -> loading.page()
+  case m.layout {
+    model.Mobile -> mobile.view(m, page)
+    model.Desktop -> desktop.view(m, page)
   }
 }

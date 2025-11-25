@@ -25,6 +25,7 @@ pub fn handle_request(req: wisp.Request) -> wisp.Response {
   use <- wisp.rescue_crashes
   use req <- wisp.handle_head(req)
   use <- wisp.serve_static(req, under: "/static", from: "../priv/static")
+  use <- wisp.serve_static(req, under: "/", from: "../priv/static/sw")
 
   let body =
     html.html(
@@ -81,13 +82,25 @@ pub fn handle_request(req: wisp.Request) -> wisp.Response {
           html.style(
             [],
             "
-    .wavy-circle {
-      --s: 300px; /* adjust to control the size */
+      .wavy-circle {
+        --s: 300px; /* adjust to control the size */
 
-      width: var(--s); 
-      aspect-ratio: 1;
-      --g:/calc(var(--s)*0.195) calc(var(--s)*0.195) radial-gradient(50% 50%,#000 99%,#0000 101%) no-repeat;
-      mask: calc(50% + var(--s)*0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*-0.189) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*-0.189) var(--g),radial-gradient(calc(var(--s)*0.452),#000 99%,#0000 101%) subtract,calc(50% + var(--s)*0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*-0.138) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.516) calc(50% + var(--s)*-0.138) var(--g);
+        width: var(--s); 
+        aspect-ratio: 1;
+        --g:/calc(var(--s)*0.195) calc(var(--s)*0.195) radial-gradient(50% 50%,#000 99%,#0000 101%) no-repeat;
+        mask: calc(50% + var(--s)*0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*0.327) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*0.189) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0) var(--g),calc(50% + var(--s)*-0.327) calc(50% + var(--s)*-0.189) var(--g),calc(50% + var(--s)*-0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.189) calc(50% + var(--s)*-0.327) var(--g),calc(50% + var(--s)*0.327) calc(50% + var(--s)*-0.189) var(--g),radial-gradient(calc(var(--s)*0.452),#000 99%,#0000 101%) subtract,calc(50% + var(--s)*0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*0.516) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*0.378) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*0.138) var(--g),calc(50% + var(--s)*-0.516) calc(50% + var(--s)*-0.138) var(--g),calc(50% + var(--s)*-0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*-0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.138) calc(50% + var(--s)*-0.516) var(--g),calc(50% + var(--s)*0.378) calc(50% + var(--s)*-0.378) var(--g),calc(50% + var(--s)*0.516) calc(50% + var(--s)*-0.138) var(--g);
+      }
+  ",
+          ),
+          html.script(
+            [attribute.type_("module")],
+            "
+    import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
+
+    if ('serviceWorker' in navigator) {
+      const wb = new Workbox('/sw.js');
+
+      wb.register();
     }
   ",
           ),
@@ -99,7 +112,31 @@ pub fn handle_request(req: wisp.Request) -> wisp.Response {
         html.body(
           [attribute.class("w-screen h-screen flex"), attribute.id("app")],
           [
-            html.div([attribute.id("app")], []),
+            html.div(
+              [attribute.class("w-full h-full flex"), attribute.id("app")],
+              [
+                html.div(
+                  [
+                    attribute.class(
+                      "flex-1 flex flex-col items-center justify-center gap-4",
+                    ),
+                  ],
+                  [
+                    html.div(
+                      [
+                        attribute.class(
+                          "text-center font-[Poppins,sans-serif] font-extrabold text-3xl",
+                        ),
+                      ],
+                      [
+                        html.h1([], [html.text("ƪ(˘⌣˘)ʃ")]),
+                        html.h1([], [html.text("Loading....")]),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
             html.script(
               [
                 attribute("async", ""),

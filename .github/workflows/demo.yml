@@ -23,6 +23,7 @@ jobs:
           cp index.html public/index.html
           cp index.html public/404.html
           cp priv/static/* public/priv/static
+          cp sw.js public/sw.js
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
