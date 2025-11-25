@@ -22835,10 +22835,10 @@ function check_scrobble(m) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 19551,
-              end: 19604,
-              pattern_start: 19562,
-              pattern_end: 19569
+              start: 19565,
+              end: 19618,
+              pattern_start: 19576,
+              pattern_end: 19583
             }
           );
         }
@@ -23148,10 +23148,10 @@ function update11(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 12411,
-                end: 12464,
-                pattern_start: 12422,
-                pattern_end: 12429
+                start: 12425,
+                end: 12478,
+                pattern_start: 12436,
+                pattern_end: 12443
               }
             );
           }
@@ -23218,10 +23218,10 @@ function update11(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 13016,
-                    end: 13082,
-                    pattern_start: 13027,
-                    pattern_end: 13043
+                    start: 13030,
+                    end: 13096,
+                    pattern_start: 13041,
+                    pattern_end: 13057
                   }
                 );
               }
@@ -23257,10 +23257,10 @@ function update11(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $22,
-                start: 13343,
-                end: 13396,
-                pattern_start: 13354,
-                pattern_end: 13361
+                start: 13357,
+                end: 13410,
+                pattern_start: 13368,
+                pattern_end: 13375
               }
             );
           }
@@ -23284,10 +23284,10 @@ function update11(m, msg) {
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 13428,
-              end: 13494,
-              pattern_start: 13439,
-              pattern_end: 13455
+              start: 13442,
+              end: 13508,
+              pattern_start: 13453,
+              pattern_end: 13469
             }
           );
         }
@@ -23330,10 +23330,10 @@ function update11(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $2,
-                start: 12411,
-                end: 12464,
-                pattern_start: 12422,
-                pattern_end: 12429
+                start: 12425,
+                end: 12478,
+                pattern_start: 12436,
+                pattern_end: 12443
               }
             );
           }
@@ -23400,10 +23400,10 @@ function update11(m, msg) {
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 13016,
-                    end: 13082,
-                    pattern_start: 13027,
-                    pattern_end: 13043
+                    start: 13030,
+                    end: 13096,
+                    pattern_start: 13041,
+                    pattern_end: 13057
                   }
                 );
               }
@@ -24094,10 +24094,10 @@ function update11(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 16136,
-            end: 16189,
-            pattern_start: 16147,
-            pattern_end: 16154
+            start: 16150,
+            end: 16203,
+            pattern_start: 16161,
+            pattern_end: 16168
           }
         );
       }
@@ -24122,10 +24122,10 @@ function update11(m, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 16271,
-          end: 16327,
-          pattern_start: 16282,
-          pattern_end: 16299
+          start: 16285,
+          end: 16341,
+          pattern_start: 16296,
+          pattern_end: 16313
         }
       );
     }
@@ -24447,10 +24447,10 @@ function update11(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 10711,
-                end: 10764,
-                pattern_start: 10722,
-                pattern_end: 10729
+                start: 10725,
+                end: 10778,
+                pattern_start: 10736,
+                pattern_end: 10743
               }
             );
           }
@@ -24466,16 +24466,18 @@ function update11(m, msg) {
   } else if (msg instanceof PlayerTick) {
     let time3 = msg.time;
     let _block;
-    if (time3 === 0) {
+    let $ = time3 < 1;
+    if ($) {
       _block = 0;
     } else {
-      let time$1 = time3;
-      let $ = absolute_value(time$1 - identity(m.played_seconds)) > 1;
-      if ($) {
-        _block = m.played_seconds + 1;
+      let _block$1;
+      let $1 = absolute_value(time3 - identity(m.played_seconds)) > 1;
+      if ($1) {
+        _block$1 = m.played_seconds + 1;
       } else {
-        _block = m.played_seconds;
+        _block$1 = m.played_seconds;
       }
+      _block = echo9(_block$1, void 0, "src/somachord.gleam", 367);
     }
     let playtime = _block;
     return [
@@ -24529,10 +24531,10 @@ function update11(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 11648,
-            end: 11701,
-            pattern_start: 11659,
-            pattern_end: 11666
+            start: 11662,
+            end: 11715,
+            pattern_start: 11673,
+            pattern_end: 11680
           }
         );
       }
@@ -24687,10 +24689,10 @@ function update11(m, msg) {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 16703,
-                end: 16756,
-                pattern_start: 16714,
-                pattern_end: 16721
+                start: 16717,
+                end: 16770,
+                pattern_start: 16728,
+                pattern_end: 16735
               }
             );
           }
@@ -24736,10 +24738,10 @@ function update11(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 11648,
-            end: 11701,
-            pattern_start: 11659,
-            pattern_end: 11666
+            start: 11662,
+            end: 11715,
+            pattern_start: 11673,
+            pattern_end: 11680
           }
         );
       }
@@ -24846,10 +24848,10 @@ function update11(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 17427,
-            end: 17480,
-            pattern_start: 17438,
-            pattern_end: 17445
+            start: 17441,
+            end: 17494,
+            pattern_start: 17452,
+            pattern_end: 17459
           }
         );
       }
