@@ -9,6 +9,7 @@
     monospace;
     --color-red-400: oklch(70.4% 0.191 22.216);
     --color-yellow-400: oklch(85.2% 0.199 91.936);
+    --color-sky-500: oklch(68.5% 0.169 237.323);
     --color-violet-200: oklch(89.4% 0.057 293.283);
     --color-violet-400: oklch(70.2% 0.183 293.541);
     --color-violet-500: oklch(60.6% 0.25 292.717);
@@ -250,6 +251,9 @@
   .-top-2 {
     top: calc(var(--spacing) * -2);
   }
+  .-top-20 {
+    top: calc(var(--spacing) * -20);
+  }
   .-top-83 {
     top: calc(var(--spacing) * -83);
   }
@@ -345,6 +349,9 @@
   }
   .mx-auto {
     margin-inline: auto;
+  }
+  .my-1 {
+    margin-block: calc(var(--spacing) * 1);
   }
   .-mt-2 {
     margin-top: calc(var(--spacing) * -2);
@@ -514,8 +521,8 @@
   .w-120 {
     width: calc(var(--spacing) * 120);
   }
-  .w-\[96\%\] {
-    width: 96%;
+  .w-\[95\%\] {
+    width: 95%;
   }
   .w-fit {
     width: fit-content;
@@ -680,6 +687,9 @@
   .self-start {
     align-self: flex-start;
   }
+  .justify-self-center {
+    justify-self: center;
+  }
   .truncate {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -754,6 +764,9 @@
   }
   .bg-black {
     background-color: var(--color-black);
+  }
+  .bg-sky-500 {
+    background-color: var(--color-sky-500);
   }
   .bg-violet-500 {
     background-color: var(--color-violet-500);
