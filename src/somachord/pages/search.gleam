@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/json
 import gleam/list
 import lustre
@@ -13,6 +14,7 @@ import somachord/api/models as api_models
 import somachord/components
 import somachord/elements
 import somachord/model
+import somachord/pages/error
 import somachord/storage
 import varasto
 
@@ -22,6 +24,7 @@ pub type Model {
     artists: List(api_models.Artist),
     albums: List(api_models.Album),
     layout: model.Layout,
+    failed: Bool,
   )
 }
 
@@ -67,6 +70,7 @@ fn init(_) {
       artists: [],
       albums: [],
       layout: components.layout(),
+      failed: False,
     ),
     effect.none(),
   )
@@ -78,7 +82,10 @@ fn update(m: Model, msg: Msg) {
     stg.auth
   }
   case msg {
-    Search(query) -> #(m, api.search(auth_details, query, SearchResults))
+    Search(query) -> #(
+      Model(..m, search_query: query),
+      api.search(auth_details, query, SearchResults),
+    )
     SearchResults(Ok(Ok(api.Search(_, albums)))) -> #(
       Model(..m, albums:),
       effect.none(),
@@ -89,7 +96,7 @@ fn update(m: Model, msg: Msg) {
     }
     SearchResults(Error(e)) -> {
       echo e
-      panic as "search results rsvp error"
+      #(Model(..m, failed: True), effect.none())
     }
     PlayAlbum(id) -> #(
       m,
@@ -103,28 +110,33 @@ fn update(m: Model, msg: Msg) {
 }
 
 fn view(m: Model) {
-  html.div([attribute.class("flex flex-col")], [
-    case m.layout {
-      model.Desktop -> element.none()
-      model.Mobile ->
-        html.input([
-          attribute.class(
-            "text-zinc-500 bg-zinc-900 p-2 rounded-sm w-full focus:outline-none outline-none ring-0",
-          ),
-          attribute.placeholder("Search"),
-          //attribute.value(query),
-          attribute.autofocus(True),
-          event.on_input(Search),
-        ])
-    },
-    html.div(
-      [
-        components.redirect_click(Nothing),
-        attribute.class("flex flex-wrap gap-4"),
-      ],
-      list.map(m.albums, fn(album: api_models.Album) {
-        elements.album(album, fn(id) { PlayAlbum(id) })
-      }),
-    ),
-  ])
+  case components.online() || m.failed |> bool.negate {
+    False ->
+      error.page(error.NoConnection, event.on_click(Search(m.search_query)))
+    True ->
+      html.div([attribute.class("flex flex-col")], [
+        case m.layout {
+          model.Desktop -> element.none()
+          model.Mobile ->
+            html.input([
+              attribute.class(
+                "text-zinc-500 bg-zinc-900 p-2 rounded-sm w-full focus:outline-none outline-none ring-0",
+              ),
+              attribute.placeholder("Search"),
+              //attribute.value(query),
+              attribute.autofocus(True),
+              event.on_input(Search),
+            ])
+        },
+        html.div(
+          [
+            components.redirect_click(Nothing),
+            attribute.class("flex flex-wrap gap-4"),
+          ],
+          list.map(m.albums, fn(album: api_models.Album) {
+            elements.album(album, fn(id) { PlayAlbum(id) })
+          }),
+        ),
+      ])
+  }
 }

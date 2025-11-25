@@ -34,6 +34,9 @@ pub fn mobile_space() {
   html.div([attribute.class("h-16")], [])
 }
 
+@external(javascript, "./components.ffi.mjs", "online")
+pub fn online() -> Bool
+
 @external(javascript, "./components.ffi.mjs", "get_element_by_id")
 pub fn get_element_by_id(id: String) -> Result(element.Element, Nil)
 
