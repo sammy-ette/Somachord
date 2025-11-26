@@ -2,14 +2,13 @@ import gleam/float
 import gleam/int
 import gleam/list
 import gleam/string
-import gleam/uri
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
 import player
 import somachord/api/api
-import somachord/api/models as api_models
+import somachord/elements/button
 
 import somachord/components
 import somachord/components/lyrics
@@ -112,13 +111,9 @@ fn view_desktop(m: model.Model) {
         ],
         [
           html.div([attribute.class("flex gap-8")], [
-            html.i(
-              [
-                attribute.class("text-3xl ph ph-caret-down"),
-                event.on_click(msg.ToggleFullscreenPlayer),
-              ],
-              [],
-            ),
+            button.button(button.Down, button.Medium, [
+              event.on_click(msg.ToggleFullscreenPlayer),
+            ]),
             // TV Mode (just an alternate layout, chromecast-y)
           // html.i(
           //   [
@@ -190,30 +185,27 @@ fn view_desktop(m: model.Model) {
                       ],
                     ),
                     html.div([attribute.class("flex gap-2")], [
-                      html.i(
+                      button.button(
+                        button.Like(filled: m.current_song.starred),
+                        button.Medium,
                         [
-                          attribute.class("text-3xl ph-heart-straight"),
                           event.on_click(msg.Like),
-                          ..case m.current_song.starred {
+                          case m.current_song.starred {
                             True ->
                               case m.current_palette.empty {
-                                True -> [
-                                  attribute.class("ph-fill text-violet-500"),
-                                ]
-                                False -> [
-                                  attribute.class("ph-fill"),
+                                True -> attribute.class("text-violet-500")
+
+                                False ->
                                   attribute.style(
                                     "color",
                                     m.current_palette
                                       |> vibrant.vibrant
                                       |> vibrant.hex,
-                                  ),
-                                ]
+                                  )
                               }
-                            False -> [attribute.class("ph")]
-                          }
+                            False -> attribute.none()
+                          },
                         ],
-                        [],
                       ),
                       // html.i(
                     //   [attribute.class("text-3xl ph ph-plus-circle")],
@@ -262,89 +254,70 @@ fn view_desktop(m: model.Model) {
                   html.div(
                     [attribute.class("flex gap-4 justify-center items-center")],
                     [
-                      html.i(
-                        [
-                          attribute.class("text-2xl ph ph-shuffle-simple"),
-                          event.on_click(msg.PlayerShuffle),
-                          ..case m.shuffled {
-                            True ->
-                              case m.current_palette.empty {
-                                True -> [
-                                  attribute.class(
-                                    "text-violet-500 underline underline-offset-4 decoration-dotted",
-                                  ),
-                                ]
-                                False -> [
-                                  attribute.class(
-                                    "underline underline-offset-4 decoration-dotted",
-                                  ),
-                                  attribute.style(
-                                    "color",
-                                    m.current_palette
-                                      |> vibrant.vibrant
-                                      |> vibrant.hex,
-                                  ),
-                                ]
-                              }
-                            False -> [attribute.none()]
-                          }
-                        ],
-                        [],
+                      button.button(button.Shuffle, button.Small, [
+                        event.on_click(msg.PlayerShuffle),
+                        ..case m.shuffled {
+                          True ->
+                            case m.current_palette.empty {
+                              True -> [
+                                attribute.class(
+                                  "text-violet-500 underline underline-offset-4 decoration-dotted",
+                                ),
+                              ]
+                              False -> [
+                                attribute.class(
+                                  "underline underline-offset-4 decoration-dotted",
+                                ),
+                                attribute.style(
+                                  "color",
+                                  m.current_palette
+                                    |> vibrant.vibrant
+                                    |> vibrant.hex,
+                                ),
+                              ]
+                            }
+                          False -> [attribute.none()]
+                        }
+                      ]),
+                      button.button(button.SkipBackward, button.Small, [
+                        event.on_click(msg.PlayerPrevious),
+                      ]),
+                      button.button(
+                        case m.player |> player.is_paused {
+                          False -> button.Pause
+                          True -> button.Play
+                        },
+                        button.Largest,
+                        [event.on_click(msg.PlayerPausePlay)],
                       ),
-                      html.i(
-                        [
-                          attribute.class("text-2xl ph-fill ph-skip-back"),
-                          event.on_click(msg.PlayerPrevious),
-                        ],
-                        [],
-                      ),
-                      html.i(
-                        [
-                          attribute.class("text-5xl ph-fill"),
-                          case m.player |> player.is_paused {
-                            False -> attribute.class("ph-pause-circle")
-                            True -> attribute.class("ph-play-circle")
-                          },
-                          event.on_click(msg.PlayerPausePlay),
-                        ],
-                        [],
-                      ),
-                      html.i(
-                        [
-                          attribute.class("text-2xl ph-fill ph-skip-forward"),
-                          event.on_click(msg.PlayerNext),
-                        ],
-                        [],
-                      ),
-                      html.i(
-                        [
-                          attribute.class("text-2xl ph ph-repeat-once"),
-                          event.on_click(msg.PlayerLoop),
-                          ..case m.looping {
-                            True ->
-                              case m.current_palette.empty {
-                                True -> [
-                                  attribute.class(
-                                    "text-violet-500 underline underline-offset-4 decoration-dotted",
-                                  ),
-                                ]
-                                False -> [
-                                  attribute.class(
-                                    "underline underline-offset-4 decoration-dotted",
-                                  ),
-                                  attribute.style(
-                                    "color",
-                                    m.current_palette
-                                      |> vibrant.vibrant
-                                      |> vibrant.hex,
-                                  ),
-                                ]
-                              }
-                            False -> [attribute.none()]
-                          }
-                        ],
-                        [],
-                      ),
+                      button.button(button.SkipForward, button.Small, [
+                        event.on_click(msg.PlayerNext),
+                      ]),
+                      button.button(button.Loop, button.Small, [
+                        event.on_click(msg.PlayerLoop),
+                        ..case m.looping {
+                          True ->
+                            case m.current_palette.empty {
+                              True -> [
+                                attribute.class(
+                                  "text-violet-500 underline underline-offset-4 decoration-dotted",
+                                ),
+                              ]
+                              False -> [
+                                attribute.class(
+                                  "underline underline-offset-4 decoration-dotted",
+                                ),
+                                attribute.style(
+                                  "color",
+                                  m.current_palette
+                                    |> vibrant.vibrant
+                                    |> vibrant.hex,
+                                ),
+                              ]
+                            }
+                          False -> [attribute.none()]
+                        }
+                      ]),
                     ],
                   ),
                 ]),
@@ -446,13 +419,9 @@ fn view_mobile(m: model.Model) {
           ),
         ],
         [
-          html.i(
-            [
-              attribute.class("text-3xl ph ph-caret-down"),
-              event.on_click(msg.ToggleFullscreenPlayer),
-            ],
-            [],
-          ),
+          button.button(button.Down, button.Medium, [
+            event.on_click(msg.ToggleFullscreenPlayer),
+          ]),
           case m.fullscreen_player_display {
             model.Default -> element.none()
             model.Lyrics ->
@@ -548,89 +517,70 @@ fn view_mobile(m: model.Model) {
           ),
         ]),
         html.div([attribute.class("flex gap-4 justify-between items-center")], [
-          html.i(
-            [
-              attribute.class("text-2xl ph ph-shuffle-simple"),
-              event.on_click(msg.PlayerShuffle),
-              ..case m.shuffled {
-                True ->
-                  case m.current_palette.empty {
-                    True -> [
-                      attribute.class(
-                        "text-violet-500 underline underline-offset-4 decoration-dotted",
-                      ),
-                    ]
-                    False -> [
-                      attribute.class(
-                        "underline underline-offset-4 decoration-dotted",
-                      ),
-                      attribute.style(
-                        "color",
-                        m.current_palette
-                          |> vibrant.vibrant
-                          |> vibrant.hex,
-                      ),
-                    ]
-                  }
-                False -> [attribute.none()]
-              }
-            ],
-            [],
+          button.button(button.Shuffle, button.Small, [
+            event.on_click(msg.PlayerShuffle),
+            ..case m.shuffled {
+              True ->
+                case m.current_palette.empty {
+                  True -> [
+                    attribute.class(
+                      "text-violet-500 underline underline-offset-4 decoration-dotted",
+                    ),
+                  ]
+                  False -> [
+                    attribute.class(
+                      "underline underline-offset-4 decoration-dotted",
+                    ),
+                    attribute.style(
+                      "color",
+                      m.current_palette
+                        |> vibrant.vibrant
+                        |> vibrant.hex,
+                    ),
+                  ]
+                }
+              False -> [attribute.none()]
+            }
+          ]),
+          button.button(button.SkipBackward, button.Small, [
+            event.on_click(msg.PlayerPrevious),
+          ]),
+          button.button(
+            case m.player |> player.is_paused {
+              False -> button.Pause
+              True -> button.Play
+            },
+            button.Largest,
+            [event.on_click(msg.PlayerPausePlay)],
           ),
-          html.i(
-            [
-              attribute.class("text-2xl ph-fill ph-skip-back"),
-              event.on_click(msg.PlayerPrevious),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-6xl ph-fill"),
-              case m.player |> player.is_paused {
-                False -> attribute.class("ph-pause-circle")
-                True -> attribute.class("ph-play-circle")
-              },
-              event.on_click(msg.PlayerPausePlay),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-2xl ph-fill ph-skip-forward"),
-              event.on_click(msg.PlayerNext),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-2xl ph ph-repeat-once"),
-              event.on_click(msg.PlayerLoop),
-              ..case m.looping {
-                True ->
-                  case m.current_palette.empty {
-                    True -> [
-                      attribute.class(
-                        "text-violet-500 underline underline-offset-4 decoration-dotted",
-                      ),
-                    ]
-                    False -> [
-                      attribute.class(
-                        "underline underline-offset-4 decoration-dotted",
-                      ),
-                      attribute.style(
-                        "color",
-                        m.current_palette
-                          |> vibrant.vibrant
-                          |> vibrant.hex,
-                      ),
-                    ]
-                  }
-                False -> [attribute.none()]
-              }
-            ],
-            [],
-          ),
+          button.button(button.SkipForward, button.Small, [
+            event.on_click(msg.PlayerNext),
+          ]),
+          button.button(button.Loop, button.Small, [
+            event.on_click(msg.PlayerLoop),
+            ..case m.looping {
+              True ->
+                case m.current_palette.empty {
+                  True -> [
+                    attribute.class(
+                      "text-violet-500 underline underline-offset-4 decoration-dotted",
+                    ),
+                  ]
+                  False -> [
+                    attribute.class(
+                      "underline underline-offset-4 decoration-dotted",
+                    ),
+                    attribute.style(
+                      "color",
+                      m.current_palette
+                        |> vibrant.vibrant
+                        |> vibrant.hex,
+                    ),
+                  ]
+                }
+              False -> [attribute.none()]
+            }
+          ]),
         ]),
       ]),
       // Other actions
@@ -694,30 +644,27 @@ fn view_info(m: model.Model) {
           ],
         ),
         html.div([attribute.class("flex gap-2")], [
-          html.i(
+          button.button(
+            button.Like(filled: m.current_song.starred),
+            button.Medium,
             [
-              attribute.class("text-3xl ph-heart-straight"),
               event.on_click(msg.Like),
-              ..case m.current_song.starred {
+              case m.current_song.starred {
                 True ->
                   case m.current_palette.empty {
-                    True -> [
-                      attribute.class("ph-fill text-violet-500"),
-                    ]
-                    False -> [
-                      attribute.class("ph-fill"),
+                    True -> attribute.class("text-violet-500")
+
+                    False ->
                       attribute.style(
                         "color",
                         m.current_palette
                           |> vibrant.vibrant
                           |> vibrant.hex,
-                      ),
-                    ]
+                      )
                   }
-                False -> [attribute.class("ph")]
-              }
+                False -> attribute.none()
+              },
             ],
-            [],
           ),
           // html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
         ]),

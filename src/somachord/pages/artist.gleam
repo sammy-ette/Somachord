@@ -7,6 +7,7 @@ import gleam/result
 import gleam/uri
 import rsvp
 import somachord/api/api
+import somachord/elements/button
 import somachord/pages/error
 
 import somachord/components
@@ -223,13 +224,12 @@ fn view_real(m: Model) {
                       ],
                       [],
                     ),
-                    html.i(
+                    button.disabled_button(
+                      button.Play,
+                      button.Custom("text-6xl"),
                       [
-                        attribute.class(
-                          "z-10 ph-fill ph-play-circle text-6xl text-violet-500",
-                        ),
+                        attribute.class("z-10 text-violet-500"),
                       ],
-                      [],
                     ),
                   ],
                 ),

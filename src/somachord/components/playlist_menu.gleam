@@ -1,9 +1,7 @@
-import gleam/bool
 import gleam/dict
 import gleam/list
 import gleam/pair
 import gleam/string
-import gleam/uri
 import lustre
 import lustre/attribute
 import lustre/component
@@ -14,6 +12,7 @@ import lustre/event
 import rsvp
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/elements/button
 
 import somachord/storage
 import varasto
@@ -60,14 +59,7 @@ pub fn element(
   menu_attrs menu_attrs: List(attribute.Attribute(msg)),
 ) {
   html.div([attribute.class("relative inline-block group")], [
-    html.button(button_attrs, [
-      html.i(
-        [
-          attribute.class("text-3xl ph ph-plus-circle"),
-        ],
-        [],
-      ),
-    ]),
+    button.button(button.AddToPlaylist, button.Medium, button_attrs),
     element.element(
       "playlist-menu",
       [attribute.class("not-group-focus-within:hidden"), ..menu_attrs],
@@ -219,6 +211,7 @@ fn view(m: Model) {
       attribute.class(
         "z-100 absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 p-4",
       ),
+      attribute.tabindex(0),
     ],
     [
       html.div([attribute.class("inline-flex justify-between")], [

@@ -116,8 +116,13 @@ pub fn on_playlist(
       0,
       decode.int,
     ))
+    use shuffle <- decode.then(decode.optionally_at(
+      ["detail", "shuffle"],
+      False,
+      decode.bool,
+    ))
 
-    decode.success(model.PlaylistPlayRequest(playlist, index))
+    decode.success(model.PlaylistPlayRequest(playlist, index, shuffle))
     |> decode.map(handler)
   })
 }

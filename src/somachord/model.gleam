@@ -48,7 +48,7 @@ pub type PlayRequest {
 }
 
 pub type PlaylistPlayRequest {
-  PlaylistPlayRequest(playlist: api_models.Playlist, index: Int)
+  PlaylistPlayRequest(playlist: api_models.Playlist, index: Int, shuffle: Bool)
 }
 
 pub type Layout {

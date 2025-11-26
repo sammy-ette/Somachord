@@ -3,14 +3,13 @@ import gleam/int
 import gleam/list
 import gleam/option
 import gleam/string
-import gleam/uri
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
 import player
 import somachord/api/api
-import somachord/api/models as api_models
+import somachord/elements/button
 
 import somachord/components/fullscreen_player
 import somachord/components/playlist_menu
@@ -70,10 +69,12 @@ fn top_bar(m: model.Model) {
   html.div([attribute.class("flex justify-between")], [
     html.div([attribute.class("flex gap-4")], [
       html.a([attribute.href("/library")], [
-        elements.button(
+        elements.nav_button(
           html.i([attribute.class("text-3xl ph ph-cards-three")], []),
+          html.i([attribute.class("text-3xl ph-fill ph-cards-three")], []),
           "Library",
-          [attribute.class("w-42")],
+          m.route == router.Library,
+          [],
         ),
       ]),
       html.a([attribute.href("/")], [
@@ -110,10 +111,15 @@ fn top_bar(m: model.Model) {
             ],
           )
         _ ->
-          elements.button(
+          elements.nav_button(
             html.i([attribute.class("text-3xl ph ph-magnifying-glass")], []),
+            html.i(
+              [attribute.class("text-3xl ph-fill ph-magnifying-glass")],
+              [],
+            ),
             "Search",
-            [event.on_click({ msg.Search("") }), attribute.class("w-42")],
+            False,
+            [event.on_click({ msg.Search("") })],
           )
       },
     ]),
@@ -135,7 +141,7 @@ fn top_bar(m: model.Model) {
   ])
 }
 
-fn side_bar(_: model.Model) {
+fn side_bar(m: model.Model) {
   html.div(
     [
       attribute.class(
@@ -145,16 +151,20 @@ fn side_bar(_: model.Model) {
     [
       // the query doesn't actually filter to playlists only (yet)
       html.a([attribute.href("/library?filter=0")], [
-        elements.button(
+        elements.nav_button(
+          html.i([attribute.class("text-3xl ph ph-playlist")], []),
           html.i([attribute.class("text-3xl ph ph-playlist")], []),
           "Playlists",
+          False,
           [],
         ),
       ]),
       html.a([attribute.href("/likes")], [
-        elements.button(
+        elements.nav_button(
           html.i([attribute.class("text-3xl ph ph-heart-straight")], []),
+          html.i([attribute.class("text-3xl ph-fill ph-heart-straight")], []),
           "Liked Songs",
+          m.route == router.Likes,
           [],
         ),
       ]),
@@ -252,59 +262,40 @@ fn playing_bar(m: model.Model) {
       ]),
       html.div([attribute.class("space-y-1")], [
         html.div([attribute.class("flex gap-4 justify-center items-center")], [
-          html.i(
-            [
-              attribute.class("text-xl ph ph-shuffle-simple"),
-              case m.shuffled {
-                True ->
-                  attribute.class(
-                    "text-violet-400 underline underline-offset-4 decoration-dotted",
-                  )
-                False -> attribute.none()
-              },
-              event.on_click(msg.PlayerShuffle),
-            ],
-            [],
+          button.button(button.Shuffle, button.Smallest, [
+            case m.shuffled {
+              True ->
+                attribute.class(
+                  "text-violet-400 underline underline-offset-4 decoration-dotted",
+                )
+              False -> attribute.none()
+            },
+            event.on_click(msg.PlayerShuffle),
+          ]),
+          button.button(button.SkipBackward, button.Smallest, [
+            event.on_click(msg.PlayerPrevious),
+          ]),
+          button.button(
+            case m.player |> player.is_paused {
+              False -> button.Pause
+              True -> button.Play
+            },
+            button.Large,
+            [event.on_click(msg.PlayerPausePlay)],
           ),
-          html.i(
-            [
-              attribute.class("text-xl ph-fill ph-skip-back"),
-              event.on_click(msg.PlayerPrevious),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-4xl ph-fill"),
-              case m.player |> player.is_paused {
-                False -> attribute.class("ph-pause-circle")
-                True -> attribute.class("ph-play-circle")
-              },
-              event.on_click(msg.PlayerPausePlay),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-xl ph-fill ph-skip-forward"),
-              event.on_click(msg.PlayerNext),
-            ],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class("text-xl ph ph-repeat-once"),
-              case m.looping {
-                True ->
-                  attribute.class(
-                    "text-violet-400 underline underline-offset-4 decoration-dotted",
-                  )
-                False -> attribute.none()
-              },
-              event.on_click(msg.PlayerLoop),
-            ],
-            [],
-          ),
+          button.button(button.SkipForward, button.Smallest, [
+            event.on_click(msg.PlayerNext),
+          ]),
+          button.button(button.Loop, button.Smallest, [
+            case m.looping {
+              True ->
+                attribute.class(
+                  "text-violet-400 underline underline-offset-4 decoration-dotted",
+                )
+              False -> attribute.none()
+            },
+            event.on_click(msg.PlayerLoop),
+          ]),
         ]),
         html.div(
           [
@@ -338,13 +329,9 @@ fn playing_bar(m: model.Model) {
         ),
       ]),
       html.div([attribute.class("flex justify-end gap-2 w-1/3")], [
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-monitor"),
-            event.on_click(msg.ToggleFullscreenPlayer),
-          ],
-          [],
-        ),
+        button.button(button.FullscreenPlayer, button.Medium, [
+          event.on_click(msg.ToggleFullscreenPlayer),
+        ]),
         html.div([attribute.class("inline-flex relative")], [
           html.label([attribute.class("peer")], [
             html.input([
@@ -387,16 +374,16 @@ fn playing_bar(m: model.Model) {
             ],
           ),
         ]),
-        html.i(
+        button.button(
+          button.Like(filled: m.current_song.starred),
+          button.Medium,
           [
             case m.current_song.starred {
-              True -> attribute.class("ph-fill text-violet-500")
-              False -> attribute.class("ph")
+              True -> attribute.class("text-violet-500")
+              False -> attribute.none()
             },
-            attribute.class("text-3xl ph-heart-straight"),
             event.on_click(msg.Like),
           ],
-          [],
         ),
         playlist_menu.element(button_attrs: [], menu_attrs: [
           attribute.class("absolute bottom-92 right-96"),

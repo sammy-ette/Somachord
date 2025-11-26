@@ -9,6 +9,7 @@ import lustre/element/html
 import lustre/event
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/elements/button
 
 import somachord/components
 import somachord/elements
@@ -185,34 +186,24 @@ fn buttons(m: model.Model, album: api_models.Album) {
   case m.layout {
     model.Desktop ->
       html.div([attribute.class("text-zinc-400 flex gap-4 items-center")], [
-        html.i(
-          [
-            attribute.class("text-5xl text-violet-500 ph-fill ph-play-circle"),
-            event.on_click({ msg.StreamAlbum(album, 0) }),
-          ],
-          [],
-        ),
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-shuffle-simple"),
-            event.on_click({ msg.StreamAlbumShuffled(album, 0) }),
-          ],
-          [],
-        ),
+        button.button(button.Play, button.Largest, [
+          attribute.class("text-violet-500"),
+          event.on_click({ msg.StreamAlbum(album, 0) }),
+        ]),
+        button.button(button.Shuffle, button.Medium, [
+          event.on_click({ msg.StreamAlbumShuffled(album, 0) }),
+        ]),
         // html.i(
-        //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-        //   [],
-        // ),
-        // html.i(
-        //   [
-        //     attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
-        //   ],
-        //   [],
-        // ),
-        html.i(
-          [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
-          [],
-        ),
+      //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+      //   [],
+      // ),
+      // html.i(
+      //   [
+      //     attribute.class("text-3xl ph ph-download-simple cursor-not-allowed"),
+      //   ],
+      //   [],
+      // ),
+      // button.disabled_button(button.MoreHorizontal, button.Medium, []),
       ])
     model.Mobile ->
       html.div(
@@ -223,32 +214,23 @@ fn buttons(m: model.Model, album: api_models.Album) {
         ],
         [
           html.div([attribute.class("flex gap-4 items-center")], [
-            html.i(
-              [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-              [],
-            ),
-            html.i(
-              [
-                attribute.class(
-                  "text-3xl ph ph-shuffle-simple cursor-not-allowed",
-                ),
-              ],
-              [],
-            ),
-            html.i(
-              [
-                attribute.class(
-                  "text-5xl text-violet-500 ph-fill ph-play-circle",
-                ),
-                event.on_click({ msg.StreamAlbum(album, 0) }),
-              ],
-              [],
-            ),
+            // html.i(
+            //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+            //   [],
+            // ),
+            button.button(button.Shuffle, button.Medium, [
+              event.on_click({ msg.StreamAlbumShuffled(album, 0) }),
+            ]),
+            button.button(button.Play, button.Largest, [
+              attribute.class("text-violet-500"),
+              event.on_click({ msg.StreamAlbum(album, 0) }),
+            ]),
           ]),
-          html.i(
-            [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
-            [],
-          ),
+          html.div([], []),
+          // html.i(
+        //   [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
+        //   [],
+        // ),
         ]
           |> list.reverse,
       )

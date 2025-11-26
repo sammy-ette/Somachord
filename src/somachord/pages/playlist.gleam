@@ -15,6 +15,7 @@ import player
 import rsvp
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/elements/button
 import somachord/pages/error
 
 import somachord/components
@@ -34,7 +35,7 @@ pub type Msg {
     Result(Result(List(api_models.Child), api.SubsonicError), rsvp.Error),
   )
 
-  PlayPlaylist(index: Int)
+  PlayPlaylist(index: Int, shuffle: Bool)
 
   ShowEditor(Bool)
   PlaylistUpdate(Result(PlaylistForm, form.Form(PlaylistForm)))
@@ -178,9 +179,12 @@ fn update(m: Model, msg: Msg) {
       echo e
       #(m, effect.none())
     }
-    PlayPlaylist(index) -> {
+    PlayPlaylist(index, shuffle) -> {
       echo "playing playlist"
-      #(m, event.emit("playPlaylist", playlist_json(m.playlist, index)))
+      #(
+        m,
+        event.emit("playPlaylist", playlist_json(m.playlist, index, shuffle)),
+      )
     }
     ShowEditor(show) -> #(Model(..m, show_editor: show), effect.none())
     PlaylistUpdate(Ok(playlist_update_info)) -> {
@@ -240,10 +244,11 @@ fn update(m: Model, msg: Msg) {
   }
 }
 
-fn playlist_json(playlist: api_models.Playlist, index: Int) {
+fn playlist_json(playlist: api_models.Playlist, index: Int, shuffle: Bool) {
   json.object([
     #("playlist", api_models.playlist_encode(playlist)),
     #("index", json.int(index)),
+    #("shuffle", json.bool(shuffle)),
   ])
 }
 
@@ -300,15 +305,10 @@ fn editor(m: Model) {
               html.h1([attribute.class("text-xl font-black text-white")], [
                 element.text("Edit Playlist"),
               ]),
-              html.i(
-                [
-                  event.on_click(ShowEditor(False)),
-                  attribute.class(
-                    "text-2xl p-2 ph ph-x cursor-pointer text-white hover:bg-zinc-700 rounded-full",
-                  ),
-                ],
-                [],
-              ),
+              button.button(button.Close, button.Medium, [
+                event.on_click(ShowEditor(False)),
+                attribute.class("hover:bg-zinc-600 p-2 rounded-full"),
+              ]),
             ],
           ),
           html.div([attribute.class("flex flex-col gap-1")], [
@@ -452,29 +452,37 @@ fn page(m: Model) {
         //   model.Desktop -> element.none()
         // },
         buttons(m),
-        html.div([attribute.class("flex flex-col gap-4")], [
-          case m.layout {
-            model.Mobile -> components.mobile_space()
-            model.Desktop -> element.none()
-          },
-          ..list.index_map(
-            m.playlist.songs,
-            fn(song: api_models.Child, index: Int) {
-              elements.song(
-                song,
-                attrs: [
-                  attribute.attribute("data-index", index + 1 |> int.to_string),
-                  case song.id == m.current_song_id {
-                    True -> attribute.attribute("data-playing", "")
-                    False -> attribute.none()
-                  },
-                ],
-                cover_art: True,
-                msg: { PlayPlaylist(index) },
-              )
+        html.div(
+          [attribute.class("flex flex-col gap-4")],
+          [
+            case m.layout {
+              model.Mobile -> components.mobile_space()
+              model.Desktop -> element.none()
             },
-          )
-        ]),
+            ..list.index_map(
+              m.playlist.songs,
+              fn(song: api_models.Child, index: Int) {
+                elements.song(
+                  song,
+                  attrs: [
+                    attribute.attribute(
+                      "data-index",
+                      index + 1 |> int.to_string,
+                    ),
+                    case song.id == m.current_song_id {
+                      True -> attribute.attribute("data-playing", "")
+                      False -> attribute.none()
+                    },
+                  ],
+                  cover_art: True,
+                  msg: { PlayPlaylist(index, False) },
+                )
+              },
+            )
+            |> list.reverse
+          ]
+            |> list.reverse,
+        ),
         // html.div(
       //   [attribute.class("flex flex-col gap-4")],
       //   [
@@ -571,19 +579,13 @@ fn buttons(m: Model) {
   case m.layout {
     model.Desktop ->
       html.div([attribute.class("text-zinc-400 flex gap-4 items-center")], [
-        html.i(
-          [
-            attribute.class("text-5xl text-violet-500 ph-fill ph-play-circle"),
-            event.on_click({ PlayPlaylist(0) }),
-          ],
-          [],
-        ),
-        html.i(
-          [
-            attribute.class("text-3xl ph ph-shuffle-simple cursor-not-allowed"),
-          ],
-          [],
-        ),
+        button.button(button.Play, button.Largest, [
+          attribute.class("text-violet-500"),
+          event.on_click(PlayPlaylist(0, False)),
+        ]),
+        button.button(button.Shuffle, button.Medium, [
+          event.on_click(PlayPlaylist(0, True)),
+        ]),
         // html.i(
         //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
         //   [],
@@ -599,10 +601,10 @@ fn buttons(m: Model) {
             )
           True -> element.none()
         },
-        html.i(
-          [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
-          [],
-        ),
+        // html.i(
+      //   [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
+      //   [],
+      // ),
       ])
     model.Mobile ->
       html.div(
@@ -613,32 +615,23 @@ fn buttons(m: Model) {
         ],
         [
           html.div([attribute.class("flex gap-4 items-center")], [
-            html.i(
-              [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
-              [],
-            ),
-            html.i(
-              [
-                attribute.class(
-                  "text-3xl ph ph-shuffle-simple cursor-not-allowed",
-                ),
-              ],
-              [],
-            ),
-            html.i(
-              [
-                attribute.class(
-                  "text-5xl text-violet-500 ph-fill ph-play-circle",
-                ),
-                event.on_click({ PlayPlaylist(0) }),
-              ],
-              [],
-            ),
+            // html.i(
+            //   [attribute.class("text-3xl ph ph-plus-circle cursor-not-allowed")],
+            //   [],
+            // ),
+            button.button(button.Shuffle, button.Medium, [
+              event.on_click(PlayPlaylist(0, True)),
+            ]),
+            button.button(button.Play, button.Largest, [
+              attribute.class("text-violet-500"),
+              event.on_click(PlayPlaylist(0, False)),
+            ]),
           ]),
-          html.i(
-            [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
-            [],
-          ),
+          html.div([], []),
+          // html.i(
+        //   [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
+        //   [],
+        // ),
         ]
           |> list.reverse,
       )

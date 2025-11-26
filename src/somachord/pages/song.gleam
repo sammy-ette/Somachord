@@ -15,6 +15,7 @@ import lustre/event
 import rsvp
 import somachord/api/api
 import somachord/api/models as api_models
+import somachord/elements/button
 
 import somachord/components
 import somachord/components/lyrics
@@ -238,19 +239,13 @@ fn view(m: Model) {
         html.div(
           [attribute.class("text-zinc-400 flex gap-4 items-center -ml-1")],
           [
-            html.i(
-              [
-                attribute.class(
-                  "text-5xl text-violet-500 ph-fill ph-play-circle",
-                ),
-                event.on_click(PlaySong),
-              ],
-              [],
-            ),
+            button.button(button.Play, button.Largest, [
+              attribute.class("text-violet-500"),
+              event.on_click(PlaySong),
+            ]),
             playlist_menu.element([], []),
-            html.i([attribute.class("text-3xl ph ph-download-simple")], []),
-            html.i([attribute.class("text-3xl ph ph-link")], []),
-            html.i([attribute.class("text-3xl ph ph-dots-three")], []),
+            // html.i([attribute.class("text-3xl ph ph-download-simple")], []),
+          // html.i([attribute.class("text-3xl ph ph-dots-three")], []),
           ],
         ),
         // html.div([attribute.class("flex flex-wrap gap-4")], [

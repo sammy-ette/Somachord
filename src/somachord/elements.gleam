@@ -11,6 +11,7 @@ import lustre/element/html
 import lustre/event
 import player
 import somachord/api/api
+import somachord/elements/button
 
 import somachord/components
 import somachord/model
@@ -28,6 +29,7 @@ pub fn song(
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
   msg msg: msg,
+  // like_msg like_msg: msg,
 ) {
   let auth_details = {
     let assert Ok(stg) = storage.create() |> varasto.get("auth")
@@ -149,18 +151,21 @@ pub fn song(
           ],
         ),
         html.div([attribute.class("flex items-center")], [
-          html.i(
-            [attribute.class("text-zinc-500 text-2xl ph ph-heart-straight")],
-            [],
-          ),
-          html.i(
-            [
-              attribute.class(
-                "text-zinc-500 text-2xl ph ph-dots-three-vertical",
-              ),
-            ],
-            [],
-          ),
+          // button.button(button.Like(filled: False), button.Medium, [
+        //   case False {
+        //     True -> attribute.class("text-violet-500")
+        //     False -> attribute.none()
+        //   },
+        //   event.on_click(like_msg),
+        // ]),
+        // html.i(
+        //   [
+        //     attribute.class(
+        //       "text-zinc-500 text-2xl ph ph-dots-three-vertical",
+        //     ),
+        //   ],
+        //   [],
+        // ),
         ]),
       ]),
     ],
@@ -408,26 +413,11 @@ pub fn time(duration: Int, attrs: List(attribute.Attribute(a))) {
   ])
 }
 
-pub fn button(icon, name, attrs) {
-  html.div(
-    [
-      attribute.class(
-        "w-52 font-semibold text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
-      ),
-      ..attrs
-    ],
-    [
-      html.div([attribute.class("h-8 w-8")], [icon]),
-      html.h1([], [element.text(name)]),
-    ],
-  )
-}
-
 pub fn nav_button(inactive, active, name, is_active, attrs) {
   html.div(
     [
       attribute.class(
-        "w-52 font-normal flex gap-4 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
+        "w-52 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg",
       ),
       case is_active {
         True -> attribute.class("bg-zinc-900 text-zinc-100")
