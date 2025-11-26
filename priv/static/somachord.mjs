@@ -4805,6 +4805,9 @@ function style(property3, value3) {
     return attribute2("style", property3 + ":" + value3 + ";");
   }
 }
+function tabindex(index5) {
+  return attribute2("tabindex", to_string2(index5));
+}
 function href(url) {
   return attribute2("href", url);
 }
@@ -9825,10 +9828,11 @@ var PlayRequest = class extends CustomType {
   }
 };
 var PlaylistPlayRequest = class extends CustomType {
-  constructor(playlist3, index5) {
+  constructor(playlist3, index5, shuffle3) {
     super();
     this.playlist = playlist3;
     this.index = index5;
+    this.shuffle = shuffle3;
   }
 };
 var Desktop = class extends CustomType {
@@ -12286,6 +12290,149 @@ var Echo$Inspector3 = class {
   }
 };
 
+// build/dev/javascript/somachord/somachord/elements/button.mjs
+var Smallest = class extends CustomType {
+};
+var Small2 = class extends CustomType {
+};
+var Medium2 = class extends CustomType {
+};
+var Large2 = class extends CustomType {
+};
+var Largest = class extends CustomType {
+};
+var Custom = class extends CustomType {
+  constructor(class$2) {
+    super();
+    this.class = class$2;
+  }
+};
+var Play = class extends CustomType {
+};
+var Pause = class extends CustomType {
+};
+var SkipForward = class extends CustomType {
+};
+var SkipBackward = class extends CustomType {
+};
+var Loop = class extends CustomType {
+};
+var Shuffle = class extends CustomType {
+};
+var Like = class extends CustomType {
+  constructor(filled) {
+    super();
+    this.filled = filled;
+  }
+};
+var AddToPlaylist = class extends CustomType {
+};
+var FullscreenPlayer = class extends CustomType {
+};
+var MoreHorizontal = class extends CustomType {
+};
+var Down = class extends CustomType {
+};
+var Edit = class extends CustomType {
+};
+var Close = class extends CustomType {
+};
+function button_size(size3) {
+  if (size3 instanceof Smallest) {
+    return "text-xl";
+  } else if (size3 instanceof Small2) {
+    return "text-2xl";
+  } else if (size3 instanceof Medium2) {
+    return "text-3xl";
+  } else if (size3 instanceof Large2) {
+    return "text-4xl";
+  } else if (size3 instanceof Largest) {
+    return "text-5xl";
+  } else {
+    let class$2 = size3.class;
+    return class$2;
+  }
+}
+function button_class(kind) {
+  if (kind instanceof Play) {
+    return "ph-fill ph-play-circle";
+  } else if (kind instanceof Pause) {
+    return "ph-fill ph-pause-circle";
+  } else if (kind instanceof SkipForward) {
+    return "ph-fill ph-skip-forward";
+  } else if (kind instanceof SkipBackward) {
+    return "ph-fill ph-skip-back";
+  } else if (kind instanceof Loop) {
+    return "ph ph-repeat-once";
+  } else if (kind instanceof Shuffle) {
+    return "ph ph-shuffle-simple";
+  } else if (kind instanceof Like) {
+    let filled = kind.filled;
+    if (filled) {
+      return "ph-fill ph-heart-straight";
+    } else {
+      return "ph ph-heart-straight";
+    }
+  } else if (kind instanceof AddToPlaylist) {
+    return "ph ph-plus-circle";
+  } else if (kind instanceof FullscreenPlayer) {
+    return "ph ph-monitor";
+  } else if (kind instanceof MoreHorizontal) {
+    return "ph ph-dots-three";
+  } else if (kind instanceof Down) {
+    return "ph ph-caret-down";
+  } else if (kind instanceof Edit) {
+    return "ph ph-pencil-simple";
+  } else {
+    return "ph ph-x";
+  }
+}
+function button2(kind, size3, attrs) {
+  return button(
+    toList([class$("flex outline-none")]),
+    toList([
+      i(
+        prepend(
+          class$(button_class(kind)),
+          prepend(
+            class$(button_size(size3)),
+            prepend(
+              class$(
+                "transition-scale duration-300 hover:scale-[105%] hover:brightness-80 active:brightness-50 " + (() => {
+                  if (size3 instanceof Large2) {
+                    return "active:scale-[90%]";
+                  } else {
+                    return "active:scale-[95%]";
+                  }
+                })()
+              ),
+              attrs
+            )
+          )
+        ),
+        toList([])
+      )
+    ])
+  );
+}
+function disabled_button(kind, size3, attrs) {
+  return button(
+    toList([class$("flex outline-none"), disabled(true)]),
+    toList([
+      i(
+        prepend(
+          class$(button_class(kind)),
+          prepend(
+            class$(button_size(size3)),
+            prepend(class$("cursor-not-allowed"), attrs)
+          )
+        ),
+        toList([])
+      )
+    ])
+  );
+}
+
 // build/dev/javascript/somachord/somachord/msg.mjs
 var FILEPATH6 = "src/somachord/msg.gleam";
 var Router = class extends CustomType {
@@ -12358,7 +12505,7 @@ var ChangeFullscreenPlayerView = class extends CustomType {
     this[0] = $0;
   }
 };
-var Play = class extends CustomType {
+var Play2 = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -12451,7 +12598,7 @@ var PlayerNext = class extends CustomType {
 };
 var PlayerLoop = class extends CustomType {
 };
-var Like = class extends CustomType {
+var Like2 = class extends CustomType {
 };
 var QueueJumpTo = class extends CustomType {
   constructor(position) {
@@ -12534,10 +12681,19 @@ function on_playlist(handler) {
         return then$(
           optionally_at(toList(["detail", "index"]), 0, int2),
           (index5) => {
-            let _pipe = success(
-              new PlaylistPlayRequest(playlist3, index5)
+            return then$(
+              optionally_at(
+                toList(["detail", "shuffle"]),
+                false,
+                bool
+              ),
+              (shuffle3) => {
+                let _pipe = success(
+                  new PlaylistPlayRequest(playlist3, index5, shuffle3)
+                );
+                return map2(_pipe, handler);
+              }
             );
-            return map2(_pipe, handler);
           }
         );
       }
@@ -13804,10 +13960,10 @@ function song2(song3, attrs, cover_art, msg) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        33,
+        35,
         "song",
         "Pattern match failed, no pattern matched the value.",
-        { value: $, start: 859, end: 919, pattern_start: 870, pattern_end: 877 }
+        { value: $, start: 921, end: 981, pattern_start: 932, pattern_end: 939 }
       );
     }
     _block = stg.auth;
@@ -13978,24 +14134,7 @@ function song2(song3, attrs, cover_art, msg) {
           ),
           div(
             toList([class$("flex items-center")]),
-            toList([
-              i(
-                toList([
-                  class$(
-                    "text-zinc-500 text-2xl ph ph-heart-straight"
-                  )
-                ]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$(
-                    "text-zinc-500 text-2xl ph ph-dots-three-vertical"
-                  )
-                ]),
-                toList([])
-              )
-            ])
+            toList([])
           )
         ])
       )
@@ -14017,15 +14156,15 @@ function playlist2(playlist3, handler) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        283,
+        288,
         "playlist",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9261,
-          end: 9321,
-          pattern_start: 9272,
-          pattern_end: 9279
+          start: 9473,
+          end: 9533,
+          pattern_start: 9484,
+          pattern_end: 9491
         }
       );
     }
@@ -14184,25 +14323,11 @@ function time2(duration, attrs) {
     ])
   );
 }
-function button2(icon, name2, attrs) {
-  return div(
-    prepend(
-      class$(
-        "w-52 font-semibold text-zinc-500 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg"
-      ),
-      attrs
-    ),
-    toList([
-      div(toList([class$("h-8 w-8")]), toList([icon])),
-      h1(toList([]), toList([text2(name2)]))
-    ])
-  );
-}
 function nav_button(inactive, active2, name2, is_active, attrs) {
   return div(
     prepend(
       class$(
-        "w-52 font-normal flex gap-4 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg"
+        "w-52 font-normal flex gap-2 items-center hover:bg-zinc-900 px-4 py-2 rounded-lg"
       ),
       prepend(
         (() => {
@@ -14306,15 +14431,15 @@ function music_slider(m, dynamic2, attrs) {
                     "let_assert",
                     FILEPATH7,
                     "somachord/elements",
-                    500,
+                    490,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15424,
-                      end: 15471,
-                      pattern_start: 15435,
-                      pattern_end: 15450
+                      start: 15296,
+                      end: 15343,
+                      pattern_start: 15307,
+                      pattern_end: 15322
                     }
                   );
                 }
@@ -14406,15 +14531,15 @@ function album2(album3, handler) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        198,
+        203,
         "album",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6712,
-          end: 6772,
-          pattern_start: 6723,
-          pattern_end: 6730
+          start: 6924,
+          end: 6984,
+          pattern_start: 6935,
+          pattern_end: 6942
         }
       );
     }
@@ -14576,15 +14701,15 @@ function view_desktop(m) {
         "let_assert",
         FILEPATH8,
         "somachord/components/fullscreen_player",
-        86,
+        85,
         "view_desktop",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2124,
-          end: 2177,
-          pattern_start: 2135,
-          pattern_end: 2142
+          start: 2098,
+          end: 2151,
+          pattern_start: 2109,
+          pattern_end: 2116
         }
       );
     }
@@ -14623,12 +14748,10 @@ function view_desktop(m) {
           div(
             toList([class$("flex gap-8")]),
             toList([
-              i(
-                toList([
-                  class$("text-3xl ph ph-caret-down"),
-                  on_click(new ToggleFullscreenPlayer())
-                ]),
-                toList([])
+              button2(
+                new Down(),
+                new Medium2(),
+                toList([on_click(new ToggleFullscreenPlayer())])
               )
             ])
           ),
@@ -14709,45 +14832,36 @@ function view_desktop(m) {
                           div(
                             toList([class$("flex gap-2")]),
                             toList([
-                              i(
-                                prepend(
-                                  class$(
-                                    "text-3xl ph-heart-straight"
-                                  ),
-                                  prepend(
-                                    on_click(new Like()),
-                                    (() => {
-                                      let $ = m.current_song.starred;
-                                      if ($) {
-                                        let $1 = m.current_palette.empty;
-                                        if ($1) {
-                                          return toList([
-                                            class$(
-                                              "ph-fill text-violet-500"
-                                            )
-                                          ]);
-                                        } else {
-                                          return toList([
-                                            class$("ph-fill"),
-                                            style(
-                                              "color",
-                                              (() => {
-                                                let _pipe = m.current_palette;
-                                                let _pipe$1 = vibrant(
-                                                  _pipe
-                                                );
-                                                return swatch_hex(_pipe$1);
-                                              })()
-                                            )
-                                          ]);
-                                        }
+                              button2(
+                                new Like(m.current_song.starred),
+                                new Medium2(),
+                                toList([
+                                  on_click(new Like2()),
+                                  (() => {
+                                    let $ = m.current_song.starred;
+                                    if ($) {
+                                      let $1 = m.current_palette.empty;
+                                      if ($1) {
+                                        return class$(
+                                          "text-violet-500"
+                                        );
                                       } else {
-                                        return toList([class$("ph")]);
+                                        return style(
+                                          "color",
+                                          (() => {
+                                            let _pipe = m.current_palette;
+                                            let _pipe$1 = vibrant(
+                                              _pipe
+                                            );
+                                            return swatch_hex(_pipe$1);
+                                          })()
+                                        );
                                       }
-                                    })()
-                                  )
-                                ),
-                                toList([])
+                                    } else {
+                                      return none();
+                                    }
+                                  })()
+                                ])
                               )
                             ])
                           )
@@ -14830,119 +14944,102 @@ function view_desktop(m) {
                           )
                         ]),
                         toList([
-                          i(
+                          button2(
+                            new Shuffle(),
+                            new Small2(),
                             prepend(
-                              class$("text-2xl ph ph-shuffle-simple"),
-                              prepend(
-                                on_click(new PlayerShuffle()),
-                                (() => {
-                                  let $ = m.shuffled;
-                                  if ($) {
-                                    let $1 = m.current_palette.empty;
-                                    if ($1) {
-                                      return toList([
-                                        class$(
-                                          "text-violet-500 underline underline-offset-4 decoration-dotted"
-                                        )
-                                      ]);
-                                    } else {
-                                      return toList([
-                                        class$(
-                                          "underline underline-offset-4 decoration-dotted"
-                                        ),
-                                        style(
-                                          "color",
-                                          (() => {
-                                            let _pipe = m.current_palette;
-                                            let _pipe$1 = vibrant(
-                                              _pipe
-                                            );
-                                            return swatch_hex(_pipe$1);
-                                          })()
-                                        )
-                                      ]);
-                                    }
-                                  } else {
-                                    return toList([none()]);
-                                  }
-                                })()
-                              )
-                            ),
-                            toList([])
-                          ),
-                          i(
-                            toList([
-                              class$("text-2xl ph-fill ph-skip-back"),
-                              on_click(new PlayerPrevious())
-                            ]),
-                            toList([])
-                          ),
-                          i(
-                            toList([
-                              class$("text-5xl ph-fill"),
+                              on_click(new PlayerShuffle()),
                               (() => {
-                                let $ = (() => {
-                                  let _pipe = m.player;
-                                  return is_paused(_pipe);
-                                })();
+                                let $ = m.shuffled;
                                 if ($) {
-                                  return class$("ph-play-circle");
-                                } else {
-                                  return class$("ph-pause-circle");
-                                }
-                              })(),
-                              on_click(new PlayerPausePlay())
-                            ]),
-                            toList([])
-                          ),
-                          i(
-                            toList([
-                              class$(
-                                "text-2xl ph-fill ph-skip-forward"
-                              ),
-                              on_click(new PlayerNext())
-                            ]),
-                            toList([])
-                          ),
-                          i(
-                            prepend(
-                              class$("text-2xl ph ph-repeat-once"),
-                              prepend(
-                                on_click(new PlayerLoop()),
-                                (() => {
-                                  let $ = m.looping;
-                                  if ($) {
-                                    let $1 = m.current_palette.empty;
-                                    if ($1) {
-                                      return toList([
-                                        class$(
-                                          "text-violet-500 underline underline-offset-4 decoration-dotted"
-                                        )
-                                      ]);
-                                    } else {
-                                      return toList([
-                                        class$(
-                                          "underline underline-offset-4 decoration-dotted"
-                                        ),
-                                        style(
-                                          "color",
-                                          (() => {
-                                            let _pipe = m.current_palette;
-                                            let _pipe$1 = vibrant(
-                                              _pipe
-                                            );
-                                            return swatch_hex(_pipe$1);
-                                          })()
-                                        )
-                                      ]);
-                                    }
+                                  let $1 = m.current_palette.empty;
+                                  if ($1) {
+                                    return toList([
+                                      class$(
+                                        "text-violet-500 underline underline-offset-4 decoration-dotted"
+                                      )
+                                    ]);
                                   } else {
-                                    return toList([none()]);
+                                    return toList([
+                                      class$(
+                                        "underline underline-offset-4 decoration-dotted"
+                                      ),
+                                      style(
+                                        "color",
+                                        (() => {
+                                          let _pipe = m.current_palette;
+                                          let _pipe$1 = vibrant(_pipe);
+                                          return swatch_hex(_pipe$1);
+                                        })()
+                                      )
+                                    ]);
                                   }
-                                })()
-                              )
-                            ),
-                            toList([])
+                                } else {
+                                  return toList([none()]);
+                                }
+                              })()
+                            )
+                          ),
+                          button2(
+                            new SkipBackward(),
+                            new Small2(),
+                            toList([on_click(new PlayerPrevious())])
+                          ),
+                          button2(
+                            (() => {
+                              let $ = (() => {
+                                let _pipe = m.player;
+                                return is_paused(_pipe);
+                              })();
+                              if ($) {
+                                return new Play();
+                              } else {
+                                return new Pause();
+                              }
+                            })(),
+                            new Largest(),
+                            toList([on_click(new PlayerPausePlay())])
+                          ),
+                          button2(
+                            new SkipForward(),
+                            new Small2(),
+                            toList([on_click(new PlayerNext())])
+                          ),
+                          button2(
+                            new Loop(),
+                            new Small2(),
+                            prepend(
+                              on_click(new PlayerLoop()),
+                              (() => {
+                                let $ = m.looping;
+                                if ($) {
+                                  let $1 = m.current_palette.empty;
+                                  if ($1) {
+                                    return toList([
+                                      class$(
+                                        "text-violet-500 underline underline-offset-4 decoration-dotted"
+                                      )
+                                    ]);
+                                  } else {
+                                    return toList([
+                                      class$(
+                                        "underline underline-offset-4 decoration-dotted"
+                                      ),
+                                      style(
+                                        "color",
+                                        (() => {
+                                          let _pipe = m.current_palette;
+                                          let _pipe$1 = vibrant(_pipe);
+                                          return swatch_hex(_pipe$1);
+                                        })()
+                                      )
+                                    ]);
+                                  }
+                                } else {
+                                  return toList([none()]);
+                                }
+                              })()
+                            )
                           )
                         ])
                       )
@@ -15075,15 +15172,15 @@ function view_info(m) {
         "let_assert",
         FILEPATH8,
         "somachord/components/fullscreen_player",
-        668,
+        618,
         "view_info",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 23522,
-          end: 23575,
-          pattern_start: 23533,
-          pattern_end: 23540
+          start: 21983,
+          end: 22036,
+          pattern_start: 21994,
+          pattern_end: 22001
         }
       );
     }
@@ -15132,39 +15229,32 @@ function view_info(m) {
             div(
               toList([class$("flex gap-2")]),
               toList([
-                i(
-                  prepend(
-                    class$("text-3xl ph-heart-straight"),
-                    prepend(
-                      on_click(new Like()),
-                      (() => {
-                        let $ = m.current_song.starred;
-                        if ($) {
-                          let $1 = m.current_palette.empty;
-                          if ($1) {
-                            return toList([
-                              class$("ph-fill text-violet-500")
-                            ]);
-                          } else {
-                            return toList([
-                              class$("ph-fill"),
-                              style(
-                                "color",
-                                (() => {
-                                  let _pipe = m.current_palette;
-                                  let _pipe$1 = vibrant(_pipe);
-                                  return swatch_hex(_pipe$1);
-                                })()
-                              )
-                            ]);
-                          }
+                button2(
+                  new Like(m.current_song.starred),
+                  new Medium2(),
+                  toList([
+                    on_click(new Like2()),
+                    (() => {
+                      let $ = m.current_song.starred;
+                      if ($) {
+                        let $1 = m.current_palette.empty;
+                        if ($1) {
+                          return class$("text-violet-500");
                         } else {
-                          return toList([class$("ph")]);
+                          return style(
+                            "color",
+                            (() => {
+                              let _pipe = m.current_palette;
+                              let _pipe$1 = vibrant(_pipe);
+                              return swatch_hex(_pipe$1);
+                            })()
+                          );
                         }
-                      })()
-                    )
-                  ),
-                  toList([])
+                      } else {
+                        return none();
+                      }
+                    })()
+                  ])
                 )
               ])
             )
@@ -15208,12 +15298,10 @@ function view_mobile(m) {
           )
         ]),
         toList([
-          i(
-            toList([
-              class$("text-3xl ph ph-caret-down"),
-              on_click(new ToggleFullscreenPlayer())
-            ]),
-            toList([])
+          button2(
+            new Down(),
+            new Medium2(),
+            toList([on_click(new ToggleFullscreenPlayer())])
           ),
           (() => {
             let $ = m.fullscreen_player_display;
@@ -15365,113 +15453,102 @@ function view_mobile(m) {
               class$("flex gap-4 justify-between items-center")
             ]),
             toList([
-              i(
+              button2(
+                new Shuffle(),
+                new Small2(),
                 prepend(
-                  class$("text-2xl ph ph-shuffle-simple"),
-                  prepend(
-                    on_click(new PlayerShuffle()),
-                    (() => {
-                      let $ = m.shuffled;
-                      if ($) {
-                        let $1 = m.current_palette.empty;
-                        if ($1) {
-                          return toList([
-                            class$(
-                              "text-violet-500 underline underline-offset-4 decoration-dotted"
-                            )
-                          ]);
-                        } else {
-                          return toList([
-                            class$(
-                              "underline underline-offset-4 decoration-dotted"
-                            ),
-                            style(
-                              "color",
-                              (() => {
-                                let _pipe = m.current_palette;
-                                let _pipe$1 = vibrant(_pipe);
-                                return swatch_hex(_pipe$1);
-                              })()
-                            )
-                          ]);
-                        }
-                      } else {
-                        return toList([none()]);
-                      }
-                    })()
-                  )
-                ),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$("text-2xl ph-fill ph-skip-back"),
-                  on_click(new PlayerPrevious())
-                ]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$("text-6xl ph-fill"),
+                  on_click(new PlayerShuffle()),
                   (() => {
-                    let $ = (() => {
-                      let _pipe = m.player;
-                      return is_paused(_pipe);
-                    })();
+                    let $ = m.shuffled;
                     if ($) {
-                      return class$("ph-play-circle");
-                    } else {
-                      return class$("ph-pause-circle");
-                    }
-                  })(),
-                  on_click(new PlayerPausePlay())
-                ]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$("text-2xl ph-fill ph-skip-forward"),
-                  on_click(new PlayerNext())
-                ]),
-                toList([])
-              ),
-              i(
-                prepend(
-                  class$("text-2xl ph ph-repeat-once"),
-                  prepend(
-                    on_click(new PlayerLoop()),
-                    (() => {
-                      let $ = m.looping;
-                      if ($) {
-                        let $1 = m.current_palette.empty;
-                        if ($1) {
-                          return toList([
-                            class$(
-                              "text-violet-500 underline underline-offset-4 decoration-dotted"
-                            )
-                          ]);
-                        } else {
-                          return toList([
-                            class$(
-                              "underline underline-offset-4 decoration-dotted"
-                            ),
-                            style(
-                              "color",
-                              (() => {
-                                let _pipe = m.current_palette;
-                                let _pipe$1 = vibrant(_pipe);
-                                return swatch_hex(_pipe$1);
-                              })()
-                            )
-                          ]);
-                        }
+                      let $1 = m.current_palette.empty;
+                      if ($1) {
+                        return toList([
+                          class$(
+                            "text-violet-500 underline underline-offset-4 decoration-dotted"
+                          )
+                        ]);
                       } else {
-                        return toList([none()]);
+                        return toList([
+                          class$(
+                            "underline underline-offset-4 decoration-dotted"
+                          ),
+                          style(
+                            "color",
+                            (() => {
+                              let _pipe = m.current_palette;
+                              let _pipe$1 = vibrant(_pipe);
+                              return swatch_hex(_pipe$1);
+                            })()
+                          )
+                        ]);
                       }
-                    })()
-                  )
-                ),
-                toList([])
+                    } else {
+                      return toList([none()]);
+                    }
+                  })()
+                )
+              ),
+              button2(
+                new SkipBackward(),
+                new Small2(),
+                toList([on_click(new PlayerPrevious())])
+              ),
+              button2(
+                (() => {
+                  let $ = (() => {
+                    let _pipe = m.player;
+                    return is_paused(_pipe);
+                  })();
+                  if ($) {
+                    return new Play();
+                  } else {
+                    return new Pause();
+                  }
+                })(),
+                new Largest(),
+                toList([on_click(new PlayerPausePlay())])
+              ),
+              button2(
+                new SkipForward(),
+                new Small2(),
+                toList([on_click(new PlayerNext())])
+              ),
+              button2(
+                new Loop(),
+                new Small2(),
+                prepend(
+                  on_click(new PlayerLoop()),
+                  (() => {
+                    let $ = m.looping;
+                    if ($) {
+                      let $1 = m.current_palette.empty;
+                      if ($1) {
+                        return toList([
+                          class$(
+                            "text-violet-500 underline underline-offset-4 decoration-dotted"
+                          )
+                        ]);
+                      } else {
+                        return toList([
+                          class$(
+                            "underline underline-offset-4 decoration-dotted"
+                          ),
+                          style(
+                            "color",
+                            (() => {
+                              let _pipe = m.current_palette;
+                              let _pipe$1 = vibrant(_pipe);
+                              return swatch_hex(_pipe$1);
+                            })()
+                          )
+                        ]);
+                      }
+                    } else {
+                      return toList([none()]);
+                    }
+                  })()
+                )
               )
             ])
           )
@@ -16526,7 +16603,7 @@ var SongID2 = class extends CustomType {
 };
 var NewPlaylist = class extends CustomType {
 };
-var AddToPlaylist = class extends CustomType {
+var AddToPlaylist2 = class extends CustomType {
   constructor(playlist_id) {
     super();
     this.playlist_id = playlist_id;
@@ -16566,14 +16643,10 @@ function element6(button_attrs, menu_attrs) {
   return div(
     toList([class$("relative inline-block group")]),
     toList([
-      button(
-        button_attrs,
-        toList([
-          i(
-            toList([class$("text-3xl ph ph-plus-circle")]),
-            toList([])
-          )
-        ])
+      button2(
+        new AddToPlaylist(),
+        new Medium2(),
+        button_attrs
       ),
       element2(
         "playlist-menu",
@@ -16630,15 +16703,15 @@ function update4(m, msg) {
           "let_assert",
           FILEPATH10,
           "somachord/components/playlist_menu",
-          106,
+          98,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2482,
-            end: 2542,
-            pattern_start: 2493,
-            pattern_end: 2500
+            start: 2397,
+            end: 2457,
+            pattern_start: 2408,
+            pattern_end: 2415
           }
         );
       }
@@ -16656,7 +16729,7 @@ function update4(m, msg) {
         }
       )
     ];
-  } else if (msg instanceof AddToPlaylist) {
+  } else if (msg instanceof AddToPlaylist2) {
     let playlist_id = msg.playlist_id;
     let _block;
     {
@@ -16672,15 +16745,15 @@ function update4(m, msg) {
           "let_assert",
           FILEPATH10,
           "somachord/components/playlist_menu",
-          131,
+          123,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 3073,
-            end: 3133,
-            pattern_start: 3084,
-            pattern_end: 3091
+            start: 2988,
+            end: 3048,
+            pattern_start: 2999,
+            pattern_end: 3006
           }
         );
       }
@@ -16732,15 +16805,15 @@ function update4(m, msg) {
           "let_assert",
           FILEPATH10,
           "somachord/components/playlist_menu",
-          154,
+          146,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 3716,
-            end: 3776,
-            pattern_start: 3727,
-            pattern_end: 3734
+            start: 3631,
+            end: 3691,
+            pattern_start: 3642,
+            pattern_end: 3649
           }
         );
       }
@@ -16828,15 +16901,15 @@ function update4(m, msg) {
                         "let_assert",
                         FILEPATH10,
                         "somachord/components/playlist_menu",
-                        189,
+                        181,
                         "update",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $2,
-                          start: 4704,
-                          end: 4764,
-                          pattern_start: 4715,
-                          pattern_end: 4722
+                          start: 4619,
+                          end: 4679,
+                          pattern_start: 4630,
+                          pattern_end: 4637
                         }
                       );
                     }
@@ -16854,12 +16927,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 191);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 199);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 191);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistWithSongs2) {
@@ -16882,12 +16955,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 201);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 209);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 201);
       return [m, none2()];
     }
   } else if (msg instanceof CreatePlaylist) {
@@ -16910,12 +16983,12 @@ function update4(m, msg) {
         ];
       } else {
         let e = $;
-        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+        echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 118);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 126);
+      echo5(e, void 0, "src/somachord/components/playlist_menu.gleam", 118);
       return [m, none2()];
     }
   } else {
@@ -16927,7 +17000,8 @@ function view5(m) {
     toList([
       class$(
         "z-100 absolute flex flex-col gap-2 rounded-lg bg-zinc-900 w-96 h-80 p-4"
-      )
+      ),
+      tabindex(0)
     ]),
     toList([
       div(
@@ -17006,15 +17080,15 @@ function view5(m) {
                               "let_assert",
                               FILEPATH10,
                               "somachord/components/playlist_menu",
-                              270,
+                              263,
                               "view",
                               "Pattern match failed, no pattern matched the value.",
                               {
                                 value: $1,
-                                start: 7185,
-                                end: 7269,
-                                pattern_start: 7196,
-                                pattern_end: 7203
+                                start: 7129,
+                                end: 7213,
+                                pattern_start: 7140,
+                                pattern_end: 7147
                               }
                             );
                           }
@@ -17054,7 +17128,7 @@ function view5(m) {
                                 if (song_in_playlist) {
                                   return new RemoveFromPlaylist(playlist3[0]);
                                 } else {
-                                  return new AddToPlaylist(playlist3[0]);
+                                  return new AddToPlaylist2(playlist3[0]);
                                 }
                               })()
                             ),
@@ -17318,25 +17392,18 @@ function buttons(m, album3) {
     return div(
       toList([class$("text-zinc-400 flex gap-4 items-center")]),
       toList([
-        i(
+        button2(
+          new Play(),
+          new Largest(),
           toList([
-            class$("text-5xl text-violet-500 ph-fill ph-play-circle"),
+            class$("text-violet-500"),
             on_click(new StreamAlbum(album3, 0))
-          ]),
-          toList([])
+          ])
         ),
-        i(
-          toList([
-            class$("text-3xl ph ph-shuffle-simple"),
-            on_click(new StreamAlbumShuffled(album3, 0))
-          ]),
-          toList([])
-        ),
-        i(
-          toList([
-            class$("text-3xl ph ph-dots-three cursor-not-allowed")
-          ]),
-          toList([])
+        button2(
+          new Shuffle(),
+          new Medium2(),
+          toList([on_click(new StreamAlbumShuffled(album3, 0))])
         )
       ])
     );
@@ -17352,39 +17419,22 @@ function buttons(m, album3) {
           div(
             toList([class$("flex gap-4 items-center")]),
             toList([
-              i(
-                toList([
-                  class$(
-                    "text-3xl ph ph-plus-circle cursor-not-allowed"
-                  )
-                ]),
-                toList([])
+              button2(
+                new Shuffle(),
+                new Medium2(),
+                toList([on_click(new StreamAlbumShuffled(album3, 0))])
               ),
-              i(
+              button2(
+                new Play(),
+                new Largest(),
                 toList([
-                  class$(
-                    "text-3xl ph ph-shuffle-simple cursor-not-allowed"
-                  )
-                ]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$(
-                    "text-5xl text-violet-500 ph-fill ph-play-circle"
-                  ),
+                  class$("text-violet-500"),
                   on_click(new StreamAlbum(album3, 0))
-                ]),
-                toList([])
+                ])
               )
             ])
           ),
-          i(
-            toList([
-              class$("text-3xl ph ph-dots-three cursor-not-allowed")
-            ]),
-            toList([])
-          )
+          div(toList([]), toList([]))
         ]);
         return reverse(_pipe);
       })()
@@ -17453,15 +17503,15 @@ function desktop_page(m, id3) {
             "let_assert",
             FILEPATH11,
             "somachord/pages/album",
-            69,
+            70,
             "desktop_page",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 1728,
-              end: 1788,
-              pattern_start: 1739,
-              pattern_end: 1746
+              start: 1761,
+              end: 1821,
+              pattern_start: 1772,
+              pattern_end: 1779
             }
           );
         }
@@ -17945,15 +17995,15 @@ function update5(m, msg) {
             "let_assert",
             FILEPATH12,
             "somachord/pages/artist",
-            123,
+            124,
             "update",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $2,
-              start: 2692,
-              end: 2745,
-              pattern_start: 2703,
-              pattern_end: 2728
+              start: 2725,
+              end: 2778,
+              pattern_start: 2736,
+              pattern_end: 2761
             }
           );
         }
@@ -17980,7 +18030,7 @@ function update5(m, msg) {
           "panic",
           FILEPATH12,
           "somachord/pages/artist",
-          129,
+          130,
           "update",
           "idk this guy",
           {}
@@ -18355,13 +18405,10 @@ function view_real(m) {
                             ]),
                             toList([])
                           ),
-                          i(
-                            toList([
-                              class$(
-                                "z-10 ph-fill ph-play-circle text-6xl text-violet-500"
-                              )
-                            ]),
-                            toList([])
+                          disabled_button(
+                            new Play(),
+                            new Custom("text-6xl"),
+                            toList([class$("z-10 text-violet-500")])
                           )
                         ])
                       )
@@ -18464,7 +18511,7 @@ var AlbumListRetrieved = class extends CustomType {
     this[0] = $0;
   }
 };
-var Play2 = class extends CustomType {
+var Play3 = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -18593,7 +18640,7 @@ function update6(m, msg) {
       echo6(e, void 0, "src/somachord/pages/home.gleam", 134);
       return [new Model6(m.albumlists, true), none2()];
     }
-  } else if (msg instanceof Play2) {
+  } else if (msg instanceof Play3) {
     let req = msg[0];
     return [
       m,
@@ -18752,7 +18799,7 @@ function view7(m) {
                                   return album2(
                                     album3,
                                     (id3) => {
-                                      return new Play2(
+                                      return new Play3(
                                         new PlayRequest("album", id3, 0)
                                       );
                                     }
@@ -19450,9 +19497,10 @@ var LikedSongsResponse = class extends CustomType {
   }
 };
 var PlayPlaylist2 = class extends CustomType {
-  constructor(index5) {
+  constructor(index5, shuffle3) {
     super();
     this.index = index5;
+    this.shuffle = shuffle3;
   }
 };
 var ShowEditor = class extends CustomType {
@@ -19550,11 +19598,12 @@ function init8(_) {
     none2()
   ];
 }
-function playlist_json(playlist3, index5) {
+function playlist_json(playlist3, index5, shuffle3) {
   return object2(
     toList([
       ["playlist", playlist_encode(playlist3)],
-      ["index", int3(index5)]
+      ["index", int3(index5)],
+      ["shuffle", bool2(shuffle3)]
     ])
   );
 }
@@ -19588,15 +19637,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  129,
+                  130,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 3244,
-                    end: 3304,
-                    pattern_start: 3255,
-                    pattern_end: 3262
+                    start: 3292,
+                    end: 3352,
+                    pattern_start: 3303,
+                    pattern_end: 3310
                   }
                 );
               }
@@ -19621,15 +19670,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  137,
+                  138,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 3491,
-                    end: 3551,
-                    pattern_start: 3502,
-                    pattern_end: 3509
+                    start: 3539,
+                    end: 3599,
+                    pattern_start: 3550,
+                    pattern_end: 3557
                   }
                 );
               }
@@ -19677,12 +19726,12 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 178);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 179);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 174);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 175);
       return [
         new Model8(
           m.playlist,
@@ -19733,12 +19782,12 @@ function update8(m, msg) {
         ];
       } else {
         let res = $1;
-        echo7(res, void 0, "src/somachord/pages/playlist.gleam", 162);
+        echo7(res, void 0, "src/somachord/pages/playlist.gleam", 163);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 166);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 167);
       return [
         new Model8(
           m.playlist,
@@ -19754,13 +19803,17 @@ function update8(m, msg) {
     }
   } else if (msg instanceof PlayPlaylist2) {
     let index5 = msg.index;
+    let shuffle3 = msg.shuffle;
     echo7(
       "playing playlist",
       void 0,
       "src/somachord/pages/playlist.gleam",
-      182
+      183
     );
-    return [m, emit("playPlaylist", playlist_json(m.playlist, index5))];
+    return [
+      m,
+      emit("playPlaylist", playlist_json(m.playlist, index5, shuffle3))
+    ];
   } else if (msg instanceof ShowEditor) {
     let show = msg[0];
     return [
@@ -19823,15 +19876,15 @@ function update8(m, msg) {
                 "let_assert",
                 FILEPATH15,
                 "somachord/pages/playlist",
-                202,
+                206,
                 "update",
                 "Pattern match failed, no pattern matched the value.",
                 {
                   value: $1,
-                  start: 5473,
-                  end: 5533,
-                  pattern_start: 5484,
-                  pattern_end: 5491
+                  start: 5564,
+                  end: 5624,
+                  pattern_start: 5575,
+                  pattern_end: 5582
                 }
               );
             }
@@ -19847,7 +19900,7 @@ function update8(m, msg) {
         )
       ];
     } else {
-      echo7("form error!", void 0, "src/somachord/pages/playlist.gleam", 214);
+      echo7("form error!", void 0, "src/somachord/pages/playlist.gleam", 218);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistUpdateResponse) {
@@ -19896,12 +19949,12 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 236);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 240);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 236);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 240);
       return [m, none2()];
     }
   } else {
@@ -19943,14 +19996,13 @@ function editor(m) {
                 toList([class$("text-xl font-black text-white")]),
                 toList([text2("Edit Playlist")])
               ),
-              i(
+              button2(
+                new Close(),
+                new Medium2(),
                 toList([
                   on_click(new ShowEditor(false)),
-                  class$(
-                    "text-2xl p-2 ph ph-x cursor-pointer text-white hover:bg-zinc-700 rounded-full"
-                  )
-                ]),
-                toList([])
+                  class$("hover:bg-zinc-600 p-2 rounded-full")
+                ])
               )
             ])
           ),
@@ -20046,20 +20098,18 @@ function buttons2(m) {
     return div(
       toList([class$("text-zinc-400 flex gap-4 items-center")]),
       toList([
-        i(
+        button2(
+          new Play(),
+          new Largest(),
           toList([
-            class$("text-5xl text-violet-500 ph-fill ph-play-circle"),
-            on_click(new PlayPlaylist2(0))
-          ]),
-          toList([])
+            class$("text-violet-500"),
+            on_click(new PlayPlaylist2(0, false))
+          ])
         ),
-        i(
-          toList([
-            class$(
-              "text-3xl ph ph-shuffle-simple cursor-not-allowed"
-            )
-          ]),
-          toList([])
+        button2(
+          new Shuffle(),
+          new Medium2(),
+          toList([on_click(new PlayPlaylist2(0, true))])
         ),
         (() => {
           let $1 = m.playlist.id === somachord_likes_playlist_id;
@@ -20074,13 +20124,7 @@ function buttons2(m) {
               toList([])
             );
           }
-        })(),
-        i(
-          toList([
-            class$("text-3xl ph ph-dots-three cursor-not-allowed")
-          ]),
-          toList([])
-        )
+        })()
       ])
     );
   } else {
@@ -20095,39 +20139,22 @@ function buttons2(m) {
           div(
             toList([class$("flex gap-4 items-center")]),
             toList([
-              i(
-                toList([
-                  class$(
-                    "text-3xl ph ph-plus-circle cursor-not-allowed"
-                  )
-                ]),
-                toList([])
+              button2(
+                new Shuffle(),
+                new Medium2(),
+                toList([on_click(new PlayPlaylist2(0, true))])
               ),
-              i(
+              button2(
+                new Play(),
+                new Largest(),
                 toList([
-                  class$(
-                    "text-3xl ph ph-shuffle-simple cursor-not-allowed"
-                  )
-                ]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$(
-                    "text-5xl text-violet-500 ph-fill ph-play-circle"
-                  ),
-                  on_click(new PlayPlaylist2(0))
-                ]),
-                toList([])
+                  class$("text-violet-500"),
+                  on_click(new PlayPlaylist2(0, false))
+                ])
               )
             ])
           ),
-          i(
-            toList([
-              class$("text-3xl ph ph-dots-three cursor-not-allowed")
-            ]),
-            toList([])
-          )
+          div(toList([]), toList([]))
         ]);
         return reverse(_pipe);
       })()
@@ -20154,10 +20181,10 @@ function page4(m) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 11047,
-          end: 11107,
-          pattern_start: 11058,
-          pattern_end: 11065
+          start: 11084,
+          end: 11144,
+          pattern_start: 11095,
+          pattern_end: 11102
         }
       );
     }
@@ -20263,43 +20290,49 @@ function page4(m) {
         buttons2(m),
         div(
           toList([class$("flex flex-col gap-4")]),
-          prepend(
-            (() => {
-              let $ = m.layout;
-              if ($ instanceof Desktop) {
-                return none3();
-              } else {
-                return mobile_space();
-              }
-            })(),
-            index_map(
-              m.playlist.songs,
-              (song3, index5) => {
-                return song2(
-                  song3,
-                  toList([
-                    attribute2(
-                      "data-index",
-                      (() => {
-                        let _pipe = index5 + 1;
-                        return to_string2(_pipe);
-                      })()
-                    ),
-                    (() => {
-                      let $ = song3.id === m.current_song_id;
-                      if ($) {
-                        return attribute2("data-playing", "");
-                      } else {
-                        return none();
-                      }
-                    })()
-                  ]),
-                  true,
-                  new PlayPlaylist2(index5)
+          (() => {
+            let _pipe = prepend(
+              (() => {
+                let $ = m.layout;
+                if ($ instanceof Desktop) {
+                  return none3();
+                } else {
+                  return mobile_space();
+                }
+              })(),
+              (() => {
+                let _pipe2 = index_map(
+                  m.playlist.songs,
+                  (song3, index5) => {
+                    return song2(
+                      song3,
+                      toList([
+                        attribute2(
+                          "data-index",
+                          (() => {
+                            let _pipe3 = index5 + 1;
+                            return to_string2(_pipe3);
+                          })()
+                        ),
+                        (() => {
+                          let $ = song3.id === m.current_song_id;
+                          if ($) {
+                            return attribute2("data-playing", "");
+                          } else {
+                            return none();
+                          }
+                        })()
+                      ]),
+                      true,
+                      new PlayPlaylist2(index5, false)
+                    );
+                  }
                 );
-              }
-            )
-          )
+                return reverse(_pipe2);
+              })()
+            );
+            return reverse(_pipe);
+          })()
         )
       ])
     ),
@@ -21198,15 +21231,15 @@ function update10(m, msg) {
               "let_assert",
               FILEPATH17,
               "somachord/pages/song",
-              140,
+              141,
               "update",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 2955,
-                end: 3015,
-                pattern_start: 2966,
-                pattern_end: 2973
+                start: 2988,
+                end: 3048,
+                pattern_start: 2999,
+                pattern_end: 3006
               }
             );
           }
@@ -21406,15 +21439,15 @@ function font_size(m) {
                         "let_assert",
                         FILEPATH17,
                         "somachord/pages/song",
-                        365,
+                        360,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 10325,
-                          end: 10362,
-                          pattern_start: 10336,
-                          pattern_end: 10343
+                          start: 10210,
+                          end: 10247,
+                          pattern_start: 10221,
+                          pattern_end: 10228
                         }
                       );
                     }
@@ -21456,15 +21489,15 @@ function view11(m) {
         "let_assert",
         FILEPATH17,
         "somachord/pages/song",
-        176,
+        177,
         "view",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3918,
-          end: 3978,
-          pattern_start: 3929,
-          pattern_end: 3936
+          start: 3951,
+          end: 4011,
+          pattern_start: 3962,
+          pattern_end: 3969
         }
       );
     }
@@ -21612,28 +21645,15 @@ function view11(m) {
                   )
                 ]),
                 toList([
-                  i(
+                  button2(
+                    new Play(),
+                    new Largest(),
                     toList([
-                      class$(
-                        "text-5xl text-violet-500 ph-fill ph-play-circle"
-                      ),
+                      class$("text-violet-500"),
                       on_click(new PlaySong2())
-                    ]),
-                    toList([])
+                    ])
                   ),
-                  element6(toList([]), toList([])),
-                  i(
-                    toList([class$("text-3xl ph ph-download-simple")]),
-                    toList([])
-                  ),
-                  i(
-                    toList([class$("text-3xl ph ph-link")]),
-                    toList([])
-                  ),
-                  i(
-                    toList([class$("text-3xl ph ph-dots-three")]),
-                    toList([])
-                  )
+                  element6(toList([]), toList([]))
                 ])
               )
             ])
@@ -21746,13 +21766,18 @@ function top_bar(m) {
           a(
             toList([href("/library")]),
             toList([
-              button2(
+              nav_button(
                 i(
                   toList([class$("text-3xl ph ph-cards-three")]),
                   toList([])
                 ),
+                i(
+                  toList([class$("text-3xl ph-fill ph-cards-three")]),
+                  toList([])
+                ),
                 "Library",
-                toList([class$("w-42")])
+                isEqual(m.route, new Library()),
+                toList([])
               )
             ])
           ),
@@ -21809,16 +21834,20 @@ function top_bar(m) {
                 ])
               );
             } else {
-              return button2(
+              return nav_button(
                 i(
                   toList([class$("text-3xl ph ph-magnifying-glass")]),
                   toList([])
                 ),
+                i(
+                  toList([
+                    class$("text-3xl ph-fill ph-magnifying-glass")
+                  ]),
+                  toList([])
+                ),
                 "Search",
-                toList([
-                  on_click(new Search3("")),
-                  class$("w-42")
-                ])
+                false,
+                toList([on_click(new Search3(""))])
               );
             }
           })()
@@ -21848,7 +21877,7 @@ function top_bar(m) {
     ])
   );
 }
-function side_bar(_) {
+function side_bar(m) {
   return div(
     toList([
       class$(
@@ -21859,12 +21888,17 @@ function side_bar(_) {
       a(
         toList([href("/library?filter=0")]),
         toList([
-          button2(
+          nav_button(
+            i(
+              toList([class$("text-3xl ph ph-playlist")]),
+              toList([])
+            ),
             i(
               toList([class$("text-3xl ph ph-playlist")]),
               toList([])
             ),
             "Playlists",
+            false,
             toList([])
           )
         ])
@@ -21872,12 +21906,17 @@ function side_bar(_) {
       a(
         toList([href("/likes")]),
         toList([
-          button2(
+          nav_button(
             i(
               toList([class$("text-3xl ph ph-heart-straight")]),
               toList([])
             ),
+            i(
+              toList([class$("text-3xl ph-fill ph-heart-straight")]),
+              toList([])
+            ),
             "Liked Songs",
+            isEqual(m.route, new Likes()),
             toList([])
           )
         ])
@@ -21900,15 +21939,15 @@ function playing_bar(m) {
         "let_assert",
         FILEPATH18,
         "somachord/pages/views/desktop",
-        194,
+        204,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 5389,
-          end: 5442,
-          pattern_start: 5400,
-          pattern_end: 5407
+          start: 5788,
+          end: 5841,
+          pattern_start: 5799,
+          pattern_end: 5806
         }
       );
     }
@@ -21992,9 +22031,10 @@ function playing_bar(m) {
           div(
             toList([class$("flex gap-4 justify-center items-center")]),
             toList([
-              i(
+              button2(
+                new Shuffle(),
+                new Smallest(),
                 toList([
-                  class$("text-xl ph ph-shuffle-simple"),
                   (() => {
                     let $ = m.shuffled;
                     if ($) {
@@ -22006,44 +22046,37 @@ function playing_bar(m) {
                     }
                   })(),
                   on_click(new PlayerShuffle())
-                ]),
-                toList([])
+                ])
               ),
-              i(
-                toList([
-                  class$("text-xl ph-fill ph-skip-back"),
-                  on_click(new PlayerPrevious())
-                ]),
-                toList([])
+              button2(
+                new SkipBackward(),
+                new Smallest(),
+                toList([on_click(new PlayerPrevious())])
               ),
-              i(
-                toList([
-                  class$("text-4xl ph-fill"),
-                  (() => {
-                    let $ = (() => {
-                      let _pipe = m.player;
-                      return is_paused(_pipe);
-                    })();
-                    if ($) {
-                      return class$("ph-play-circle");
-                    } else {
-                      return class$("ph-pause-circle");
-                    }
-                  })(),
-                  on_click(new PlayerPausePlay())
-                ]),
-                toList([])
+              button2(
+                (() => {
+                  let $ = (() => {
+                    let _pipe = m.player;
+                    return is_paused(_pipe);
+                  })();
+                  if ($) {
+                    return new Play();
+                  } else {
+                    return new Pause();
+                  }
+                })(),
+                new Large2(),
+                toList([on_click(new PlayerPausePlay())])
               ),
-              i(
-                toList([
-                  class$("text-xl ph-fill ph-skip-forward"),
-                  on_click(new PlayerNext())
-                ]),
-                toList([])
+              button2(
+                new SkipForward(),
+                new Smallest(),
+                toList([on_click(new PlayerNext())])
               ),
-              i(
+              button2(
+                new Loop(),
+                new Smallest(),
                 toList([
-                  class$("text-xl ph ph-repeat-once"),
                   (() => {
                     let $ = m.looping;
                     if ($) {
@@ -22055,8 +22088,7 @@ function playing_bar(m) {
                     }
                   })(),
                   on_click(new PlayerLoop())
-                ]),
-                toList([])
+                ])
               )
             ])
           ),
@@ -22123,12 +22155,10 @@ function playing_bar(m) {
       div(
         toList([class$("flex justify-end gap-2 w-1/3")]),
         toList([
-          i(
-            toList([
-              class$("text-3xl ph ph-monitor"),
-              on_click(new ToggleFullscreenPlayer())
-            ]),
-            toList([])
+          button2(
+            new FullscreenPlayer(),
+            new Medium2(),
+            toList([on_click(new ToggleFullscreenPlayer())])
           ),
           div(
             toList([class$("inline-flex relative")]),
@@ -22191,20 +22221,20 @@ function playing_bar(m) {
               )
             ])
           ),
-          i(
+          button2(
+            new Like(m.current_song.starred),
+            new Medium2(),
             toList([
               (() => {
                 let $ = m.current_song.starred;
                 if ($) {
-                  return class$("ph-fill text-violet-500");
+                  return class$("text-violet-500");
                 } else {
-                  return class$("ph");
+                  return none();
                 }
               })(),
-              class$("text-3xl ph-heart-straight"),
-              on_click(new Like())
-            ]),
-            toList([])
+              on_click(new Like2())
+            ])
           ),
           element6(
             toList([]),
@@ -23501,7 +23531,7 @@ function update11(m, msg) {
       ),
       none2()
     ];
-  } else if (msg instanceof Play) {
+  } else if (msg instanceof Play2) {
     let req = msg[0];
     echo9(
       "!!! play request id: " + req.id,
@@ -24724,7 +24754,7 @@ function update11(m, msg) {
       ),
       none2()
     ];
-  } else if (msg instanceof Like) {
+  } else if (msg instanceof Like2) {
     let _block;
     {
       let _block$1;
@@ -25149,7 +25179,7 @@ function view14(m) {
           if ($ instanceof Home) {
             _block = element8(
               toList([on_play((var0) => {
-                return new Play(var0);
+                return new Play2(var0);
               })])
             );
           } else if ($ instanceof Search) {
@@ -25157,7 +25187,7 @@ function view14(m) {
             _block = element11(
               toList([
                 on_play((var0) => {
-                  return new Play(var0);
+                  return new Play2(var0);
                 }),
                 query(query2)
               ])
@@ -25167,7 +25197,7 @@ function view14(m) {
             _block = element7(
               toList([
                 on_play((var0) => {
-                  return new Play(var0);
+                  return new Play2(var0);
                 }),
                 attribute2("artist-id", id3),
                 (() => {
@@ -25190,7 +25220,7 @@ function view14(m) {
             _block = element12(
               toList([
                 on_play((var0) => {
-                  return new Play(var0);
+                  return new Play2(var0);
                 }),
                 attribute2("song-id", id3),
                 (() => {
@@ -25223,7 +25253,7 @@ function view14(m) {
                   }
                 ),
                 on_play((var0) => {
-                  return new Play(var0);
+                  return new Play2(var0);
                 }),
                 attribute2("playlist-id", id3),
                 attribute2("song-id", m.current_song.id)
@@ -25238,7 +25268,7 @@ function view14(m) {
                   }
                 ),
                 on_play((var0) => {
-                  return new Play(var0);
+                  return new Play2(var0);
                 }),
                 attribute2(
                   "playlist-id",
@@ -25250,7 +25280,7 @@ function view14(m) {
           } else if ($ instanceof Library) {
             _block = element9(
               toList([on_play((var0) => {
-                return new Play(var0);
+                return new Play2(var0);
               })])
             );
           } else {

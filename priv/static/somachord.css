@@ -1476,6 +1476,13 @@
       }
     }
   }
+  .hover\:scale-\[105\%\] {
+    &:hover {
+      @media (hover: hover) {
+        scale: 105%;
+      }
+    }
+  }
   .hover\:bg-violet-600\/80 {
     &:hover {
       @media (hover: hover) {
@@ -1503,10 +1510,10 @@
       }
     }
   }
-  .hover\:bg-zinc-700 {
+  .hover\:bg-zinc-600 {
     &:hover {
       @media (hover: hover) {
-        background-color: var(--color-zinc-700);
+        background-color: var(--color-zinc-600);
       }
     }
   }
@@ -1552,6 +1559,14 @@
     &:hover {
       @media (hover: hover) {
         opacity: 50%;
+      }
+    }
+  }
+  .hover\:brightness-80 {
+    &:hover {
+      @media (hover: hover) {
+        --tw-brightness: brightness(80%);
+        filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
       }
     }
   }
@@ -1608,6 +1623,11 @@
       outline-style: none;
     }
   }
+  .active\:scale-\[90\%\] {
+    &:active {
+      scale: 90%;
+    }
+  }
   .active\:scale-\[95\%\] {
     &:active {
       scale: 95%;
@@ -1621,6 +1641,12 @@
   .active\:bg-zinc-900 {
     &:active {
       background-color: var(--color-zinc-900);
+    }
+  }
+  .active\:brightness-50 {
+    &:active {
+      --tw-brightness: brightness(50%);
+      filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
     }
   }
   .data-playing\:before\:invisible {
