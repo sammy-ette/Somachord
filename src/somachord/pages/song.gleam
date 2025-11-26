@@ -202,20 +202,7 @@ fn view(m: Model) {
           [
             html.span([attribute.class("flex gap-2 items-center")], [
               html.i([attribute.class("text-xl ph ph-user-sound")], []),
-              html.span(
-                [attribute.class("text-zinc-300")],
-                list.map(song.artists, fn(artist: api_models.SmallArtist) {
-                  html.a([attribute.href("/artist/" <> artist.id)], [
-                    html.span(
-                      [
-                        attribute.class("hover:underline font-light text-sm"),
-                      ],
-                      [element.text(artist.name)],
-                    ),
-                  ])
-                })
-                  |> list.intersperse(element.text(", ")),
-              ),
+              elements.artists(song.artists, []),
             ]),
             html.span([], [element.text("•")]),
             html.span([attribute.class("flex gap-2 items-center")], [

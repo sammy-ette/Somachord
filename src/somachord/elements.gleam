@@ -116,7 +116,7 @@ pub fn song(
               [attribute.class("select-none text-sm text-zinc-500 font-light")],
               list.map(song.artists, fn(artist: api_models.SmallArtist) {
                 let elem =
-                  html.span([attribute.class("text-zinc-300 hover:underline")], [
+                  html.span([attribute.class("text-zinc-400 hover:underline")], [
                     element.text(artist.name),
                   ])
                 case layout {
@@ -250,7 +250,7 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
           ),
         ],
       ),
-      html.span([attribute.class("inline-flex flex-col")], [
+      html.span([attribute.class("inline-flex flex-col gap-1")], [
         html.a(
           [attribute.href("/album/" <> album.id), attribute.class("space-x-1")],
           [
@@ -269,22 +269,7 @@ pub fn album(album album: api_models.Album, handler handler: fn(String) -> msg) 
           // },
           ],
         ),
-        html.span(
-          [],
-          list.map(album.artists, fn(artist: api_models.SmallArtist) {
-            html.a([attribute.href("/artist/" <> artist.id)], [
-              html.span(
-                [
-                  attribute.class(
-                    "hover:underline font-light text-sm text-zinc-400",
-                  ),
-                ],
-                [element.text(artist.name)],
-              ),
-            ])
-          })
-            |> list.intersperse(element.text(", ")),
-        ),
+        artists(album.artists, []),
       ]),
     ],
   )
@@ -532,4 +517,34 @@ pub fn music_slider(
       attribute.type_("range"),
     ]),
   ])
+}
+
+pub fn artists(
+  artists: List(api_models.SmallArtist),
+  attrs: List(attribute.Attribute(a)),
+) {
+  html.span(
+    [
+      attribute.class(
+        "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
+      ),
+      ..attrs
+    ],
+    list.map(artists, fn(artist: api_models.SmallArtist) {
+      html.a(
+        [
+          attribute.href("/artist/" <> artist.id),
+        ],
+        [
+          html.span(
+            [
+              attribute.class("hover:underline"),
+            ],
+            [element.text(artist.name)],
+          ),
+        ],
+      )
+    })
+      |> list.intersperse(element.text(", ")),
+  )
 }

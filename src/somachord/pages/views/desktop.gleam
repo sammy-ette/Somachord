@@ -247,22 +247,7 @@ fn playing_bar(m: model.Model) {
               element.text(m.current_song.title),
             ],
           ),
-          html.span(
-            [
-              attribute.class(
-                "hover:underline text-sm font-light overflow-hidden text-nowrap text-ellipsis min-w-0",
-              ),
-            ],
-            list.map(m.current_song.artists, fn(artist: api_models.SmallArtist) {
-              html.span(
-                [
-                  attribute.class("hover:underline"),
-                ],
-                [element.text(artist.name)],
-              )
-            })
-              |> list.intersperse(element.text(", ")),
-          ),
+          elements.artists(m.current_song.artists, []),
         ]),
       ]),
       html.div([attribute.class("space-y-1")], [

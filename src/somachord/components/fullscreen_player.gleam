@@ -221,33 +221,10 @@ fn view_desktop(m: model.Model) {
                     // ),
                     ]),
                   ]),
-                  html.span(
-                    [
-                      attribute.class(
-                        "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
-                      ),
-                    ],
-                    list.map(
-                      m.current_song.artists,
-                      fn(artist: api_models.SmallArtist) {
-                        html.a(
-                          [
-                            attribute.href("/artist/" <> artist.id),
-                            event.on_click(msg.ToggleFullscreenPlayer),
-                          ],
-                          [
-                            html.span(
-                              [
-                                attribute.class("hover:underline"),
-                              ],
-                              [element.text(artist.name)],
-                            ),
-                          ],
-                        )
-                      },
-                    )
-                      |> list.intersperse(element.text(", ")),
-                  ),
+                  elements.artists(m.current_song.artists, [
+                    attribute.class("text-zinc-400"),
+                    event.on_click(msg.ToggleFullscreenPlayer),
+                  ]),
                 ]),
                 html.div([attribute.class("space-y-1 w-full")], [
                   html.div(
@@ -745,30 +722,9 @@ fn view_info(m: model.Model) {
           // html.i([attribute.class("text-3xl ph ph-plus-circle")], []),
         ]),
       ]),
-      html.span(
-        [
-          attribute.class(
-            "text-zinc-300 font-normal text-sm overflow-hidden text-nowrap text-ellipsis min-w-0",
-          ),
-        ],
-        list.map(m.current_song.artists, fn(artist: api_models.SmallArtist) {
-          html.a(
-            [
-              attribute.href("/artist/" <> artist.id),
-              event.on_click(msg.ToggleFullscreenPlayer),
-            ],
-            [
-              html.span(
-                [
-                  attribute.class("hover:underline"),
-                ],
-                [element.text(artist.name)],
-              ),
-            ],
-          )
-        })
-          |> list.intersperse(element.text(", ")),
-      ),
+      elements.artists(m.current_song.artists, [
+        event.on_click(msg.ToggleFullscreenPlayer),
+      ]),
     ]),
   ]
 }
