@@ -8464,11 +8464,11 @@ var SmallArtist = class extends CustomType {
   }
 };
 var Album = class extends CustomType {
-  constructor(id3, name2, artists, cover_art_id, duration, plays, created, year2, genres, songs, release_types) {
+  constructor(id3, name2, artists2, cover_art_id, duration, plays, created, year2, genres, songs, release_types) {
     super();
     this.id = id3;
     this.name = name2;
-    this.artists = artists;
+    this.artists = artists2;
     this.cover_art_id = cover_art_id;
     this.duration = duration;
     this.plays = plays;
@@ -8503,13 +8503,13 @@ var Playlist = class extends CustomType {
   }
 };
 var Child = class extends CustomType {
-  constructor(id3, album_name, album_id, cover_art_id, artists, duration, title2, track, year2, starred, plays) {
+  constructor(id3, album_name, album_id, cover_art_id, artists2, duration, title2, track, year2, starred, plays) {
     super();
     this.id = id3;
     this.album_name = album_name;
     this.album_id = album_id;
     this.cover_art_id = cover_art_id;
-    this.artists = artists;
+    this.artists = artists2;
     this.duration = duration;
     this.title = title2;
     this.track = track;
@@ -8587,7 +8587,7 @@ function song_decoder() {
                   return field(
                     "artists",
                     list2(artist_small_decoder()),
-                    (artists) => {
+                    (artists2) => {
                       return field(
                         "duration",
                         int2,
@@ -8620,7 +8620,7 @@ function song_decoder() {
                                                   album_name,
                                                   album_id,
                                                   cover_art_id,
-                                                  artists,
+                                                  artists2,
                                                   duration,
                                                   title2,
                                                   track,
@@ -8664,7 +8664,7 @@ function album_decoder() {
           return field(
             "artists",
             list2(artist_small_decoder()),
-            (artists) => {
+            (artists2) => {
               return optional_field(
                 "coverArt",
                 "",
@@ -8732,7 +8732,7 @@ function album_decoder() {
                                                 new Album(
                                                   id3,
                                                   name2,
-                                                  artists,
+                                                  artists2,
                                                   cover_art_id,
                                                   duration,
                                                   plays,
@@ -8888,7 +8888,7 @@ function song_encode(child) {
   let album_name;
   let album_id;
   let cover_art_id;
-  let artists;
+  let artists2;
   let duration;
   let title2;
   let track;
@@ -8899,7 +8899,7 @@ function song_encode(child) {
   album_name = child.album_name;
   album_id = child.album_id;
   cover_art_id = child.cover_art_id;
-  artists = child.artists;
+  artists2 = child.artists;
   duration = child.duration;
   title2 = child.title;
   track = child.track;
@@ -8912,7 +8912,7 @@ function song_encode(child) {
       ["album", string4(album_name)],
       ["albumID", string4(album_id)],
       ["coverArt", string4(cover_art_id)],
-      ["artists", array2(artists, artist_encode)],
+      ["artists", array2(artists2, artist_encode)],
       ["duration", int3(duration)],
       ["title", string4(title2)],
       ["track", int3(track)],
@@ -10794,7 +10794,7 @@ function search(auth_details, query2, msg) {
             toList([]),
             list2(artist_small_decoder())
           ),
-          (artists) => {
+          (artists2) => {
             return then$(
               optionally_at(
                 toList(["subsonic-response", "searchResult3", "album"]),
@@ -10802,7 +10802,7 @@ function search(auth_details, query2, msg) {
                 list2(album_decoder())
               ),
               (albums) => {
-                return success(new Search2(artists, albums));
+                return success(new Search2(artists2, albums));
               }
             );
           }
@@ -13931,7 +13931,7 @@ function song2(song3, attrs, cover_art, msg) {
                         (artist2) => {
                           let elem = span(
                             toList([
-                              class$("text-zinc-300 hover:underline")
+                              class$("text-zinc-400 hover:underline")
                             ]),
                             toList([text2(artist2.name)])
                           );
@@ -14002,141 +14002,6 @@ function song2(song3, attrs, cover_art, msg) {
     ])
   );
 }
-function album2(album3, handler) {
-  let _block;
-  {
-    let _block$1;
-    let _pipe = create();
-    _block$1 = get2(_pipe, "auth");
-    let $ = _block$1;
-    let stg;
-    if ($ instanceof Ok) {
-      stg = $[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH7,
-        "somachord/elements",
-        198,
-        "album",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 6712,
-          end: 6772,
-          pattern_start: 6723,
-          pattern_end: 6730
-        }
-      );
-    }
-    _block = stg.auth;
-  }
-  let auth_details = _block;
-  return div(
-    toList([
-      class$(
-        "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75"
-      ),
-      on("dblclick", success(handler(album3.id)))
-    ]),
-    toList([
-      div(
-        toList([
-          class$("relative mt-4 h-42"),
-          style("clip-path", "inset(0 0 0 0);")
-        ]),
-        toList([
-          div(
-            toList([
-              class$(
-                "w-34 h-28 -mt-2 mx-2 bg-zinc-700 rounded-md absolute"
-              )
-            ]),
-            toList([])
-          ),
-          a(
-            toList([href("/album/" + album3.id)]),
-            toList([
-              img(
-                toList([
-                  src(
-                    cover_url(auth_details, album3.cover_art_id, 500)
-                  ),
-                  class$(
-                    "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute"
-                  )
-                ])
-              )
-            ])
-          ),
-          div(
-            toList([
-              on_click(handler(album3.id)),
-              class$(
-                "absolute top-26 left-26 relative transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-              )
-            ]),
-            toList([
-              div(
-                toList([class$("rounded-full bg-black w-8 h-8")]),
-                toList([])
-              ),
-              i(
-                toList([
-                  class$(
-                    "absolute -top-2 -left-2 ph-fill ph-play-circle text-5xl text-violet-500"
-                  )
-                ]),
-                toList([])
-              )
-            ])
-          )
-        ])
-      ),
-      span(
-        toList([class$("inline-flex flex-col")]),
-        toList([
-          a(
-            toList([
-              href("/album/" + album3.id),
-              class$("space-x-1")
-            ]),
-            toList([
-              span(
-                toList([class$("text-zinc-100 hover:underline")]),
-                toList([text2(album3.name)])
-              )
-            ])
-          ),
-          span(
-            toList([]),
-            (() => {
-              let _pipe = map(
-                album3.artists,
-                (artist2) => {
-                  return a(
-                    toList([href("/artist/" + artist2.id)]),
-                    toList([
-                      span(
-                        toList([
-                          class$(
-                            "hover:underline font-light text-sm text-zinc-400"
-                          )
-                        ]),
-                        toList([text2(artist2.name)])
-                      )
-                    ])
-                  );
-                }
-              );
-              return intersperse(_pipe, text2(", "));
-            })()
-          )
-        ])
-      )
-    ])
-  );
-}
 function playlist2(playlist3, handler) {
   let _block;
   {
@@ -14152,15 +14017,15 @@ function playlist2(playlist3, handler) {
         "let_assert",
         FILEPATH7,
         "somachord/elements",
-        298,
+        283,
         "playlist",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9731,
-          end: 9791,
-          pattern_start: 9742,
-          pattern_end: 9749
+          start: 9261,
+          end: 9321,
+          pattern_start: 9272,
+          pattern_end: 9279
         }
       );
     }
@@ -14441,15 +14306,15 @@ function music_slider(m, dynamic2, attrs) {
                     "let_assert",
                     FILEPATH7,
                     "somachord/elements",
-                    515,
+                    500,
                     "music_slider",
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15894,
-                      end: 15941,
-                      pattern_start: 15905,
-                      pattern_end: 15920
+                      start: 15424,
+                      end: 15471,
+                      pattern_start: 15435,
+                      pattern_end: 15450
                     }
                   );
                 }
@@ -14494,6 +14359,145 @@ function music_slider(m, dynamic2, attrs) {
             )
           ),
           type_("range")
+        ])
+      )
+    ])
+  );
+}
+function artists(artists2, attrs) {
+  return span(
+    prepend(
+      class$(
+        "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0"
+      ),
+      attrs
+    ),
+    (() => {
+      let _pipe = map(
+        artists2,
+        (artist2) => {
+          return a(
+            toList([href("/artist/" + artist2.id)]),
+            toList([
+              span(
+                toList([class$("hover:underline")]),
+                toList([text2(artist2.name)])
+              )
+            ])
+          );
+        }
+      );
+      return intersperse(_pipe, text2(", "));
+    })()
+  );
+}
+function album2(album3, handler) {
+  let _block;
+  {
+    let _block$1;
+    let _pipe = create();
+    _block$1 = get2(_pipe, "auth");
+    let $ = _block$1;
+    let stg;
+    if ($ instanceof Ok) {
+      stg = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH7,
+        "somachord/elements",
+        198,
+        "album",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 6712,
+          end: 6772,
+          pattern_start: 6723,
+          pattern_end: 6730
+        }
+      );
+    }
+    _block = stg.auth;
+  }
+  let auth_details = _block;
+  return div(
+    toList([
+      class$(
+        "flex flex-col flex-none w-42 gap-2 group p-2 rounded hover:bg-zinc-900/75"
+      ),
+      on("dblclick", success(handler(album3.id)))
+    ]),
+    toList([
+      div(
+        toList([
+          class$("relative mt-4 h-42"),
+          style("clip-path", "inset(0 0 0 0);")
+        ]),
+        toList([
+          div(
+            toList([
+              class$(
+                "w-34 h-28 -mt-2 mx-2 bg-zinc-700 rounded-md absolute"
+              )
+            ]),
+            toList([])
+          ),
+          a(
+            toList([href("/album/" + album3.id)]),
+            toList([
+              img(
+                toList([
+                  src(
+                    cover_url(auth_details, album3.cover_art_id, 500)
+                  ),
+                  class$(
+                    "border-t-2 border-zinc-900/75 group-hover:border-zinc-900 object-cover rounded-md absolute"
+                  )
+                ])
+              )
+            ])
+          ),
+          div(
+            toList([
+              on_click(handler(album3.id)),
+              class$(
+                "absolute top-26 left-26 relative transition duration-250 ease-out translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+              )
+            ]),
+            toList([
+              div(
+                toList([class$("rounded-full bg-black w-8 h-8")]),
+                toList([])
+              ),
+              i(
+                toList([
+                  class$(
+                    "absolute -top-2 -left-2 ph-fill ph-play-circle text-5xl text-violet-500"
+                  )
+                ]),
+                toList([])
+              )
+            ])
+          )
+        ])
+      ),
+      span(
+        toList([class$("inline-flex flex-col gap-1")]),
+        toList([
+          a(
+            toList([
+              href("/album/" + album3.id),
+              class$("space-x-1")
+            ]),
+            toList([
+              span(
+                toList([class$("text-zinc-100 hover:underline")]),
+                toList([text2(album3.name)])
+              )
+            ])
+          ),
+          artists(album3.artists, toList([]))
         ])
       )
     ])
@@ -14749,36 +14753,12 @@ function view_desktop(m) {
                           )
                         ])
                       ),
-                      span(
+                      artists(
+                        m.current_song.artists,
                         toList([
-                          class$(
-                            "text-zinc-400 font-light text-sm overflow-hidden text-nowrap text-ellipsis min-w-0"
-                          )
-                        ]),
-                        (() => {
-                          let _pipe = map(
-                            m.current_song.artists,
-                            (artist2) => {
-                              return a(
-                                toList([
-                                  href("/artist/" + artist2.id),
-                                  on_click(
-                                    new ToggleFullscreenPlayer()
-                                  )
-                                ]),
-                                toList([
-                                  span(
-                                    toList([
-                                      class$("hover:underline")
-                                    ]),
-                                    toList([text2(artist2.name)])
-                                  )
-                                ])
-                              );
-                            }
-                          );
-                          return intersperse(_pipe, text2(", "));
-                        })()
+                          class$("text-zinc-400"),
+                          on_click(new ToggleFullscreenPlayer())
+                        ])
                       )
                     ])
                   ),
@@ -15095,15 +15075,15 @@ function view_info(m) {
         "let_assert",
         FILEPATH8,
         "somachord/components/fullscreen_player",
-        691,
+        668,
         "view_info",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 24410,
-          end: 24463,
-          pattern_start: 24421,
-          pattern_end: 24428
+          start: 23522,
+          end: 23575,
+          pattern_start: 23533,
+          pattern_end: 23540
         }
       );
     }
@@ -15190,32 +15170,9 @@ function view_info(m) {
             )
           ])
         ),
-        span(
-          toList([
-            class$(
-              "text-zinc-300 font-normal text-sm overflow-hidden text-nowrap text-ellipsis min-w-0"
-            )
-          ]),
-          (() => {
-            let _pipe = map(
-              m.current_song.artists,
-              (artist2) => {
-                return a(
-                  toList([
-                    href("/artist/" + artist2.id),
-                    on_click(new ToggleFullscreenPlayer())
-                  ]),
-                  toList([
-                    span(
-                      toList([class$("hover:underline")]),
-                      toList([text2(artist2.name)])
-                    )
-                  ])
-                );
-              }
-            );
-            return intersperse(_pipe, text2(", "));
-          })()
+        artists(
+          m.current_song.artists,
+          toList([on_click(new ToggleFullscreenPlayer())])
         )
       ])
     )
@@ -17542,33 +17499,13 @@ function desktop_page(m, id3) {
                 toList([
                   span(
                     toList([class$("flex gap-2 items-center")]),
-                    prepend(
+                    toList([
                       i(
                         toList([class$("text-xl ph ph-user-sound")]),
                         toList([])
                       ),
-                      (() => {
-                        let _pipe = map(
-                          album3.artists,
-                          (artist2) => {
-                            return a(
-                              toList([href("/artist/" + artist2.id)]),
-                              toList([
-                                span(
-                                  toList([
-                                    class$(
-                                      "text-zinc-300 text-nowrap hover:underline"
-                                    )
-                                  ]),
-                                  toList([text2(artist2.name)])
-                                )
-                              ])
-                            );
-                          }
-                        );
-                        return intersperse(_pipe, text2(", "));
-                      })()
-                    )
+                      artists(album3.artists, toList([]))
+                    ])
                   ),
                   span(toList([]), toList([text2("\u2022")])),
                   span(
@@ -20702,10 +20639,10 @@ var Echo$Inspector7 = class {
 // build/dev/javascript/somachord/somachord/pages/search.mjs
 var FILEPATH16 = "src/somachord/pages/search.gleam";
 var Model9 = class extends CustomType {
-  constructor(search_query, artists, albums, layout2, failed) {
+  constructor(search_query, artists2, albums, layout2, failed) {
     super();
     this.search_query = search_query;
-    this.artists = artists;
+    this.artists = artists2;
     this.albums = albums;
     this.layout = layout2;
     this.failed = failed;
@@ -21469,15 +21406,15 @@ function font_size(m) {
                         "let_assert",
                         FILEPATH17,
                         "somachord/pages/song",
-                        378,
+                        365,
                         "font_size",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 10847,
-                          end: 10884,
-                          pattern_start: 10858,
-                          pattern_end: 10865
+                          start: 10325,
+                          end: 10362,
+                          pattern_start: 10336,
+                          pattern_end: 10343
                         }
                       );
                     }
@@ -21581,30 +21518,7 @@ function view11(m) {
                         toList([class$("text-xl ph ph-user-sound")]),
                         toList([])
                       ),
-                      span(
-                        toList([class$("text-zinc-300")]),
-                        (() => {
-                          let _pipe = map(
-                            song3.artists,
-                            (artist2) => {
-                              return a(
-                                toList([href("/artist/" + artist2.id)]),
-                                toList([
-                                  span(
-                                    toList([
-                                      class$(
-                                        "hover:underline font-light text-sm"
-                                      )
-                                    ]),
-                                    toList([text2(artist2.name)])
-                                  )
-                                ])
-                              );
-                            }
-                          );
-                          return intersperse(_pipe, text2(", "));
-                        })()
-                      )
+                      artists(song3.artists, toList([]))
                     ])
                   ),
                   prepend(
@@ -22067,25 +21981,7 @@ function playing_bar(m) {
                 ]),
                 toList([text2(m.current_song.title)])
               ),
-              span(
-                toList([
-                  class$(
-                    "hover:underline text-sm font-light overflow-hidden text-nowrap text-ellipsis min-w-0"
-                  )
-                ]),
-                (() => {
-                  let _pipe = map(
-                    m.current_song.artists,
-                    (artist2) => {
-                      return span(
-                        toList([class$("hover:underline")]),
-                        toList([text2(artist2.name)])
-                      );
-                    }
-                  );
-                  return intersperse(_pipe, text2(", "));
-                })()
-              )
+              artists(m.current_song.artists, toList([]))
             ])
           )
         ])
