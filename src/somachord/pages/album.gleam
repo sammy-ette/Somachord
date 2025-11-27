@@ -151,6 +151,10 @@ pub fn desktop_page(m: model.Model, id) {
                       "data-index",
                       index + 1 |> int.to_string,
                     ),
+                    case m.current_song.id == song.id {
+                      True -> attribute.attribute("data-playing", "")
+                      False -> attribute.none()
+                    },
                   ],
                   cover_art: False,
                   msg: { msg.StreamAlbum(album, index) },
@@ -163,7 +167,7 @@ pub fn desktop_page(m: model.Model, id) {
         ),
       ],
     ),
-    html.div([attribute.class("flex flex-col gap-8")], [
+    html.div([attribute.class("flex flex-col gap-8 select-none")], [
       html.img([
         attribute.src(api.cover_url(auth_details, album.cover_art_id, 500)),
         attribute.class(

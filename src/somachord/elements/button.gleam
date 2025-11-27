@@ -42,7 +42,7 @@ pub fn button(
         attribute.class(button_class(kind)),
         attribute.class(button_size(size)),
         attribute.class(
-          "transition-scale duration-300 hover:scale-[105%] hover:brightness-80 active:brightness-50 "
+          "select-none transition-scale duration-300 hover:scale-[105%] hover:brightness-80 active:brightness-50 "
           <> case size {
             Large -> "active:scale-[90%]"
             _ -> "active:scale-[95%]"
