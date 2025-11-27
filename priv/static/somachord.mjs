@@ -14086,9 +14086,7 @@ function song2(song3, attrs, cover_art, msg) {
                         song3.artists,
                         (artist2) => {
                           let elem = span(
-                            toList([
-                              class$("text-zinc-400 hover:underline")
-                            ]),
+                            toList([class$("hover:underline")]),
                             toList([text2(artist2.name)])
                           );
                           if (layout2 instanceof Desktop) {
@@ -14161,10 +14159,10 @@ function playlist2(playlist3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9473,
-          end: 9533,
-          pattern_start: 9484,
-          pattern_end: 9491
+          start: 9459,
+          end: 9519,
+          pattern_start: 9470,
+          pattern_end: 9477
         }
       );
     }
@@ -14436,10 +14434,10 @@ function music_slider(m, dynamic2, attrs) {
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15296,
-                      end: 15343,
-                      pattern_start: 15307,
-                      pattern_end: 15322
+                      start: 15282,
+                      end: 15329,
+                      pattern_start: 15293,
+                      pattern_end: 15308
                     }
                   );
                 }
@@ -14536,10 +14534,10 @@ function album2(album3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6924,
-          end: 6984,
-          pattern_start: 6935,
-          pattern_end: 6942
+          start: 6910,
+          end: 6970,
+          pattern_start: 6921,
+          pattern_end: 6928
         }
       );
     }
@@ -18560,7 +18558,7 @@ function init6(_) {
               stg.auth,
               "frequent",
               0,
-              11,
+              16,
               (var0) => {
                 return new AlbumListRetrieved(var0);
               }
@@ -18569,7 +18567,7 @@ function init6(_) {
               stg.auth,
               "newest",
               0,
-              11,
+              16,
               (var0) => {
                 return new AlbumListRetrieved(var0);
               }
@@ -18578,7 +18576,7 @@ function init6(_) {
               stg.auth,
               "random",
               0,
-              11,
+              16,
               (var0) => {
                 return new AlbumListRetrieved(var0);
               }
