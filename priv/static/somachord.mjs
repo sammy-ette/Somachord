@@ -12398,7 +12398,7 @@ function button2(kind, size3, attrs) {
             class$(button_size(size3)),
             prepend(
               class$(
-                "transition-scale duration-300 hover:scale-[105%] hover:brightness-80 active:brightness-50 " + (() => {
+                "select-none transition-scale duration-300 hover:scale-[105%] hover:brightness-80 active:brightness-50 " + (() => {
                   if (size3 instanceof Large2) {
                     return "active:scale-[90%]";
                   } else {
@@ -13987,7 +13987,7 @@ function song2(song3, attrs, cover_art, msg) {
         ),
         prepend(
           class$(
-            "group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2"
+            "select-none group [.has-dynamic-color]:hover:bg-(--dynamic-color)/35! hover:bg-zinc-800 rounded-md p-2 -mt-3 flex gap-2"
           ),
           prepend(
             on("dblclick", success(msg)),
@@ -14159,10 +14159,10 @@ function playlist2(playlist3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 9459,
-          end: 9519,
-          pattern_start: 9470,
-          pattern_end: 9477
+          start: 9471,
+          end: 9531,
+          pattern_start: 9482,
+          pattern_end: 9489
         }
       );
     }
@@ -14434,10 +14434,10 @@ function music_slider(m, dynamic2, attrs) {
                     "Pattern match failed, no pattern matched the value.",
                     {
                       value: $,
-                      start: 15282,
-                      end: 15329,
-                      pattern_start: 15293,
-                      pattern_end: 15308
+                      start: 15294,
+                      end: 15341,
+                      pattern_start: 15305,
+                      pattern_end: 15320
                     }
                   );
                 }
@@ -14534,10 +14534,10 @@ function album2(album3, handler) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6910,
-          end: 6970,
-          pattern_start: 6921,
-          pattern_end: 6928
+          start: 6922,
+          end: 6982,
+          pattern_start: 6933,
+          pattern_end: 6940
         }
       );
     }
@@ -17645,7 +17645,18 @@ function desktop_page(m, id3) {
                                   let _pipe3 = index5 + 1;
                                   return to_string2(_pipe3);
                                 })()
-                              )
+                              ),
+                              (() => {
+                                let $ = m.current_song.id === song3.id;
+                                if ($) {
+                                  return attribute2(
+                                    "data-playing",
+                                    ""
+                                  );
+                                } else {
+                                  return none();
+                                }
+                              })()
                             ]),
                             false,
                             new StreamAlbum(album3, index5)
@@ -17661,7 +17672,7 @@ function desktop_page(m, id3) {
             ])
           ),
           div(
-            toList([class$("flex flex-col gap-8")]),
+            toList([class$("flex flex-col gap-8 select-none")]),
             toList([
               img(
                 toList([
