@@ -3,20 +3,32 @@
 
 > 🎼 A simple self-hosted Subsonic web client.
 
+Somachord is a music player for Subsonic servers on the Web made to rule over all
+the others.
+
 # Features
-- Written in [Gleam](https://gleam.run/)
-- Fast
-- Lightweight
-- Modern, targetting OpenSubsonic and newer servers only
-- [x] Autoplay similar music when queue is finished
-- [x] Save and restore music queue
-- [x] Lyrics
-- [x] Playlists
+
+- It plays music!
+- It's written in [Gleam](https://gleam.run/)
+- Has a straightforward UI
+- Works on Mobile and Desktop
+  - PWA
+  - Electron
+  - Web/Browser
+- Works **offline**, which means you can play music without an internet connection (if you've played it once already)
+- Lyrics, synced or unsynced
+- Scrobbles to Subsonic server
+- Autoplay similar music when the queue is finished
+- Saves and restore queue
+- Playlist management
 
 Request features you would like as an [issue](https://github.com/sammy-ette/Somachord/issues/new)
 and I may or may not work on it.
 
-![](https://yuki.suou.moe/screenshot-PZUm43AZ.png)
+![](https://yuki.suou.moe/screenshot-8k6yVwiT.png)
+![](https://yuki.suou.moe/screenshot-CvkyKxBM.png)
+![](assets/image.png)
+![](assets/image1.png)
 
 # Setting Up
 ## Docker
