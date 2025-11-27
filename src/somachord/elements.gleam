@@ -118,7 +118,7 @@ pub fn song(
               [attribute.class("select-none text-sm text-zinc-500 font-light")],
               list.map(song.artists, fn(artist: api_models.SmallArtist) {
                 let elem =
-                  html.span([attribute.class("text-zinc-400 hover:underline")], [
+                  html.span([attribute.class("hover:underline")], [
                     element.text(artist.name),
                   ])
                 case layout {
