@@ -24,6 +24,7 @@ pub type Route {
   Playlists
   Artists
   Albums
+  About
   Unknown
 }
 
@@ -47,6 +48,7 @@ pub fn uri_to_route(uri: uri.Uri) -> Route {
       "/playlists/" -> Playlists
       "/library" -> Library
       "/likes" -> Likes
+      "/about" -> About
       _ -> Unknown
     }
   }

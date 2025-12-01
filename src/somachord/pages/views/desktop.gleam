@@ -24,7 +24,7 @@ pub fn view(m: model.Model, page) {
   html.div(
     [
       attribute.class(
-        "font-[Poppins,sans-serif] w-full flex flex-col px-3 py-4 gap-2 overflow-hidden",
+        "font-[Poppins,sans-serif] w-full flex flex-col px-3 py-4 gap-4 overflow-hidden",
       ),
     ],
     [
@@ -123,21 +123,29 @@ fn top_bar(m: model.Model) {
           )
       },
     ]),
-    case m.online {
-      True -> element.none()
-      False ->
-        html.div(
-          [
-            attribute.class(
-              "flex px-2 my-1 rounded-full bg-white gap-1 text-black items-center justify-center",
-            ),
-          ],
-          [
-            html.i([attribute.class("text-3xl ph ph-globe-x")], []),
-            html.span([], [element.text("Offline")]),
-          ],
-        )
-    },
+    html.div(
+      [attribute.class("flex items-center justify-center text-zinc-400")],
+      [
+        html.a([attribute.href("/about")], [
+          button.button(button.About, button.Large, []),
+        ]),
+        case m.online {
+          True -> element.none()
+          False ->
+            html.div(
+              [
+                attribute.class(
+                  "flex px-2 my-1 rounded-full bg-white gap-1 text-black items-center justify-center",
+                ),
+              ],
+              [
+                html.i([attribute.class("text-3xl ph ph-globe-x")], []),
+                html.span([], [element.text("Offline")]),
+              ],
+            )
+        },
+      ],
+    ),
   ])
 }
 

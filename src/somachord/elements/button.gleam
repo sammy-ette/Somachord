@@ -29,6 +29,7 @@ pub type Kind {
   Down
   Edit
   Close
+  About
 }
 
 pub fn button(
@@ -103,5 +104,6 @@ fn button_class(kind: Kind) {
     Down -> "ph ph-caret-down"
     Edit -> "ph ph-pencil-simple"
     Close -> "ph ph-x"
+    About -> "ph ph-question"
   }
 }

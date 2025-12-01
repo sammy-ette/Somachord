@@ -16,6 +16,7 @@ import somachord/components/lyrics
 import somachord/components/playlist_menu
 import somachord/constants
 import somachord/models/auth
+import somachord/pages/about
 import somachord/pages/error
 import somachord/pages/library
 import somachord/pages/loading
@@ -773,6 +774,7 @@ fn view(m: model.Model) {
         ),
         attribute.attribute("song-id", m.current_song.id),
       ])
+    router.About -> about.page()
     _ -> error.page(error.NotFound, attribute.none())
   }
 
