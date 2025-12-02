@@ -29,6 +29,7 @@ pub fn song(
   attrs attrs: List(attribute.Attribute(msg)),
   cover_art cover_art: Bool,
   msg msg: msg,
+  on_add_queue on_add_queue: #(Bool, msg),
   // like_msg like_msg: msg,
 ) {
   let auth_details = {
@@ -133,6 +134,30 @@ pub fn song(
         ]),
       ]),
       html.div([attribute.class("flex gap-4 items-center")], [
+        html.div([attribute.class("flex items-center text-zinc-400")], [
+          case on_add_queue.0 {
+            True ->
+              button.button(button.AddToQueue, button.Medium, [
+                event.on_click(on_add_queue.1),
+              ])
+            False -> element.none()
+          },
+          // button.button(button.Like(filled: False), button.Medium, [
+        //   case False {
+        //     True -> attribute.class("text-violet-500")
+        //     False -> attribute.none()
+        //   },
+        //   event.on_click(like_msg),
+        // ]),
+        // html.i(
+        //   [
+        //     attribute.class(
+        //       "text-zinc-500 text-2xl ph ph-dots-three-vertical",
+        //     ),
+        //   ],
+        //   [],
+        // ),
+        ]),
         html.span(
           [
             attribute.class(
@@ -150,23 +175,6 @@ pub fn song(
             }),
           ],
         ),
-        html.div([attribute.class("flex items-center")], [
-          // button.button(button.Like(filled: False), button.Medium, [
-        //   case False {
-        //     True -> attribute.class("text-violet-500")
-        //     False -> attribute.none()
-        //   },
-        //   event.on_click(like_msg),
-        // ]),
-        // html.i(
-        //   [
-        //     attribute.class(
-        //       "text-zinc-500 text-2xl ph ph-dots-three-vertical",
-        //     ),
-        //   ],
-        //   [],
-        // ),
-        ]),
       ]),
     ],
   )

@@ -158,6 +158,7 @@ pub fn desktop_page(m: model.Model, id) {
                   ],
                   cover_art: False,
                   msg: { msg.StreamAlbum(album, index) },
+                  on_add_queue: #(True, msg.AddToQueue(song)),
                 )
               },
             )

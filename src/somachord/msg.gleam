@@ -69,6 +69,7 @@ pub type Msg {
   PlayerLoop
   Like
   QueueJumpTo(position: Int)
+  AddToQueue(api_models.Child)
 
   Unload
   ComponentClick

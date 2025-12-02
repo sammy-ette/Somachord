@@ -311,6 +311,7 @@ fn view_home(m: Model) {
             ],
             cover_art: True,
             msg: PlaySong(song.id),
+            on_add_queue: #(False, Nothing),
           )
         }),
       ),

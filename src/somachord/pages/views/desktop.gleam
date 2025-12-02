@@ -376,6 +376,7 @@ fn playing_bar(m: model.Model) {
                     ],
                     cover_art: True,
                     msg: { msg.QueueJumpTo(queue_entry.0) },
+                    on_add_queue: #(False, msg.ComponentClick),
                   )
                 }),
               ),

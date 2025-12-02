@@ -476,6 +476,7 @@ fn page(m: Model) {
                   ],
                   cover_art: True,
                   msg: { PlayPlaylist(index, False) },
+                  on_add_queue: #(False, ComponentClick),
                 )
               },
             )

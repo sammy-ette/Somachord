@@ -86,7 +86,7 @@ fn init(_) {
       confirmed: False,
       albums: dict.new(),
       player: player.new(),
-      queue: queue.empty(),
+      queue: queue.new(),
       current_song: api_models.new_song(),
       seeking: False,
       seek_amount: 0,
@@ -259,7 +259,8 @@ fn update(
             m,
             api.album(auth_details:, id: req.id, msg: msg.AlbumRetrieved)
               |> effect.map(fn(msg) {
-                case msg {
+                echo "fetching album"
+                case echo msg {
                   msg.AlbumRetrieved(Ok(Ok(album))) -> msg.StreamAlbum(album, 0)
                   msg.AlbumRetrieved(Ok(Error(e))) -> {
                     echo e
@@ -314,23 +315,17 @@ fn update(
     }
     msg.StreamAlbum(album, index) -> {
       let queue =
-        case
-          m.shuffled,
-          queue.new(songs: album.songs, position: 0, song_position: 0.0)
-        {
-          True, queue -> queue |> queue.shuffle
-          False, queue -> queue
-        }
-        |> queue.jump(index)
+        echo case m.shuffled, queue.new() |> queue.add_list(album.songs) {
+            True, queue -> queue |> queue.shuffle
+            False, queue -> queue
+          }
+          |> queue.jump(index)
       #(model.Model(..m, queue:), play())
     }
     msg.StreamPlaylist(playlist, index) -> {
       echo playlist.name
       let queue =
-        case
-          m.shuffled,
-          queue.new(songs: playlist.songs, position: 0, song_position: 0.0)
-        {
+        case m.shuffled, queue.new() |> queue.add_list(playlist.songs) {
           True, queue -> queue |> queue.shuffle
           False, queue -> queue
         }
@@ -339,7 +334,8 @@ fn update(
     }
     msg.StreamAlbumShuffled(album, index) -> {
       let queue =
-        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        queue.new()
+        |> queue.add_list(album.songs)
         |> queue.shuffle
         |> queue.jump(index)
       #(model.Model(..m, queue:, shuffled: True), play())
@@ -352,13 +348,7 @@ fn update(
       let stream_uri = api.stream(auth_details, song)
 
       m.player |> player.load_song(stream_uri, song)
-      #(
-        model.Model(
-          ..m,
-          queue: queue.new(songs: [song], song_position: 0.0, position: 0),
-        ),
-        play(),
-      )
+      #(model.Model(..m, queue: queue.new() |> queue.add(song)), play())
     }
     msg.StreamError | msg.SongRetrieval(_) -> todo as "handle stream error"
     msg.PlayerTick(time) -> {
@@ -449,21 +439,11 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let new_songs =
-        m.queue.songs
-        |> dict.to_list
-        |> list.sort(
-          fn(a: #(Int, api_models.Child), b: #(Int, api_models.Child)) {
-            int.compare(a.0, b.0)
-          },
-        )
-        |> list.map(fn(song: #(Int, api_models.Child)) { song.1 })
-        |> list.append(songs)
+
       #(
-        model.Model(..m, queue: queue.new(m.queue.position, new_songs, 0.0)),
-        case m.queue.position + 1 == new_songs |> list.length {
-          False -> play()
-          True -> {
+        model.Model(..m, queue: m.queue |> queue.add_list(songs)),
+        case songs |> list.length {
+          0 -> {
             let assert Ok(first_artist) = m.current_song.artists |> list.first
             api.similar_songs_artist(
               auth_details,
@@ -471,6 +451,7 @@ fn update(
               msg: msg.SimilarSongs,
             )
           }
+          _ -> play()
         },
       )
     }
@@ -519,6 +500,16 @@ fn update(
         }
       }
     }
+    msg.AddToQueue(song) -> #(
+      model.Model(..m, queue: m.queue |> queue.add(song)),
+      effect.from(fn(dispatch) {
+        msg.DisplayToast(model.Toast(
+          "Added to queue: " <> song.title,
+          "stack-plus",
+        ))
+        |> dispatch
+      }),
+    )
     msg.StreamCurrent -> {
       case queue.current_song(m.queue) {
         option.None -> #(m, effect.none())
@@ -677,7 +668,7 @@ fn update(
       effect.none(),
     )
     msg.CurrentSongPalette(palette) -> #(
-      model.Model(..m, current_palette: echo palette),
+      model.Model(..m, current_palette: palette),
       effect.none(),
     )
     msg.ComponentClick | msg.DisgardedResponse(_) -> #(m, effect.none())

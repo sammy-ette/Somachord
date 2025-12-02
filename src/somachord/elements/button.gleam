@@ -30,6 +30,7 @@ pub type Kind {
   Edit
   Close
   About
+  AddToQueue
 }
 
 pub fn button(
@@ -105,5 +106,6 @@ fn button_class(kind: Kind) {
     Edit -> "ph ph-pencil-simple"
     Close -> "ph ph-x"
     About -> "ph ph-question"
+    AddToQueue -> "ph ph-stack-plus"
   }
 }
