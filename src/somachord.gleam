@@ -365,7 +365,7 @@ fn update(
       let playtime = case time <. 1.0 {
         True -> 0
         False ->
-          echo case
+          case
             float.absolute_value(time -. int.to_float(m.played_seconds)) >. 1.0
           {
             True -> m.played_seconds + 1
