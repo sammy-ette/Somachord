@@ -653,3 +653,19 @@ pub fn update_playlist(
     rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
   )
 }
+
+pub fn delete_playlist(
+  auth_details auth_details: auth.Auth,
+  id id: String,
+  msg msg: EmptyResponse(a),
+) {
+  let req =
+    get_request(auth_details:, path: "/rest/deletePlaylist.view", query: [
+      #("id", id),
+    ])
+
+  rsvp.send(
+    req,
+    rsvp.expect_json(subsonic_response_decoder(decode.success(Nil)), msg),
+  )
+}

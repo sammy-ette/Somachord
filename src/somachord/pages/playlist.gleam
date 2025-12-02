@@ -11,6 +11,7 @@ import lustre/effect
 import lustre/element
 import lustre/element/html
 import lustre/event
+import modem
 import player
 import rsvp
 import somachord/api/api
@@ -40,6 +41,8 @@ pub type Msg {
   ShowEditor(Bool)
   PlaylistUpdate(Result(PlaylistForm, form.Form(PlaylistForm)))
   PlaylistUpdateResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
+  DeletePlaylist
+  PlaylistDeletedResponse(Result(Result(Nil, api.SubsonicError), rsvp.Error))
 
   ComponentClick
 }
@@ -237,6 +240,26 @@ fn update(m: Model, msg: Msg) {
       )
     }
     PlaylistUpdateResponse(e) -> {
+      echo e
+      #(m, effect.none())
+    }
+    DeletePlaylist -> {
+      #(
+        m,
+        api.delete_playlist(
+          auth_details: {
+            let assert Ok(stg) = storage.create() |> varasto.get("auth")
+            stg.auth
+          },
+          id: m.playlist.id,
+          msg: PlaylistDeletedResponse,
+        ),
+      )
+    }
+    PlaylistDeletedResponse(Ok(Ok(_))) -> {
+      #(m, modem.push("/", option.None, option.None))
+    }
+    PlaylistDeletedResponse(e) -> {
       echo e
       #(m, effect.none())
     }
@@ -601,6 +624,9 @@ fn buttons(m: Model) {
             )
           True -> element.none()
         },
+        button.button(button.Delete, button.Medium, [
+          event.on_click(DeletePlaylist),
+        ]),
         // html.i(
       //   [attribute.class("text-3xl ph ph-dots-three cursor-not-allowed")],
       //   [],
