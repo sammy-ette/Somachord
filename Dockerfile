@@ -1,9 +1,10 @@
-FROM erlang:28-alpine AS build
-COPY --from=ghcr.io/gleam-lang/gleam:v1.13.0-erlang-alpine /bin/gleam /bin/gleam
+FROM ghcr.io/gleam-lang/gleam:v1.13.0-erlang AS build
+COPY --from=oven/bun:1-distroless /usr/local/bin/bun /bin/bun
 COPY . /app/
-RUN apk add git
-RUN cd /app/server && gleam export erlang-shipment
-RUN cd /app && gleam run -m lustre/dev build --minify
+WORKDIR /app
+RUN cd server && gleam export erlang-shipment
+RUN bun i
+RUN gleam run -m lustre/dev build --minify
 
 FROM erlang:alpine
 COPY --from=build /app/server/build/erlang-shipment /app/server
