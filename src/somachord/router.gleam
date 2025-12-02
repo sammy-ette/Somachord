@@ -1,5 +1,6 @@
 import electron
 import gleam/option
+import gleam/string
 import gleam/uri
 import somachord/storage
 import varasto
@@ -88,7 +89,8 @@ pub fn root_url() -> String {
 }
 
 pub fn direct(root: uri.Uri, rel: String) -> String {
-  let assert Ok(rel_url) = uri.parse(rel)
+  let assert Ok(rel_url) =
+    uri.parse({ root.path <> rel } |> string.replace("//", "/"))
   let assert Ok(direction) = uri.merge(root, rel_url)
   uri.to_string(direction)
 }
