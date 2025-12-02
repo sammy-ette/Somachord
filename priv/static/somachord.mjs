@@ -2572,6 +2572,12 @@ function shuffle(list5) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function replace(string6, pattern, substitute) {
+  let _pipe = string6;
+  let _pipe$1 = identity(_pipe);
+  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
+  return identity(_pipe$2);
+}
 function compare3(a2, b) {
   let $ = a2 === b;
   if ($) {
@@ -3094,6 +3100,9 @@ function parse_float(value3) {
 }
 function to_string2(term) {
   return term.toString();
+}
+function string_replace(string6, target3, substitute) {
+  return string6.replaceAll(target3, substitute);
 }
 function string_length(string6) {
   if (string6 === "") {
@@ -9443,7 +9452,7 @@ var Unknown = class extends CustomType {
 };
 function uri_to_route(uri) {
   let router = (path) => {
-    echo(path, void 0, "src/somachord/router.gleam", 33);
+    echo(path, void 0, "src/somachord/router.gleam", 34);
     if (path === "/") {
       return new Home();
     } else if (path === "") {
@@ -9463,15 +9472,15 @@ function uri_to_route(uri) {
           "let_assert",
           FILEPATH3,
           "somachord/router",
-          39,
+          40,
           "uri_to_route",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 598,
-            end: 654,
-            pattern_start: 609,
-            pattern_end: 626
+            start: 618,
+            end: 674,
+            pattern_start: 629,
+            pattern_end: 646
           }
         );
       }
@@ -9518,7 +9527,12 @@ function uri_to_route(uri) {
   }
 }
 function direct(root3, rel) {
-  let $ = parse(rel);
+  let $ = parse(
+    (() => {
+      let _pipe = root3.path + rel;
+      return replace(_pipe, "//", "/");
+    })()
+  );
   let rel_url;
   if ($ instanceof Ok) {
     rel_url = $[0];
@@ -9527,15 +9541,15 @@ function direct(root3, rel) {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      91,
+      92,
       "direct",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1770,
-        end: 1809,
-        pattern_start: 1781,
-        pattern_end: 1792
+        start: 1790,
+        end: 1879,
+        pattern_start: 1801,
+        pattern_end: 1812
       }
     );
   }
@@ -9548,15 +9562,15 @@ function direct(root3, rel) {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      92,
+      94,
       "direct",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $1,
-        start: 1812,
-        end: 1863,
-        pattern_start: 1823,
-        pattern_end: 1836
+        start: 1882,
+        end: 1933,
+        pattern_start: 1893,
+        pattern_end: 1906
       }
     );
   }
@@ -9572,15 +9586,15 @@ function get_route() {
       "let_assert",
       FILEPATH3,
       "somachord/router",
-      97,
+      99,
       "get_route",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1928,
-        end: 1979,
-        pattern_start: 1939,
-        pattern_end: 1948
+        start: 1998,
+        end: 2049,
+        pattern_start: 2009,
+        pattern_end: 2018
       }
     );
   }
