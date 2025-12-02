@@ -11008,6 +11008,20 @@ function update_playlist(auth_details, id3, name2, description, public$, msg) {
     )
   );
 }
+function delete_playlist(auth_details, id3, msg) {
+  let req = get_request(
+    auth_details,
+    "/rest/deletePlaylist.view",
+    toList([["id", id3]])
+  );
+  return send3(
+    req,
+    expect_json(
+      subsonic_response_decoder(success(void 0)),
+      msg
+    )
+  );
+}
 function echo2(value3, message2, file, line) {
   const grey = "\x1B[90m";
   const reset_color = "\x1B[39m";
@@ -12363,6 +12377,8 @@ var Close = class extends CustomType {
 };
 var About2 = class extends CustomType {
 };
+var Delete2 = class extends CustomType {
+};
 function button_size(size3) {
   if (size3 instanceof Smallest) {
     return "text-xl";
@@ -12411,8 +12427,10 @@ function button_class(kind) {
     return "ph ph-pencil-simple";
   } else if (kind instanceof Close) {
     return "ph ph-x";
-  } else {
+  } else if (kind instanceof About2) {
     return "ph ph-question";
+  } else {
+    return "ph ph-trash";
   }
 }
 function button2(kind, size3, attrs) {
@@ -19633,6 +19651,14 @@ var PlaylistUpdateResponse = class extends CustomType {
     this[0] = $0;
   }
 };
+var DeletePlaylist = class extends CustomType {
+};
+var PlaylistDeletedResponse = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var ComponentClick3 = class extends CustomType {
 };
 var Model8 = class extends CustomType {
@@ -19749,15 +19775,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  130,
+                  133,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 3292,
-                    end: 3352,
-                    pattern_start: 3303,
-                    pattern_end: 3310
+                    start: 3400,
+                    end: 3460,
+                    pattern_start: 3411,
+                    pattern_end: 3418
                   }
                 );
               }
@@ -19782,15 +19808,15 @@ function update8(m, msg) {
                   "let_assert",
                   FILEPATH15,
                   "somachord/pages/playlist",
-                  138,
+                  141,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 3539,
-                    end: 3599,
-                    pattern_start: 3550,
-                    pattern_end: 3557
+                    start: 3647,
+                    end: 3707,
+                    pattern_start: 3658,
+                    pattern_end: 3665
                   }
                 );
               }
@@ -19838,12 +19864,12 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 179);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 182);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 175);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 178);
       return [
         new Model8(
           m.playlist,
@@ -19894,12 +19920,12 @@ function update8(m, msg) {
         ];
       } else {
         let res = $1;
-        echo7(res, void 0, "src/somachord/pages/playlist.gleam", 163);
+        echo7(res, void 0, "src/somachord/pages/playlist.gleam", 166);
         return [m, none2()];
       }
     } else {
       let e = $[0];
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 167);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 170);
       return [
         new Model8(
           m.playlist,
@@ -19920,7 +19946,7 @@ function update8(m, msg) {
       "playing playlist",
       void 0,
       "src/somachord/pages/playlist.gleam",
-      183
+      186
     );
     return [
       m,
@@ -19988,15 +20014,15 @@ function update8(m, msg) {
                 "let_assert",
                 FILEPATH15,
                 "somachord/pages/playlist",
-                206,
+                209,
                 "update",
                 "Pattern match failed, no pattern matched the value.",
                 {
                   value: $1,
-                  start: 5564,
-                  end: 5624,
-                  pattern_start: 5575,
-                  pattern_end: 5582
+                  start: 5672,
+                  end: 5732,
+                  pattern_start: 5683,
+                  pattern_end: 5690
                 }
               );
             }
@@ -20012,7 +20038,7 @@ function update8(m, msg) {
         )
       ];
     } else {
-      echo7("form error!", void 0, "src/somachord/pages/playlist.gleam", 218);
+      echo7("form error!", void 0, "src/somachord/pages/playlist.gleam", 221);
       return [m, none2()];
     }
   } else if (msg instanceof PlaylistUpdateResponse) {
@@ -20061,12 +20087,65 @@ function update8(m, msg) {
         ];
       } else {
         let e = $;
-        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 240);
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 243);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 240);
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 243);
+      return [m, none2()];
+    }
+  } else if (msg instanceof DeletePlaylist) {
+    return [
+      m,
+      delete_playlist(
+        (() => {
+          let _block;
+          let _pipe = create();
+          _block = get2(_pipe, "auth");
+          let $ = _block;
+          let stg;
+          if ($ instanceof Ok) {
+            stg = $[0];
+          } else {
+            throw makeError(
+              "let_assert",
+              FILEPATH15,
+              "somachord/pages/playlist",
+              251,
+              "update",
+              "Pattern match failed, no pattern matched the value.",
+              {
+                value: $,
+                start: 6766,
+                end: 6826,
+                pattern_start: 6777,
+                pattern_end: 6784
+              }
+            );
+          }
+          return stg.auth;
+        })(),
+        m.playlist.id,
+        (var0) => {
+          return new PlaylistDeletedResponse(var0);
+        }
+      )
+    ];
+  } else if (msg instanceof PlaylistDeletedResponse) {
+    let $ = msg[0];
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1 instanceof Ok) {
+        return [m, push("/", new None(), new None())];
+      } else {
+        let e = $;
+        echo7(e, void 0, "src/somachord/pages/playlist.gleam", 263);
+        return [m, none2()];
+      }
+    } else {
+      let e = $;
+      echo7(e, void 0, "src/somachord/pages/playlist.gleam", 263);
       return [m, none2()];
     }
   } else {
@@ -20236,7 +20315,12 @@ function buttons2(m) {
               toList([])
             );
           }
-        })()
+        })(),
+        button2(
+          new Delete2(),
+          new Medium2(),
+          toList([on_click(new DeletePlaylist())])
+        )
       ])
     );
   } else {
@@ -20288,15 +20372,15 @@ function page5(m) {
         "let_assert",
         FILEPATH15,
         "somachord/pages/playlist",
-        382,
+        405,
         "page",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 11084,
-          end: 11144,
-          pattern_start: 11095,
-          pattern_end: 11102
+          start: 11677,
+          end: 11737,
+          pattern_start: 11688,
+          pattern_end: 11695
         }
       );
     }
