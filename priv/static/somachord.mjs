@@ -8699,8 +8699,9 @@ function album_decoder() {
                     "duration",
                     int2,
                     (duration) => {
-                      return field(
+                      return optional_field(
                         "playCount",
+                        0,
                         int2,
                         (plays) => {
                           return field(
