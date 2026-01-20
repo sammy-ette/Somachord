@@ -8463,6 +8463,13 @@ function beginning(player) {
 function loop(player, state) {
   player.element.loop = state;
 }
+function volume(player, amount) {
+  console.log(Math.min(Math.max(0, amount / 100), 1));
+  player.element.volume = Math.min(Math.max(0, amount / 100), 1);
+}
+function get_volume(player, amount) {
+  return player.element.volume * 100;
+}
 
 // build/dev/javascript/somachord/somachord/api/models.mjs
 var Artist = class extends CustomType {
@@ -12379,6 +12386,8 @@ var About2 = class extends CustomType {
 };
 var Delete2 = class extends CustomType {
 };
+var Volume = class extends CustomType {
+};
 function button_size(size3) {
   if (size3 instanceof Smallest) {
     return "text-xl";
@@ -12429,8 +12438,10 @@ function button_class(kind) {
     return "ph ph-x";
   } else if (kind instanceof About2) {
     return "ph ph-question";
-  } else {
+  } else if (kind instanceof Delete2) {
     return "ph ph-trash";
+  } else {
+    return "ph ph-speaker-high";
   }
 }
 function button2(kind, size3, attrs) {
@@ -12620,6 +12631,12 @@ var PlayerSeek = class extends CustomType {
     this[0] = $0;
   }
 };
+var PlayerVolume = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var PlayerSongLoaded = class extends CustomType {
   constructor($0) {
     super();
@@ -12670,15 +12687,15 @@ function on_url_change(url) {
             "let_assert",
             FILEPATH6,
             "somachord/msg",
-            81,
+            82,
             "on_url_change",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 2075,
-              end: 2123,
-              pattern_start: 2086,
-              pattern_end: 2093
+              start: 2095,
+              end: 2143,
+              pattern_start: 2106,
+              pattern_end: 2113
             }
           );
         }
@@ -16689,7 +16706,7 @@ function element6(button_attrs, menu_attrs) {
     toList([
       button2(
         new AddToPlaylist(),
-        new Medium2(),
+        new Small2(),
         button_attrs
       ),
       element2(
@@ -16752,10 +16769,10 @@ function update4(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 2397,
-            end: 2457,
-            pattern_start: 2408,
-            pattern_end: 2415
+            start: 2396,
+            end: 2456,
+            pattern_start: 2407,
+            pattern_end: 2414
           }
         );
       }
@@ -16794,10 +16811,10 @@ function update4(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 2988,
-            end: 3048,
-            pattern_start: 2999,
-            pattern_end: 3006
+            start: 2987,
+            end: 3047,
+            pattern_start: 2998,
+            pattern_end: 3005
           }
         );
       }
@@ -16854,10 +16871,10 @@ function update4(m, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $2,
-            start: 3631,
-            end: 3691,
-            pattern_start: 3642,
-            pattern_end: 3649
+            start: 3630,
+            end: 3690,
+            pattern_start: 3641,
+            pattern_end: 3648
           }
         );
       }
@@ -16950,10 +16967,10 @@ function update4(m, msg) {
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $2,
-                          start: 4619,
-                          end: 4679,
-                          pattern_start: 4630,
-                          pattern_end: 4637
+                          start: 4618,
+                          end: 4678,
+                          pattern_start: 4629,
+                          pattern_end: 4636
                         }
                       );
                     }
@@ -17129,10 +17146,10 @@ function view5(m) {
                               "Pattern match failed, no pattern matched the value.",
                               {
                                 value: $1,
-                                start: 7129,
-                                end: 7213,
-                                pattern_start: 7140,
-                                pattern_end: 7147
+                                start: 7128,
+                                end: 7212,
+                                pattern_start: 7139,
+                                pattern_end: 7146
                               }
                             );
                           }
@@ -22152,15 +22169,15 @@ function playing_bar(m) {
         "let_assert",
         FILEPATH18,
         "somachord/pages/views/desktop",
-        212,
+        213,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6075,
-          end: 6128,
-          pattern_start: 6086,
-          pattern_end: 6093
+          start: 6103,
+          end: 6156,
+          pattern_start: 6114,
+          pattern_end: 6121
         }
       );
     }
@@ -22234,6 +22251,29 @@ function playing_bar(m) {
                 toList([text2(m.current_song.title)])
               ),
               artists(m.current_song.artists, toList([]))
+            ])
+          ),
+          button2(
+            new Like(m.current_song.starred),
+            new Medium2(),
+            toList([
+              class$("ml-3"),
+              (() => {
+                let $ = m.current_song.starred;
+                if ($) {
+                  return class$("text-violet-500");
+                } else {
+                  return none();
+                }
+              })(),
+              on_click(new Like2())
+            ])
+          ),
+          element6(
+            toList([]),
+            toList([
+              class$("absolute bottom-92 right-96"),
+              song_id(m.current_song.id)
             ])
           )
         ])
@@ -22368,6 +22408,90 @@ function playing_bar(m) {
       div(
         toList([class$("flex justify-end gap-2 w-1/3")]),
         toList([
+          div(
+            toList([class$("flex gap-2 items-center")]),
+            toList([
+              button2(
+                new Volume(),
+                new Medium2(),
+                toList([])
+              ),
+              div(
+                toList([class$("grid grid-cols-1 grid-rows-1")]),
+                toList([
+                  div(
+                    toList([
+                      class$(
+                        "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5"
+                      )
+                    ]),
+                    toList([
+                      div(
+                        toList([
+                          class$(
+                            "bg-zinc-100 transition-[width] duration-100 rounded-full h-1.5"
+                          ),
+                          style(
+                            "width",
+                            float_to_string(
+                              (() => {
+                                let _pipe = m.player;
+                                return get_volume(_pipe);
+                              })()
+                            ) + "%"
+                          )
+                        ]),
+                        toList([])
+                      )
+                    ])
+                  ),
+                  input(
+                    toList([
+                      class$(
+                        "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full"
+                      ),
+                      value("100"),
+                      max2("105"),
+                      on(
+                        "input",
+                        subfield(
+                          toList(["target", "value"]),
+                          string3,
+                          (value3) => {
+                            let $ = parse_int(value3);
+                            let vol_amount;
+                            if ($ instanceof Ok) {
+                              vol_amount = $[0];
+                            } else {
+                              throw makeError(
+                                "let_assert",
+                                FILEPATH18,
+                                "somachord/pages/views/desktop",
+                                390,
+                                "playing_bar",
+                                "Pattern match failed, no pattern matched the value.",
+                                {
+                                  value: $,
+                                  start: 12214,
+                                  end: 12258,
+                                  pattern_start: 12225,
+                                  pattern_end: 12239
+                                }
+                              );
+                            }
+                            return success(
+                              new PlayerVolume(vol_amount)
+                            );
+                          }
+                        )
+                      ),
+                      type_("range")
+                    ])
+                  )
+                ])
+              )
+            ])
+          ),
           button2(
             new FullscreenPlayer(),
             new Medium2(),
@@ -22432,28 +22556,6 @@ function playing_bar(m) {
                   )
                 ])
               )
-            ])
-          ),
-          button2(
-            new Like(m.current_song.starred),
-            new Medium2(),
-            toList([
-              (() => {
-                let $ = m.current_song.starred;
-                if ($) {
-                  return class$("text-violet-500");
-                } else {
-                  return none();
-                }
-              })(),
-              on_click(new Like2())
-            ])
-          ),
-          element6(
-            toList([]),
-            toList([
-              class$("absolute bottom-92 right-96"),
-              song_id(m.current_song.id)
             ])
           )
         ])
@@ -22969,15 +23071,15 @@ function check_scrobble(m) {
             "let_assert",
             FILEPATH20,
             "somachord",
-            692,
+            696,
             "check_scrobble",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $1,
-              start: 19589,
-              end: 19642,
-              pattern_start: 19600,
-              pattern_end: 19607
+              start: 19695,
+              end: 19748,
+              pattern_start: 19706,
+              pattern_end: 19713
             }
           );
         }
@@ -23570,9 +23672,9 @@ function update11(m, msg) {
       let $1 = $[0];
       if ($1 instanceof Ok) {
         let playlist3 = $1[0];
-        echo9(playlist3.name, void 0, "src/somachord.gleam", 649);
-        echo9(playlist3.songs, void 0, "src/somachord.gleam", 650);
-        echo9(m.current_song, void 0, "src/somachord.gleam", 651);
+        echo9(playlist3.name, void 0, "src/somachord.gleam", 653);
+        echo9(playlist3.songs, void 0, "src/somachord.gleam", 654);
+        echo9(m.current_song, void 0, "src/somachord.gleam", 655);
         return [
           new Model(
             m.route,
@@ -23603,12 +23705,12 @@ function update11(m, msg) {
         ];
       } else {
         let e = $;
-        echo9(e, void 0, "src/somachord.gleam", 661);
+        echo9(e, void 0, "src/somachord.gleam", 665);
         return [m, none2()];
       }
     } else {
       let e = $;
-      echo9(e, void 0, "src/somachord.gleam", 661);
+      echo9(e, void 0, "src/somachord.gleam", 665);
       return [m, none2()];
     }
   } else if (msg instanceof DisplayToast) {
@@ -24024,7 +24126,7 @@ function update11(m, msg) {
         m.playlists,
         m.fullscreen_player_open,
         m.fullscreen_player_display,
-        echo9(palette3, void 0, "src/somachord.gleam", 680),
+        echo9(palette3, void 0, "src/somachord.gleam", 684),
         m.toast_display
       ),
       none2()
@@ -24542,6 +24644,11 @@ function update11(m, msg) {
       ),
       none2()
     ];
+  } else if (msg instanceof PlayerVolume) {
+    let amount = msg[0];
+    let _pipe = m.player;
+    volume(_pipe, amount);
+    return [m, none2()];
   } else if (msg instanceof PlayerSongLoaded) {
     let song3 = msg[0];
     return [
@@ -24980,15 +25087,15 @@ function update11(m, msg) {
           "let_assert",
           FILEPATH20,
           "somachord",
-          610,
+          614,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 17465,
-            end: 17518,
-            pattern_start: 17476,
-            pattern_end: 17483
+            start: 17571,
+            end: 17624,
+            pattern_start: 17582,
+            pattern_end: 17589
           }
         );
       }
@@ -25192,12 +25299,12 @@ function player_event_handler(event4, player) {
   } else if (event4 === "ended") {
     return new MusicEnded();
   } else {
-    echo9(event4, void 0, "src/somachord.gleam", 723);
+    echo9(event4, void 0, "src/somachord.gleam", 727);
     throw makeError(
       "panic",
       FILEPATH20,
       "somachord",
-      724,
+      728,
       "player_event_handler",
       "shouldnt happen",
       {}
