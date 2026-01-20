@@ -601,6 +601,10 @@ fn update(
       m.player |> player.seek(amount)
       #(model.Model(..m, seeking: False), effect.none())
     }
+    msg.PlayerVolume(amount) -> {
+      m.player |> player.volume(amount)
+      #(m, effect.none())
+    }
     msg.PlayerLoop -> {
       m.player |> player.loop(bool.negate(m.looping))
       #(model.Model(..m, looping: bool.negate(m.looping)), effect.none())

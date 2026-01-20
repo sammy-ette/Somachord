@@ -31,6 +31,7 @@ pub type Kind {
   Close
   About
   Delete
+  Volume
 }
 
 pub fn button(
@@ -107,5 +108,6 @@ fn button_class(kind: Kind) {
     Close -> "ph ph-x"
     About -> "ph ph-question"
     Delete -> "ph ph-trash"
+    Volume -> "ph ph-speaker-high"
   }
 }

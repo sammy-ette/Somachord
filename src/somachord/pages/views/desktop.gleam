@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import gleam/float
 import gleam/int
 import gleam/list
@@ -267,6 +268,22 @@ fn playing_bar(m: model.Model) {
           ),
           elements.artists(m.current_song.artists, []),
         ]),
+        button.button(
+          button.Like(filled: m.current_song.starred),
+          button.Medium,
+          [
+            attribute.class("ml-3"),
+            case m.current_song.starred {
+              True -> attribute.class("text-violet-500")
+              False -> attribute.none()
+            },
+            event.on_click(msg.Like),
+          ],
+        ),
+        playlist_menu.element(button_attrs: [], menu_attrs: [
+          attribute.class("absolute bottom-92 right-96"),
+          playlist_menu.song_id(m.current_song.id),
+        ]),
       ]),
       html.div([attribute.class("space-y-1")], [
         html.div([attribute.class("flex gap-4 justify-center items-center")], [
@@ -337,6 +354,46 @@ fn playing_bar(m: model.Model) {
         ),
       ]),
       html.div([attribute.class("flex justify-end gap-2 w-1/3")], [
+        html.div([attribute.class("flex gap-2 items-center")], [
+          button.button(button.Volume, button.Medium, []),
+          html.div([attribute.class("grid grid-cols-1 grid-rows-1")], [
+            html.div(
+              [
+                attribute.class(
+                  "col-start-1 row-start-1 bg-zinc-800 rounded-full h-1.5",
+                ),
+              ],
+              [
+                html.div(
+                  [
+                    attribute.class(
+                      "bg-zinc-100 transition-[width] duration-100 rounded-full h-1.5",
+                    ),
+                    attribute.style(
+                      "width",
+                      float.to_string({ m.player |> player.get_volume() })
+                        <> "%",
+                    ),
+                  ],
+                  [],
+                ),
+              ],
+            ),
+            html.input([
+              attribute.class(
+                "col-start-1 row-start-1 opacity-0 focus:ring-0 [&::-webkit-slider-thumb]:opacity-0 w-full h-1.5 rounded-full",
+              ),
+              attribute.value("100"),
+              attribute.max("105"),
+              event.on("input", {
+                use value <- decode.subfield(["target", "value"], decode.string)
+                let assert Ok(vol_amount) = int.parse(value)
+                decode.success(msg.PlayerVolume(vol_amount))
+              }),
+              attribute.type_("range"),
+            ]),
+          ]),
+        ]),
         button.button(button.FullscreenPlayer, button.Medium, [
           event.on_click(msg.ToggleFullscreenPlayer),
         ]),
@@ -381,21 +438,6 @@ fn playing_bar(m: model.Model) {
               ),
             ],
           ),
-        ]),
-        button.button(
-          button.Like(filled: m.current_song.starred),
-          button.Medium,
-          [
-            case m.current_song.starred {
-              True -> attribute.class("text-violet-500")
-              False -> attribute.none()
-            },
-            event.on_click(msg.Like),
-          ],
-        ),
-        playlist_menu.element(button_attrs: [], menu_attrs: [
-          attribute.class("absolute bottom-92 right-96"),
-          playlist_menu.song_id(m.current_song.id),
         ]),
       ]),
     ],

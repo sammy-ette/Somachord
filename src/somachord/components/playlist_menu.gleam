@@ -59,7 +59,7 @@ pub fn element(
   menu_attrs menu_attrs: List(attribute.Attribute(msg)),
 ) {
   html.div([attribute.class("relative inline-block group")], [
-    button.button(button.AddToPlaylist, button.Medium, button_attrs),
+    button.button(button.AddToPlaylist, button.Small, button_attrs),
     element.element(
       "playlist-menu",
       [attribute.class("not-group-focus-within:hidden"), ..menu_attrs],

@@ -175,3 +175,13 @@ export function beginning(player) {
 export function loop(player, state) {
 	player.element.loop = state
 }
+
+
+export function volume(player, amount) {
+	console.log(Math.min(Math.max(0.0, amount / 100), 1.0))
+	player.element.volume = Math.min(Math.max(0.0, amount / 100), 1.0)
+}
+
+export function get_volume(player, amount) {
+	return player.element.volume * 100
+}

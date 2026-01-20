@@ -48,3 +48,10 @@ pub fn beginning(player: model.Player) -> Nil
 
 @external(javascript, "./player.ffi.mjs", "loop")
 pub fn loop(player: model.Player, state: Bool) -> Nil
+
+// set the volume (0-100)
+@external(javascript, "./player.ffi.mjs", "volume")
+pub fn volume(player: model.Player, amount: Int) -> Nil
+
+@external(javascript, "./player.ffi.mjs", "get_volume")
+pub fn get_volume(player: model.Player) -> Float
