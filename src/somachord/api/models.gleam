@@ -76,7 +76,7 @@ pub fn album_decoder() {
   use artists <- decode.field("artists", decode.list(artist_small_decoder()))
   use cover_art_id <- decode.optional_field("coverArt", "", decode.string)
   use duration <- decode.field("duration", decode.int)
-  use plays <- decode.field("playCount", decode.int)
+  use plays <- decode.optional_field("playCount", 0, decode.int)
   use created <- decode.field("created", decode.string)
   use year <- decode.optional_field("year", 0, decode.int)
   use genres <- decode.optional_field(
