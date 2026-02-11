@@ -106,7 +106,17 @@ pub fn handle_request(req: wisp.Request) -> wisp.Response {
           ),
           html.title([], "Somachord"),
           html.script([], "window.somachordConfig = {
-          SERVER_URL: '" <> result.unwrap(envoy.get("SERVER_URL"), "") <> "'
+          SERVER_URL: '" <> result.unwrap(envoy.get("SERVER_URL"), "") <> "',
+          LOCK_SERVER: '" <> result.unwrap(envoy.get("LOCK_SERVER"), "") <> "',
+          DEFAULT_USER: '" <> result.unwrap(envoy.get("DEFAULT_USER"), "") <> "',
+          DEFAULT_PASSWORD: '" <> result.unwrap(
+            envoy.get("DEFAULT_PASSWORD"),
+            "",
+          ) <> "',
+          LOCK_CREDENTIALS: '" <> result.unwrap(
+            envoy.get("LOCK_CREDENTIALS"),
+            "",
+          ) <> "'
           }"),
         ]),
         html.body(

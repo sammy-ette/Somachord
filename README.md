@@ -53,6 +53,10 @@ services:
     image: ghcr.io/sammy-ette/somachord:master
     environment:
       - SERVER_URL=https://example.com # optional
+      - LOCK_SERVER=true # locked means the server url cannot be changed
+      - DEFAULT_USER=
+      - DEFAULT_PASSWORD
+      - LOCK_CREDENTIALS=false # locked credentials means they cannot be changed if the default credentials (user or password) is defined
     ports:
      - 8000:8000
     restart: unless-stopped

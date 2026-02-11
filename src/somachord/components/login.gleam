@@ -198,14 +198,17 @@ pub fn view(m: Model) {
                         attribute.name("serverURL"),
                         attribute.required(True),
                         attribute.class(
-                          "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
+                          "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
                         ),
                         ..case config.get("SERVER_URL") {
                           "" -> [attribute.none()]
                           _ -> [
                             attribute.value(config.get("SERVER_URL")),
-                            attribute.disabled(True),
-                            attribute.class("cursor-not-allowed text-zinc-400"),
+                            attribute.disabled(case config.get("LOCK_SERVER") {
+                              "true" | "TRUE" | "1" -> True
+                              "false" | "FALSE" | "0" -> False
+                              _ -> True
+                            }),
                           ]
                         }
                       ]),
@@ -223,11 +226,20 @@ pub fn view(m: Model) {
                         element.text("Username"),
                       ]),
                       html.input([
+                        attribute.value(config.get("DEFAULT_USER")),
+                        attribute.disabled(case config.get("DEFAULT_USER") {
+                          "" -> False
+                          _ ->
+                            case echo config.get("LOCK_CREDENTIALS") {
+                              "true" | "TRUE" | "1" -> True
+                              _ -> False
+                            }
+                        }),
                         attribute.autocomplete("username"),
                         attribute.type_("input"),
                         attribute.name("username"),
                         attribute.class(
-                          "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
+                          "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
                         ),
                       ]),
                       ..list.map(
@@ -244,11 +256,20 @@ pub fn view(m: Model) {
                         element.text("Password"),
                       ]),
                       html.input([
+                        attribute.value(config.get("DEFAULT_PASSWORD")),
+                        attribute.disabled(case config.get("DEFAULT_PASSWORD") {
+                          "" -> False
+                          _ ->
+                            case config.get("LOCK_CREDENTIALS") {
+                              "true" | "TRUE" | "1" -> True
+                              _ -> False
+                            }
+                        }),
                         attribute.autocomplete("current-password"),
                         attribute.type_("password"),
                         attribute.name("password"),
                         attribute.class(
-                          "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
+                          "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400",
                         ),
                       ]),
                       ..list.map(

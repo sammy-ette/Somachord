@@ -10,6 +10,7 @@ import lustre/element/html
 import lustre/event
 import player
 import somachord/api/api
+import somachord/api/models
 import somachord/elements/button
 
 import somachord/components/fullscreen_player
@@ -268,22 +269,27 @@ fn playing_bar(m: model.Model) {
           ),
           elements.artists(m.current_song.artists, []),
         ]),
-        button.button(
-          button.Like(filled: m.current_song.starred),
-          button.Medium,
-          [
-            attribute.class("ml-3"),
-            case m.current_song.starred {
-              True -> attribute.class("text-violet-500")
-              False -> attribute.none()
-            },
-            event.on_click(msg.Like),
-          ],
-        ),
-        playlist_menu.element(button_attrs: [], menu_attrs: [
-          attribute.class("absolute bottom-92 right-96"),
-          playlist_menu.song_id(m.current_song.id),
-        ]),
+        ..case m.current_song == models.new_song() {
+          True -> [element.none()]
+          False -> [
+            button.button(
+              button.Like(filled: m.current_song.starred),
+              button.Medium,
+              [
+                attribute.class("ml-3"),
+                case m.current_song.starred {
+                  True -> attribute.class("text-violet-500")
+                  False -> attribute.none()
+                },
+                event.on_click(msg.Like),
+              ],
+            ),
+            playlist_menu.element(button_attrs: [], menu_attrs: [
+              attribute.class("absolute bottom-92 right-96"),
+              playlist_menu.song_id(m.current_song.id),
+            ]),
+          ]
+        }
       ]),
       html.div([attribute.class("space-y-1")], [
         html.div([attribute.class("flex gap-4 justify-center items-center")], [
