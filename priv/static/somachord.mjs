@@ -12844,7 +12844,6 @@ var ImageBase = class {
   }
 };
 function applyFilters(imageData, filters) {
-  var _a;
   if (filters.length > 0) {
     const pixels = imageData.data;
     const n = pixels.length / 4;
@@ -12860,7 +12859,7 @@ function applyFilters(imageData, filters) {
       b = pixels[offset + 2];
       a2 = pixels[offset + 3];
       for (let j = 0; j < filters.length; j++) {
-        if (!((_a = filters[j]) == null ? void 0 : _a.call(filters, r, g, b, a2))) {
+        if (!filters[j]?.(r, g, b, a2)) {
           pixels[offset + 3] = 0;
           break;
         }
@@ -13286,9 +13285,8 @@ function hslToRgb(h, s, l) {
 var Swatch = class _Swatch {
   static applyFilters(colors, filters) {
     return filters.length > 0 ? colors.filter(({ r, g, b }) => {
-      var _a;
       for (let j = 0; j < filters.length; j++) {
-        if (!((_a = filters[j]) == null ? void 0 : _a.call(filters, r, g, b, 255))) return false;
+        if (!filters[j]?.(r, g, b, 255)) return false;
       }
       return true;
     }) : colors;
@@ -13739,6 +13737,7 @@ function generateSwatches(pq) {
   while (pq.size()) {
     const v = pq.pop();
     const color = v.avg();
+    const [r, g, b] = color;
     swatches.push(new Swatch(color, v.count()));
   }
   return swatches;
@@ -16310,7 +16309,7 @@ function view4(m) {
                                     required(true),
                                     prepend(
                                       class$(
-                                        "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
+                                        "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
                                       ),
                                       (() => {
                                         let $ = get3("SERVER_URL");
@@ -16321,9 +16320,27 @@ function view4(m) {
                                             value(
                                               get3("SERVER_URL")
                                             ),
-                                            disabled(true),
-                                            class$(
-                                              "cursor-not-allowed text-zinc-400"
+                                            disabled(
+                                              (() => {
+                                                let $1 = get3(
+                                                  "LOCK_SERVER"
+                                                );
+                                                if ($1 === "true") {
+                                                  return true;
+                                                } else if ($1 === "TRUE") {
+                                                  return true;
+                                                } else if ($1 === "1") {
+                                                  return true;
+                                                } else if ($1 === "false") {
+                                                  return false;
+                                                } else if ($1 === "FALSE") {
+                                                  return false;
+                                                } else if ($1 === "0") {
+                                                  return false;
+                                                } else {
+                                                  return true;
+                                                }
+                                              })()
                                             )
                                           ]);
                                         }
@@ -16358,11 +16375,36 @@ function view4(m) {
                           prepend(
                             input(
                               toList([
+                                value(get3("DEFAULT_USER")),
+                                disabled(
+                                  (() => {
+                                    let $ = get3("DEFAULT_USER");
+                                    if ($ === "") {
+                                      return false;
+                                    } else {
+                                      let $1 = echo4(
+                                        get3("LOCK_CREDENTIALS"),
+                                        void 0,
+                                        "src/somachord/components/login.gleam",
+                                        233
+                                      );
+                                      if ($1 === "true") {
+                                        return true;
+                                      } else if ($1 === "TRUE") {
+                                        return true;
+                                      } else if ($1 === "1") {
+                                        return true;
+                                      } else {
+                                        return false;
+                                      }
+                                    }
+                                  })()
+                                ),
                                 autocomplete("username"),
                                 type_("input"),
                                 name("username"),
                                 class$(
-                                  "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
+                                  "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
                                 )
                               ])
                             ),
@@ -16391,11 +16433,33 @@ function view4(m) {
                           prepend(
                             input(
                               toList([
+                                value(
+                                  get3("DEFAULT_PASSWORD")
+                                ),
+                                disabled(
+                                  (() => {
+                                    let $ = get3("DEFAULT_PASSWORD");
+                                    if ($ === "") {
+                                      return false;
+                                    } else {
+                                      let $1 = get3("LOCK_CREDENTIALS");
+                                      if ($1 === "true") {
+                                        return true;
+                                      } else if ($1 === "TRUE") {
+                                        return true;
+                                      } else if ($1 === "1") {
+                                        return true;
+                                      } else {
+                                        return false;
+                                      }
+                                    }
+                                  })()
+                                ),
                                 autocomplete("current-password"),
                                 type_("password"),
                                 name("password"),
                                 class$(
-                                  "bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
+                                  "disabled:cursor-not-allowed disabled:text-zinc-400 bg-zinc-700 rounded-md p-2 text-zinc-200 focus:outline focus:outline-violet-400"
                                 )
                               ])
                             ),
@@ -22170,15 +22234,15 @@ function playing_bar(m) {
         "let_assert",
         FILEPATH18,
         "somachord/pages/views/desktop",
-        213,
+        214,
         "playing_bar",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 6103,
-          end: 6156,
-          pattern_start: 6114,
-          pattern_end: 6121
+          start: 6131,
+          end: 6184,
+          pattern_start: 6142,
+          pattern_end: 6149
         }
       );
     }
@@ -22194,7 +22258,7 @@ function playing_bar(m) {
     toList([
       div(
         toList([class$("flex gap-2 items-center w-1/3")]),
-        toList([
+        prepend(
           div(
             toList([
               class$(
@@ -22239,45 +22303,56 @@ function playing_bar(m) {
               })()
             ])
           ),
-          div(
-            toList([class$("flex flex-col min-w-0")]),
-            toList([
-              a(
-                toList([
-                  href("/song/" + m.current_song.id),
-                  class$(
-                    "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
+          prepend(
+            div(
+              toList([class$("flex flex-col min-w-0")]),
+              toList([
+                a(
+                  toList([
+                    href("/song/" + m.current_song.id),
+                    class$(
+                      "hover:underline font-normal overflow-hidden text-nowrap text-ellipsis min-w-0"
+                    )
+                  ]),
+                  toList([text2(m.current_song.title)])
+                ),
+                artists(m.current_song.artists, toList([]))
+              ])
+            ),
+            (() => {
+              let $ = isEqual(m.current_song, new_song());
+              if ($) {
+                return toList([none3()]);
+              } else {
+                return toList([
+                  button2(
+                    new Like(m.current_song.starred),
+                    new Medium2(),
+                    toList([
+                      class$("ml-3"),
+                      (() => {
+                        let $1 = m.current_song.starred;
+                        if ($1) {
+                          return class$("text-violet-500");
+                        } else {
+                          return none();
+                        }
+                      })(),
+                      on_click(new Like2())
+                    ])
+                  ),
+                  element6(
+                    toList([]),
+                    toList([
+                      class$("absolute bottom-92 right-96"),
+                      song_id(m.current_song.id)
+                    ])
                   )
-                ]),
-                toList([text2(m.current_song.title)])
-              ),
-              artists(m.current_song.artists, toList([]))
-            ])
-          ),
-          button2(
-            new Like(m.current_song.starred),
-            new Medium2(),
-            toList([
-              class$("ml-3"),
-              (() => {
-                let $ = m.current_song.starred;
-                if ($) {
-                  return class$("text-violet-500");
-                } else {
-                  return none();
-                }
-              })(),
-              on_click(new Like2())
-            ])
-          ),
-          element6(
-            toList([]),
-            toList([
-              class$("absolute bottom-92 right-96"),
-              song_id(m.current_song.id)
-            ])
+                ]);
+              }
+            })()
           )
-        ])
+        )
       ),
       div(
         toList([class$("space-y-1")]),
@@ -22468,15 +22543,15 @@ function playing_bar(m) {
                                 "let_assert",
                                 FILEPATH18,
                                 "somachord/pages/views/desktop",
-                                390,
+                                396,
                                 "playing_bar",
                                 "Pattern match failed, no pattern matched the value.",
                                 {
                                   value: $,
-                                  start: 12214,
-                                  end: 12258,
-                                  pattern_start: 12225,
-                                  pattern_end: 12239
+                                  start: 12437,
+                                  end: 12481,
+                                  pattern_start: 12448,
+                                  pattern_end: 12462
                                 }
                               );
                             }

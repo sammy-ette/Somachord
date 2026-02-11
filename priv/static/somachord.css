@@ -1658,6 +1658,16 @@
       filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
     }
   }
+  .disabled\:cursor-not-allowed {
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+  .disabled\:text-zinc-400 {
+    &:disabled {
+      color: var(--color-zinc-400);
+    }
+  }
   .data-playing\:before\:invisible {
     &[data-playing] {
       &::before {
