@@ -10443,9 +10443,15 @@ function album_list(auth_details, type_2, offset, amount, msg) {
     req,
     expect_json(
       subsonic_response_decoder(
-        subfield(
-          toList(["subsonic-response", "albumList2", "album"]),
-          list2(album_decoder()),
+        then$(
+          optionally_at(
+            toList(["subsonic-response", "albumList2", "album"]),
+            toList([]),
+            one_of(
+              list2(album_decoder()),
+              toList([success(toList([]))])
+            )
+          ),
           (albums) => {
             return success(new AlbumList(type_2, albums));
           }
@@ -10684,15 +10690,15 @@ function queue(auth_details, msg) {
                         "let_assert",
                         FILEPATH4,
                         "somachord/api/api",
-                        354,
+                        357,
                         "queue",
                         "Pattern match failed, no pattern matched the value.",
                         {
                           value: $,
-                          start: 8454,
-                          end: 8557,
-                          pattern_start: 8465,
-                          pattern_end: 8481
+                          start: 8552,
+                          end: 8655,
+                          pattern_start: 8563,
+                          pattern_end: 8579
                         }
                       );
                     }
@@ -10747,15 +10753,15 @@ function save_queue(auth_details, queue2, msg) {
             "let_assert",
             FILEPATH4,
             "somachord/api/api",
-            397,
+            400,
             "save_queue",
             "Pattern match failed, no pattern matched the value.",
             {
               value: $,
-              start: 9498,
-              end: 9567,
-              pattern_start: 9509,
-              pattern_end: 9525
+              start: 9596,
+              end: 9665,
+              pattern_start: 9607,
+              pattern_end: 9623
             }
           );
         }
