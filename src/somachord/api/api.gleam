@@ -133,10 +133,13 @@ pub fn album_list(
     req,
     rsvp.expect_json(
       subsonic_response_decoder({
-        use albums <- decode.subfield(
+        use albums <- decode.then(decode.optionally_at(
           ["subsonic-response", "albumList2", "album"],
-          decode.list(api_models.album_decoder()),
-        )
+          [],
+          decode.one_of(decode.list(api_models.album_decoder()), [
+            { decode.success([]) },
+          ]),
+        ))
         decode.success(AlbumList(type_, albums))
       }),
       msg,
