@@ -1,6 +1,5 @@
 import gleam/bool
 import gleam/dynamic/decode
-import gleam/int
 import gleam/javascript/array
 import gleam/json
 import gleam/list

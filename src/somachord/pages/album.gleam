@@ -167,22 +167,28 @@ pub fn desktop_page(m: model.Model, id) {
         ),
       ],
     ),
-    html.div([attribute.class("flex flex-col gap-8 select-none")], [
-      html.img([
-        attribute.src(api.cover_url(auth_details, album.cover_art_id, 500)),
-        attribute.class(
-          "self-center w-52 h-52 md:w-80 md:h-80 object-scale rounded-md",
-        ),
-      ]),
-      case m.layout {
-        model.Mobile -> element.none()
-        model.Desktop ->
-          html.div(
-            [attribute.class("flex flex-wrap gap-4")],
-            list.map(album.genres, elements.tag),
-          )
-      },
-    ]),
+    html.div(
+      [
+        attribute.class("overflow-y-auto flex flex-col gap-8 select-none"),
+        attribute.class(elements.scrollbar_class),
+      ],
+      [
+        html.img([
+          attribute.src(api.cover_url(auth_details, album.cover_art_id, 500)),
+          attribute.class(
+            "self-center w-52 h-52 md:w-80 md:h-80 object-scale rounded-md",
+          ),
+        ]),
+        case m.layout {
+          model.Mobile -> element.none()
+          model.Desktop ->
+            html.div(
+              [attribute.class("flex flex-wrap gap-4")],
+              list.map(album.genres, elements.tag),
+            )
+        },
+      ],
+    ),
   ])
 }
 
