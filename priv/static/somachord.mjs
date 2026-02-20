@@ -11616,15 +11616,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  165,
+                  164,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 4344,
-                    end: 4447,
-                    pattern_start: 4355,
-                    pattern_end: 4370
+                    start: 4327,
+                    end: 4430,
+                    pattern_start: 4338,
+                    pattern_end: 4353
                   }
                 );
               }
@@ -11637,15 +11637,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  167,
+                  166,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $2,
-                    start: 4458,
-                    end: 4525,
-                    pattern_start: 4469,
-                    pattern_end: 4491
+                    start: 4441,
+                    end: 4508,
+                    pattern_start: 4452,
+                    pattern_end: 4474
                   }
                 );
               }
@@ -11658,15 +11658,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  168,
+                  167,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $3,
-                    start: 4536,
-                    end: 4626,
-                    pattern_start: 4547,
-                    pattern_end: 4555
+                    start: 4519,
+                    end: 4609,
+                    pattern_start: 4530,
+                    pattern_end: 4538
                   }
                 );
               }
@@ -11679,15 +11679,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  170,
+                  169,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $4,
-                    start: 4637,
-                    end: 4690,
-                    pattern_start: 4648,
-                    pattern_end: 4663
+                    start: 4620,
+                    end: 4673,
+                    pattern_start: 4631,
+                    pattern_end: 4646
                   }
                 );
               }
@@ -11749,15 +11749,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  192,
+                  191,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $1,
-                    start: 5380,
-                    end: 5478,
-                    pattern_start: 5391,
-                    pattern_end: 5399
+                    start: 5363,
+                    end: 5461,
+                    pattern_start: 5374,
+                    pattern_end: 5382
                   }
                 );
               }
@@ -11770,15 +11770,15 @@ function update2(m, msg) {
                   "let_assert",
                   FILEPATH5,
                   "somachord/components/lyrics",
-                  194,
+                  193,
                   "update",
                   "Pattern match failed, no pattern matched the value.",
                   {
                     value: $2,
-                    start: 5489,
-                    end: 5542,
-                    pattern_start: 5500,
-                    pattern_end: 5515
+                    start: 5472,
+                    end: 5525,
+                    pattern_start: 5483,
+                    pattern_end: 5498
                   }
                 );
               }
@@ -11840,12 +11840,12 @@ function update2(m, msg) {
             emit_lyrics_loaded(false)
           ];
         } else {
-          echo3(e, void 0, "src/somachord/components/lyrics.gleam", 220);
+          echo3(e, void 0, "src/somachord/components/lyrics.gleam", 219);
           throw makeError(
             "panic",
             FILEPATH5,
             "somachord/components/lyrics",
-            221,
+            220,
             "update",
             "should be unreachable",
             {}
@@ -11854,12 +11854,12 @@ function update2(m, msg) {
       }
     } else {
       let e = $[0];
-      echo3(e, void 0, "src/somachord/components/lyrics.gleam", 210);
+      echo3(e, void 0, "src/somachord/components/lyrics.gleam", 209);
       throw makeError(
         "panic",
         FILEPATH5,
         "somachord/components/lyrics",
-        211,
+        210,
         "update",
         "rsvp error",
         {}
@@ -17881,7 +17881,12 @@ function desktop_page(m, id3) {
             ])
           ),
           div(
-            toList([class$("flex flex-col gap-8 select-none")]),
+            toList([
+              class$(
+                "overflow-y-auto flex flex-col gap-8 select-none"
+              ),
+              class$(scrollbar_class)
+            ]),
             toList([
               img(
                 toList([
