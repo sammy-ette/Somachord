@@ -127,7 +127,9 @@ pub fn on_playlist(
   })
 }
 
-pub fn on_lyric_seek(handler: fn(Float) -> msg) {
+pub fn on_lyric_seek(
+  handler: fn(Float) -> msg,
+) -> attribute.Attribute(msg) {
   event.on("lyric-seek", {
     use time <- decode.field("detail", decode.float)
 
