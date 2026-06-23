@@ -1,153 +1,155 @@
-import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option
-import gleam/order
-import gleam/pair
 import plinth/javascript/date
 import somachord/api/models as api_models
 
 pub type Queue {
   Queue(
     song_position: Float,
-    songs: dict.Dict(Int, api_models.Child),
-    // played, unplayed
-    // top of unplayed is the current song
-    song_order: SongOrder,
-    position: Int,
+    played: List(#(Int, api_models.Child)),
+    current: option.Option(#(Int, api_models.Child)),
+    unplayed: List(#(Int, api_models.Child)),
+    next_id: Int,
     changed: date.Date,
   )
-}
-
-pub type SongOrder {
-  SongOrder(played: List(Int), unplayed: List(Int))
 }
 
 pub fn empty() {
   Queue(
     song_position: 0.0,
-    songs: dict.new(),
-    song_order: SongOrder(played: [], unplayed: []),
-    position: 0,
+    played: [],
+    current: option.None,
+    unplayed: [],
+    next_id: 0,
     changed: date.now(),
   )
 }
 
 pub fn new(
-  position position: Int,
   songs songs: List(api_models.Child),
   song_position song_position: Float,
 ) {
-  let song_order =
-    list.range(0, list.length(songs) - 1)
-    |> list.split(position)
-  Queue(
-    position:,
-    song_position:,
-    songs: songs
-      |> list.fold(#(dict.new(), 0), fn(acc, song) {
-        let #(d, idx) = acc
-        #(d |> dict.insert(idx, song), idx + 1)
-      })
-      |> pair.first,
-    changed: date.now(),
-    song_order: SongOrder(played: song_order.0, unplayed: song_order.1),
-  )
+  case songs |> list.index_map(fn(song, idx) { #(idx, song) }) {
+    [] -> empty()
+    [first, ..rest] ->
+      Queue(
+        song_position:,
+        played: [],
+        current: option.Some(first),
+        unplayed: rest,
+        next_id: list.length(songs),
+        changed: date.now(),
+      )
+  }
 }
 
 pub fn shuffle(queue: Queue) {
-  let song_order =
-    list.range(0, list.length(queue.songs |> dict.values) - 1)
-    |> list.shuffle
-    |> list.split(queue.position)
   Queue(
     ..queue,
-    song_order: SongOrder(played: song_order.0, unplayed: song_order.1),
+    played: list.shuffle(queue.played),
+    unplayed: list.shuffle(queue.unplayed),
   )
 }
 
 pub fn unshuffle(queue: Queue) {
-  let song_order =
-    list.range(0, list.length(queue.songs |> dict.values) - 1)
-    |> list.split(queue.position)
   Queue(
     ..queue,
-    song_order: SongOrder(played: song_order.0, unplayed: song_order.1),
+    played: queue.played |> list.sort(fn(a, b) { int.compare(b.0, a.0) }),
+    unplayed: queue.unplayed |> list.sort(fn(a, b) { int.compare(a.0, b.0) }),
   )
 }
 
-pub fn jump(queue: Queue, position: Int) {
-  case int.compare(position, queue.position) {
-    order.Gt -> {
-      next_itr(queue, position - queue.position)
-    }
-    order.Lt -> {
-      previous_itr(queue, queue.position - position)
-    }
-
-    order.Eq -> queue
-  }
-}
-
-fn next_itr(queue: Queue, times: Int) {
-  case times {
-    0 -> queue
-    _ -> next_itr(next(queue), times - 1)
-  }
-}
-
-fn previous_itr(queue: Queue, times: Int) {
-  case times {
-    0 -> queue
-    _ -> previous_itr(previous(queue), times - 1)
-  }
-}
-
 pub fn next(queue: Queue) {
-  case queue.song_order.unplayed {
+  case queue.unplayed {
     [] -> queue
-    [front_first, ..unplayed_rest] -> {
-      let updated_played = [front_first, ..queue.song_order.played]
+    [head, ..rest] ->
       Queue(
         ..queue,
-        song_order: SongOrder(updated_played, unplayed_rest),
-        position: queue.position + 1,
+        played: case queue.current {
+          option.Some(c) -> [c, ..queue.played]
+          option.None -> queue.played
+        },
+        current: option.Some(head),
+        unplayed: rest,
       )
-    }
   }
 }
 
 pub fn previous(queue: Queue) {
-  case queue.song_order.played {
+  case queue.played {
     [] -> queue
-    [played_first, ..played_rest] -> {
-      let updated_unplayed = [played_first, ..queue.song_order.unplayed]
+    [head, ..rest] ->
       Queue(
         ..queue,
-        song_order: SongOrder(played_rest, updated_unplayed),
-        position: queue.position - 1,
+        played: rest,
+        current: option.Some(head),
+        unplayed: case queue.current {
+          option.Some(c) -> [c, ..queue.unplayed]
+          option.None -> queue.unplayed
+        },
       )
-    }
   }
 }
 
 pub fn current_song(queue: Queue) -> option.Option(api_models.Child) {
-  case queue.song_order.unplayed |> list.first {
-    Ok(idx) -> {
-      let assert Ok(song) = queue.songs |> dict.get(idx)
-      option.Some(song)
-    }
-    Error(_) -> option.None
-  }
+  queue.current |> option.map(fn(c) { c.1 })
 }
 
 pub fn list(queue: Queue) -> List(#(Int, api_models.Child)) {
-  list.map(
-    [list.reverse(queue.song_order.played), queue.song_order.unplayed]
-      |> list.flatten,
-    fn(idx) {
-      let assert Ok(song) = queue.songs |> dict.get(idx)
-      #(idx, song)
-    },
+  case queue.current {
+    option.Some(current) ->
+      list.flatten([list.reverse(queue.played), [current], queue.unplayed])
+    option.None -> list.append(list.reverse(queue.played), queue.unplayed)
+  }
+}
+
+pub fn jump(queue: Queue, song_idx: Int) -> Queue {
+  let matches_idx = fn(entry: #(Int, api_models.Child)) { entry.0 != song_idx }
+  case queue.current {
+    option.Some(#(idx, _)) if idx == song_idx -> queue
+    _ ->
+      case list.split_while(queue.unplayed, matches_idx) {
+        #(before, [found, ..after]) ->
+          Queue(
+            ..queue,
+            played: case queue.current {
+              option.Some(c) ->
+                list.append(list.reverse(before), [c, ..queue.played])
+              option.None -> list.reverse(before)
+            },
+            current: option.Some(found),
+            unplayed: after,
+          )
+        #(_, []) ->
+          case list.split_while(queue.played, matches_idx) {
+            #(before, [found, ..after]) ->
+              Queue(
+                ..queue,
+                played: after,
+                current: option.Some(found),
+                unplayed: case queue.current {
+                  option.Some(c) ->
+                    list.append(list.reverse(before), [c, ..queue.unplayed])
+                  option.None ->
+                    list.append(list.reverse(before), queue.unplayed)
+                },
+              )
+            #(_, []) -> queue
+          }
+      }
+  }
+}
+
+pub fn append_songs(queue: Queue, songs: List(api_models.Child)) -> Queue {
+  let #(new_entries, next_id) =
+    songs
+    |> list.fold(#([], queue.next_id), fn(acc, song) {
+      #([#(acc.1, song), ..acc.0], acc.1 + 1)
+    })
+  Queue(
+    ..queue,
+    unplayed: list.append(queue.unplayed, list.reverse(new_entries)),
+    next_id:,
   )
 }
