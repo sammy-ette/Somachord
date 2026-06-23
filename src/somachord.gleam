@@ -175,6 +175,7 @@ fn online_event() {
 
 fn keybind_msg(key: String, ctrl_or_meta: Bool) -> option.Option(msg.Msg) {
   case key, ctrl_or_meta {
+    "Escape", False -> option.Some(msg.HideFullscreenPlayer)
     " ", False -> option.Some(msg.PlayerPausePlay)
     "ArrowLeft", True -> option.Some(msg.PlayerPrevious)
     "ArrowRight", True -> option.Some(msg.PlayerNext)
@@ -369,8 +370,7 @@ fn update(
     msg.StreamPlaylist(playlist, index) -> {
       echo playlist.name
       let queue =
-        case m.shuffled, queue.new(songs: playlist.songs, song_position: 0.0)
-        {
+        case m.shuffled, queue.new(songs: playlist.songs, song_position: 0.0) {
           True, queue -> queue |> queue.shuffle
           False, queue -> queue
         }
@@ -393,10 +393,7 @@ fn update(
 
       m.player |> player.load_song(stream_uri, song)
       #(
-        model.Model(
-          ..m,
-          queue: queue.new(songs: [song], song_position: 0.0),
-        ),
+        model.Model(..m, queue: queue.new(songs: [song], song_position: 0.0)),
         play(),
       )
     }
@@ -699,6 +696,10 @@ fn update(
         ..m,
         fullscreen_player_open: bool.negate(m.fullscreen_player_open),
       ),
+      effect.none(),
+    )
+    msg.HideFullscreenPlayer -> #(
+      model.Model(..m, fullscreen_player_open: False),
       effect.none(),
     )
     msg.ChangeFullscreenPlayerView(view) -> #(

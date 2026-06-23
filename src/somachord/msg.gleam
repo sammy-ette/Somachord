@@ -33,6 +33,7 @@ pub type Msg {
   ClearToast
   Connectivity(Bool)
   ToggleFullscreenPlayer
+  HideFullscreenPlayer
   ChangeFullscreenPlayerView(model.FullscreenPlayerDisplay)
 
   // dispatches the appropriate msg (StreamAlbum, StreamSong)
