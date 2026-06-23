@@ -68,6 +68,7 @@ pub type Msg {
   PlayerPausePlay
   PlayerNext
   PlayerLoop
+  PlayerMute
   Like
   QueueJumpTo(position: Int)
 

@@ -55,3 +55,6 @@ pub fn volume(player: model.Player, amount: Int) -> Nil
 
 @external(javascript, "./player.ffi.mjs", "get_volume")
 pub fn get_volume(player: model.Player) -> Float
+
+@external(javascript, "./player.ffi.mjs", "toggle_mute")
+pub fn toggle_mute(player: model.Player) -> Nil

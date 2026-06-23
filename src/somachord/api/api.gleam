@@ -1,5 +1,4 @@
 import gleam/bool
-import gleam/dict
 import gleam/dynamic/decode
 import gleam/float
 import gleam/http/request
@@ -363,10 +362,7 @@ pub fn queue(auth_details: auth.Auth, msg: Response(queue.Queue, b)) {
         )
 
         decode.success(
-          queue.Queue(
-            ..queue.new(song_position:, songs: songs, position: 0),
-            changed:,
-          )
+          queue.Queue(..queue.new(song_position:, songs: songs), changed:)
           |> queue.jump({ current_song.0 }),
         )
       }),
@@ -397,7 +393,7 @@ pub fn save_queue(
       path: "/rest/savePlayQueue.view",
       query: case queue {
         option.Some(queue) -> {
-          let assert Ok(current_song) = queue.songs |> dict.get(queue.position)
+          let assert option.Some(current_song) = queue.current_song(queue)
           [
             #("current", current_song.id),
             #(

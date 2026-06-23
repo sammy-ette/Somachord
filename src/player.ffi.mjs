@@ -177,6 +177,10 @@ export function loop(player, state) {
 }
 
 
+export function toggle_mute(player) {
+	player.element.muted = !player.element.muted
+}
+
 export function volume(player, amount) {
 	console.log(Math.min(Math.max(0.0, amount / 100), 1.0))
 	player.element.volume = Math.min(Math.max(0.0, amount / 100), 1.0)

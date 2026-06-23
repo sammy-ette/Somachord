@@ -4,7 +4,6 @@ import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option
-import gleam/order
 import gleam/pair
 import gleam/result
 import gleam/uri
@@ -30,6 +29,8 @@ import lustre/attribute
 import lustre/effect
 import lustre/element
 import modem
+import plinth/browser/element as browser_element
+import plinth/browser/event
 import plinth/browser/window
 import varasto
 
@@ -116,6 +117,7 @@ fn init(_) {
         unload_event(),
         online_event(),
         offline_event(),
+        keydown_event(),
       ]),
     )
     Error(_) ->
@@ -167,6 +169,49 @@ fn online_event() {
   effect.from(fn(dispatch) {
     window.add_event_listener("online", fn(_event) {
       msg.Connectivity(True) |> dispatch
+    })
+  })
+}
+
+fn keybind_msg(key: String, ctrl_or_meta: Bool) -> option.Option(msg.Msg) {
+  case key, ctrl_or_meta {
+    " ", False -> option.Some(msg.PlayerPausePlay)
+    "ArrowLeft", True -> option.Some(msg.PlayerPrevious)
+    "ArrowRight", True -> option.Some(msg.PlayerNext)
+    "s", False -> option.Some(msg.PlayerShuffle)
+    "r", False -> option.Some(msg.PlayerLoop)
+    "f", False -> option.Some(msg.Like)
+    "m", False -> option.Some(msg.PlayerMute)
+    _, _ -> option.None
+  }
+}
+
+fn keydown_event() {
+  effect.from(fn(dispatch) {
+    window.add_event_listener("keydown", fn(kb_event) {
+      let in_editable =
+        kb_event
+        |> event.target
+        |> browser_element.cast
+        |> result.map(fn(el) {
+          browser_element.closest(
+            el,
+            "input, textarea, select, [contenteditable]",
+          )
+          |> result.is_ok
+        })
+        |> result.unwrap(False)
+
+      use <- bool.guard(in_editable, Nil)
+
+      let ctrl_or_meta = event.ctrl_key(kb_event) || event.meta_key(kb_event)
+      case keybind_msg(event.key(kb_event), ctrl_or_meta) {
+        option.Some(m) -> {
+          event.prevent_default(kb_event)
+          dispatch(m)
+        }
+        option.None -> Nil
+      }
     })
   })
 }
@@ -314,10 +359,7 @@ fn update(
     }
     msg.StreamAlbum(album, index) -> {
       let queue =
-        case
-          m.shuffled,
-          queue.new(songs: album.songs, position: 0, song_position: 0.0)
-        {
+        case m.shuffled, queue.new(songs: album.songs, song_position: 0.0) {
           True, queue -> queue |> queue.shuffle
           False, queue -> queue
         }
@@ -327,9 +369,7 @@ fn update(
     msg.StreamPlaylist(playlist, index) -> {
       echo playlist.name
       let queue =
-        case
-          m.shuffled,
-          queue.new(songs: playlist.songs, position: 0, song_position: 0.0)
+        case m.shuffled, queue.new(songs: playlist.songs, song_position: 0.0)
         {
           True, queue -> queue |> queue.shuffle
           False, queue -> queue
@@ -339,7 +379,7 @@ fn update(
     }
     msg.StreamAlbumShuffled(album, index) -> {
       let queue =
-        queue.new(songs: album.songs, position: 0, song_position: 0.0)
+        queue.new(songs: album.songs, song_position: 0.0)
         |> queue.shuffle
         |> queue.jump(index)
       #(model.Model(..m, queue:, shuffled: True), play())
@@ -355,7 +395,7 @@ fn update(
       #(
         model.Model(
           ..m,
-          queue: queue.new(songs: [song], song_position: 0.0, position: 0),
+          queue: queue.new(songs: [song], song_position: 0.0),
         ),
         play(),
       )
@@ -405,7 +445,7 @@ fn update(
       )
     }
     msg.PlayerPrevious ->
-      case m.queue.position == 0, m.player |> player.time() >. 2.0 {
+      case list.is_empty(m.queue.played), m.player |> player.time() >. 2.0 {
         False, False -> #(
           model.Model(..m, queue: queue.previous(m.queue)),
           play(),
@@ -421,25 +461,19 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
+      let new_queue = queue.next(m.queue)
       #(
-        model.Model(..m, queue: queue.next(m.queue)),
+        model.Model(..m, queue: new_queue),
         effect.batch([
           check_scrobble(m),
-          case
-            int.compare(
-              m.queue.position + 1,
-              m.queue.songs |> dict.keys |> list.length,
-            )
-          {
-            order.Lt -> play()
-            order.Eq -> {
+          case list.is_empty(new_queue.unplayed) {
+            False -> play()
+            True ->
               api.similar_songs(
                 auth_details,
                 m.current_song.id,
                 msg: msg.SimilarSongs,
               )
-            }
-            _ -> effect.none()
           },
         ]),
       )
@@ -449,19 +483,10 @@ fn update(
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
-      let new_songs =
-        m.queue.songs
-        |> dict.to_list
-        |> list.sort(
-          fn(a: #(Int, api_models.Child), b: #(Int, api_models.Child)) {
-            int.compare(a.0, b.0)
-          },
-        )
-        |> list.map(fn(song: #(Int, api_models.Child)) { song.1 })
-        |> list.append(songs)
+      let new_queue = m.queue |> queue.append_songs(songs)
       #(
-        model.Model(..m, queue: queue.new(m.queue.position, new_songs, 0.0)),
-        case m.queue.position + 1 == new_songs |> list.length {
+        model.Model(..m, queue: new_queue),
+        case list.is_empty(new_queue.unplayed) {
           False -> play()
           True -> {
             let assert Ok(first_artist) = m.current_song.artists |> list.first
@@ -609,28 +634,28 @@ fn update(
       m.player |> player.loop(bool.negate(m.looping))
       #(model.Model(..m, looping: bool.negate(m.looping)), effect.none())
     }
+    msg.PlayerMute -> {
+      m.player |> player.toggle_mute
+      #(m, effect.none())
+    }
     msg.Like -> {
       let auth_details = {
         let assert Ok(stg) = m.storage |> varasto.get("auth")
         stg.auth
       }
+      let updated_song =
+        api_models.Child(
+          ..m.current_song,
+          starred: bool.negate(m.current_song.starred),
+        )
       #(
         model.Model(
           ..m,
-          current_song: api_models.Child(
-            ..m.current_song,
-            starred: bool.negate(m.current_song.starred),
-          ),
+          current_song: updated_song,
           queue: queue.Queue(
             ..m.queue,
-            songs: m.queue.songs
-              |> dict.insert(
-                m.queue.position,
-                api_models.Child(
-                  ..m.current_song,
-                  starred: bool.negate(m.current_song.starred),
-                ),
-              ),
+            current: m.queue.current
+              |> option.map(fn(c) { #(c.0, updated_song) }),
           ),
         ),
         case m.current_song.starred {
