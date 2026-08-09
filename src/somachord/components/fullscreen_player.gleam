@@ -384,6 +384,7 @@ fn view_desktop(m: model.Model) {
                       True -> lyrics.auto_scroll(True)
                       False -> lyrics.auto_scroll(False)
                     },
+                    msg.on_lyric_seek(msg.PlayerSeek),
                   ])
               },
             ]),

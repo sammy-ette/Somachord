@@ -33,6 +33,7 @@ pub type Model {
     font_size: Size,
     show_size_changer: Bool,
     nested_shadow: Bool,
+    hover_index: Int,
   )
 }
 
@@ -53,6 +54,8 @@ type Msg {
   SizeChange(Size)
   ToggleSizeChanger
   NestedShadow(Bool)
+  UpdateHoverIndex(Int)
+  Seek(Float)
   Nothing
 }
 
@@ -135,6 +138,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       },
       show_size_changer: False,
       nested_shadow: False,
+      hover_index: -1,
     ),
     effect.none(),
   )
@@ -235,6 +239,11 @@ fn update(m: Model, msg: Msg) {
       effect.none(),
     )
     SizeChange(size) -> #(Model(..m, font_size: size), effect.none())
+    UpdateHoverIndex(index) -> #(
+      Model(..m, hover_index: index, auto_scroll: index == -1),
+      effect.none(),
+    )
+    Seek(time) -> #(m, event.emit("lyric-seek", json.float(time)))
     Nothing -> #(m, effect.none())
   }
 }
@@ -307,21 +316,29 @@ fn view(m: Model) {
           ])
         True -> element.none()
       },
-      ..list.map(lyrics.lines, fn(lyric: api_models.Lyric) {
+      ..list.index_map(lyrics.lines, fn(lyric: api_models.Lyric, index: Int) {
         html.p(
           [
-            attribute.class("font-semibold"),
-            case m.song_time {
-              option.None | option.Some(-1.0) ->
-                attribute.class("text-zinc-300")
-              option.Some(current_time) ->
-                case
-                  { current_time +. lyrics.offset } >. { lyric.time -. 0.5 }
-                {
-                  True -> attribute.class("text-zinc-300")
-                  False -> attribute.class("text-(--unplayed-color) off-time")
+            attribute.class("font-semibold cursor-pointer"),
+            case m.hover_index != -1 && m.hover_index >= index {
+              True -> attribute.class("text-white")
+              False ->
+                case m.song_time {
+                  option.None | option.Some(-1.0) ->
+                    attribute.class("text-zinc-300")
+                  option.Some(current_time) ->
+                    case
+                      { current_time +. lyrics.offset } >. { lyric.time -. 0.5 }
+                    {
+                      True -> attribute.class("text-zinc-300")
+                      False ->
+                        attribute.class("text-(--unplayed-color) off-time")
+                    }
                 }
             },
+            event.on_mouse_enter(UpdateHoverIndex(index)),
+            event.on_mouse_leave(UpdateHoverIndex(-1)),
+            event.on_click(Seek(lyric.time)),
           ],
           [element.text(lyric.text)],
         )

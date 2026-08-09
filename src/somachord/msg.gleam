@@ -129,3 +129,13 @@ pub fn on_playlist(
     |> decode.map(handler)
   })
 }
+
+pub fn on_lyric_seek(
+  handler: fn(Float) -> msg,
+) -> attribute.Attribute(msg) {
+  event.on("lyric-seek", {
+    use time <- decode.field("detail", decode.float)
+
+    decode.success(time) |> decode.map(handler)
+  })
+}
